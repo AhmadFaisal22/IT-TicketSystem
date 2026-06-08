@@ -5,10 +5,10 @@
 # ============================================================
 set -e
 
-DOMAIN="helpdesk.yourdomain.com"       # <-- change this
+DOMAIN="helpdesk.segsolar-ind.com"
 DB_NAME="it_helpdesk"
 DB_USER="helpdesk"
-DB_PASS="change_this_strong_password"  # <-- change this
+DB_PASS="change_this_strong_password"  # <-- change this before running!
 DEPLOY_USER="deploy"
 
 echo "======================================"
