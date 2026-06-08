@@ -62,11 +62,13 @@ import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ticketApi } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 import CategoryPicker from '@/components/tickets/CategoryPicker.vue'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 
 const ticketId = Number(route.params.id)
 const loadingTicket = ref(true)
@@ -85,6 +87,11 @@ const form = reactive({
 async function loadTicket() {
   try {
     const { data } = await ticketApi.get(ticketId)
+    const canEdit = auth.isItStaff || data.status === 'open'
+    if (!canEdit) {
+      router.replace(`/tickets/${ticketId}`)
+      return
+    }
     ticketNumber.value = data.ticket_number
     form.title = data.title
     form.description = data.description

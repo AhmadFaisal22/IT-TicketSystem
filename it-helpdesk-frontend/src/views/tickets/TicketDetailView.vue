@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useTicketStore } from '@/stores/tickets'
@@ -209,6 +209,7 @@ const auth = useAuthStore()
 
 const loading = ref(true)
 const ticket = computed(() => ticketStore.currentTicket)
+let pollTimer: ReturnType<typeof setInterval> | null = null
 const comments = ref<Comment[]>([])
 const itStaff = ref<any[]>([])
 const newComment = ref('')
@@ -270,8 +271,9 @@ function formatDateTime(dt: string) {
 }
 
 onMounted(async () => {
+  const id = Number(route.params.id)
   try {
-    await ticketStore.fetchTicket(Number(route.params.id))
+    await ticketStore.fetchTicket(id)
     assignedTo.value = ticket.value?.assigned_to ?? null
     await loadComments()
     if (auth.isItStaff) {
@@ -281,5 +283,14 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+
+  pollTimer = setInterval(async () => {
+    await ticketStore.fetchTicket(id)
+    await loadComments()
+  }, 30000)
+})
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer)
 })
 </script>

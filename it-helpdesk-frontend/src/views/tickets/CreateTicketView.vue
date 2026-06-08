@@ -186,8 +186,8 @@ async function submit() {
     if (form.subcategory) fd.append('subcategory', form.subcategory)
     attachments.value.forEach(f => fd.append('attachments[]', f))
 
-    const ticket = await ticketStore.createTicket(fd)
-    router.push(`/tickets/${ticket.id}`)
+    await ticketStore.createTicket(fd)
+    router.replace('/tickets')
   } catch (e: any) {
     error.value = e?.response?.data?.message || t('common.error')
   } finally {

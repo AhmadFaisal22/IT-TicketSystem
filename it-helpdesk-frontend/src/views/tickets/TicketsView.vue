@@ -220,7 +220,8 @@ function goToPage(page: number) {
 }
 
 function canEdit(ticket: Ticket): boolean {
-  return auth.isItStaff || ticket.created_by === auth.user?.id
+  if (auth.isItStaff) return true
+  return ticket.created_by === auth.user?.id && ticket.status === 'open'
 }
 
 async function handleDelete(ticket: Ticket) {
