@@ -45,6 +45,20 @@ services:
       postgres:
         condition: service_healthy
 
+  # ── Laravel Scheduler (SLA breach checks, etc.) ───────────
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.php
+    restart: unless-stopped
+    command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
+    env_file: .env.docker
+    volumes:
+      - backend_storage:/var/www/backend/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   # ── Nginx + Vue SPA (built inside image) ──────────────────
   nginx:
     build:

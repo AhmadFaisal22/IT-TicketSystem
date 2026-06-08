@@ -7,6 +7,7 @@ use App\Models\Attachment;
 use App\Models\SlaPolicy;
 use App\Models\Ticket;
 use App\Models\TicketHistory;
+use App\Models\User;
 use App\Notifications\TicketCreated;
 use App\Notifications\TicketStatusChanged;
 use App\Notifications\TicketAssigned;
@@ -112,8 +113,8 @@ class TicketController extends Controller
             return $ticket;
         });
 
-        $itStaff = \App\Models\User::where('role', 'it_staff')->get();
-        Notification::send($itStaff, new TicketCreated($ticket));
+        $notifyStaff = User::whereIn('role', ['it_staff', 'admin'])->where('active', true)->get();
+        Notification::send($notifyStaff, new TicketCreated($ticket));
 
         return response()->json($ticket->load(['creator', 'department', 'attachments']), 201);
     }

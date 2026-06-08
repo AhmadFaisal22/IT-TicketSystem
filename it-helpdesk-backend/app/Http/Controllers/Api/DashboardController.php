@@ -46,11 +46,15 @@ class DashboardController extends Controller
             ])
             ->get();
 
-        // SQLite-compatible average resolution hours
-        $avgResolutionHours = Ticket::whereNotNull('resolved_at')
+        // Database-agnostic: compute avg resolution in PHP to support both SQLite (dev) and PostgreSQL (prod)
+        $resolvedTickets = Ticket::whereNotNull('resolved_at')
             ->whereBetween('created_at', [$from, now()])
-            ->selectRaw('AVG((JULIANDAY(resolved_at) - JULIANDAY(created_at)) * 24) as avg_hours')
-            ->value('avg_hours');
+            ->select(['created_at', 'resolved_at'])
+            ->get();
+
+        $avgResolutionHours = $resolvedTickets->isNotEmpty()
+            ? $resolvedTickets->avg(fn ($t) => $t->created_at->diffInMinutes($t->resolved_at)) / 60
+            : 0;
 
         $trendsRaw = Ticket::whereBetween('created_at', [$from, now()])
             ->selectRaw("DATE(created_at) as date, count(*) as created")

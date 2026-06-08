@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/api'
-import { useI18n } from 'vue-i18n'
 
 export interface User {
   id: number
