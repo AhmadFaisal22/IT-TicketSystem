@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Dark mode global cascade ───────────────────────────────────────────────
+   These two-class selectors (.dark .class) beat Tailwind's single-class
+   utilities, so they cascade down to all views without touching every file.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Page background */
+.dark body                { background-color: #0f172a; color: #f1f5f9; }
+.dark .bg-gray-100        { background-color: #0f172a; }
+
+/* Card / panel surfaces */
+.dark .bg-white           { background-color: #1e293b; }
+.dark .bg-gray-50         { background-color: #1e293b; }
+
+/* Text */
+.dark .text-gray-900,
+.dark .text-gray-800      { color: #f1f5f9; }
+.dark .text-gray-700      { color: #e2e8f0; }
+.dark .text-gray-600      { color: #94a3b8; }
+.dark .text-gray-500      { color: #64748b; }
+
+/* Borders */
+.dark .border-gray-100,
+.dark .border-gray-200    { border-color: #334155; }
+.dark .border-gray-300    { border-color: #475569; }
+
+/* Form inputs */
+.dark input:not([type='checkbox']):not([type='radio']),
+.dark select,
+.dark textarea {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: #475569; }
+
+/* Table */
+.dark thead tr             { background-color: #0f172a; }
+.dark .hover\:bg-gray-50:hover { background-color: #1e293b; }
+
+/* Shadows */
+.dark .shadow-sm {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+}
+
+/* Status / priority light-tint badges */
+.dark .bg-blue-50    { background-color: rgba(59,  130, 246, 0.15); }
+.dark .bg-yellow-50  { background-color: rgba(234, 179,   8, 0.15); }
+.dark .bg-green-50   { background-color: rgba(34,  197,  94, 0.15); }
+.dark .bg-orange-50  { background-color: rgba(249, 115,  22, 0.15); }
+.dark .bg-red-50     { background-color: rgba(239,  68,  68, 0.10); }
+.dark .bg-purple-50  { background-color: rgba(168,  85, 247, 0.15); }
+.dark .bg-indigo-50  { background-color: rgba(99,  102, 241, 0.15); }
+
+/* Error / warning banner borders in dark mode */
+.dark .border-orange-200  { border-color: rgba(249, 115,  22, 0.40); }
+.dark .border-red-300     { border-color: rgba(239,  68,  68, 0.40); }
+
+/* Scrollbar */
+.dark ::-webkit-scrollbar-thumb { background-color: #334155; }
+.dark ::-webkit-scrollbar-track { background-color: #0f172a; }

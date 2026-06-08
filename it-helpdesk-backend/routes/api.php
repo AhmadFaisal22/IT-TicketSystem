@@ -1,0 +1,67 @@
+<?php
+
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\SlaController;
+use App\Http\Controllers\Api\TicketController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
+
+// OAuth + password login
+Route::prefix('auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::get('redirect/google', [AuthController::class, 'redirectToGoogle']);
+    Route::get('redirect/microsoft', [AuthController::class, 'redirectToMicrosoft']);
+    Route::get('callback/google', [AuthController::class, 'handleGoogleCallback'])->middleware('throttle:10,1');
+    Route::get('callback/microsoft', [AuthController::class, 'handleMicrosoftCallback'])->middleware('throttle:10,1');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('me', [AuthController::class, 'me']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::patch('locale', [AuthController::class, 'updateLocale']);
+    });
+});
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Tickets
+    Route::apiResource('tickets', TicketController::class);
+    Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
+    Route::patch('tickets/{ticket}/assign', [TicketController::class, 'assign']);
+
+    // Comments
+    Route::get('tickets/{ticket}/comments', [CommentController::class, 'index']);
+    Route::post('tickets/{ticket}/comments', [CommentController::class, 'store']);
+    Route::delete('tickets/{ticket}/comments/{comment}', [CommentController::class, 'destroy']);
+
+    // Departments
+    Route::apiResource('departments', DepartmentController::class);
+
+    // Users (admin only)
+    Route::get('users', [UserController::class, 'index']);
+    Route::get('users/it-staff', [UserController::class, 'itStaff']);
+    Route::post('users', [UserController::class, 'store']);
+    Route::put('users/{user}', [UserController::class, 'update']);
+    Route::delete('users/{user}', [UserController::class, 'destroy']);
+    Route::patch('users/{user}/role', [UserController::class, 'updateRole']);
+    Route::patch('users/{user}/department', [UserController::class, 'updateDepartment']);
+    Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive']);
+
+    // Dashboard
+    Route::get('dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('dashboard/sla', [DashboardController::class, 'sla']);
+
+    // Notifications
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::patch('notifications/{id}/read', [NotificationController::class, 'markRead']);
+    Route::patch('notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+
+    // SLA Policies
+    Route::get('sla-policies', [SlaController::class, 'index']);
+    Route::post('sla-policies', [SlaController::class, 'store']);
+    Route::delete('sla-policies/{slaPolicy}', [SlaController::class, 'destroy']);
+});
