@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL Database ───────────────────────────────────
+  postgres:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${DB_DATABASE:-it_helpdesk}
+      POSTGRES_USER:     ${DB_USERNAME:-helpdesk}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-helpdesk}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Laravel Backend (PHP-FPM) ─────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.php
+    restart: unless-stopped
+    env_file: .env.docker
+    volumes:
+      - backend_storage:/var/www/backend/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Laravel Queue Worker ──────────────────────────────────
+  queue:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.php
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    env_file: .env.docker
+    volumes:
+      - backend_storage:/var/www/backend/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Nginx + Vue SPA (built inside image) ──────────────────
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.nginx
+    restart: unless-stopped
+    ports:
+      - "8088:80"       # Synology: access via http://NAS-IP:8088
+    volumes:
+      - backend_storage:/var/www/backend/storage/app/public:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
+  backend_storage:
