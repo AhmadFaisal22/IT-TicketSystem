@@ -6,11 +6,6 @@
         <input v-model="form.asset_tag" placeholder="US02-ADOM001-011" class="input" />
       </div>
 
-      <div class="sm:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.name') }}</label>
-        <input v-model="form.name" class="input" />
-      </div>
-
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.lastName') }}</label>
         <input v-model="form.last_name" class="input" />
@@ -112,7 +107,6 @@ const error = ref('')
 
 const form = reactive({
   asset_tag: props.asset?.asset_tag ?? '',
-  name: props.asset?.name ?? '',
   last_name: props.asset?.last_name ?? '',
   first_name: props.asset?.first_name ?? '',
   category: props.asset?.category ?? 'laptop',
@@ -130,7 +124,6 @@ const form = reactive({
 function payload() {
   return {
     asset_tag: form.asset_tag,
-    name: form.name || null,
     last_name: form.last_name || null,
     first_name: form.first_name || null,
     category: form.category,
