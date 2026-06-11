@@ -107,3 +107,20 @@ export const approvalApi = {
   reject: (ticketId: number, notes: string) =>
     api.post(`/tickets/${ticketId}/reject`, { notes }),
 }
+
+export const assetApi = {
+  list: (params?: object) => api.get('/assets', { params }),
+  meta: () => api.get('/assets/meta'),
+  get: (id: number) => api.get(`/assets/${id}`),
+  create: (data: object) => api.post('/assets', data),
+  update: (id: number, data: object) => api.put(`/assets/${id}`, data),
+  remove: (id: number) => api.delete(`/assets/${id}`),
+  assign: (id: number, assigned_to: number | null, department_id?: number | null) =>
+    api.patch(`/assets/${id}/assign`, { assigned_to, department_id }),
+  updateStatus: (id: number, status: string) => api.patch(`/assets/${id}/status`, { status }),
+  uploadAttachments: (id: number, formData: FormData) => api.post(`/assets/${id}/attachments`, formData),
+  deleteAttachment: (id: number, attachmentId: number) =>
+    api.delete(`/assets/${id}/attachments/${attachmentId}`),
+  export: (params?: object) => api.get('/assets/export', { params, responseType: 'blob' }),
+  import: (formData: FormData) => api.post('/assets/import', formData),
+}
