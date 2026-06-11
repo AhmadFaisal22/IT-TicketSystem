@@ -1,0 +1,33 @@
+# Dev / CLI image: run composer + `php artisan test` locally without installing PHP on the host.
+# Mirrors the production extension set (docker/Dockerfile.php) and adds pdo_sqlite for the
+# in-memory test database (phpunit.xml uses sqlite :memory:). Source is bind-mounted at runtime,
+# so this image is not rebuilt on code changes — only when extensions/tooling change.
+FROM php:8.2-cli-alpine
+
+RUN apk add --no-cache \
+    postgresql-dev \
+    sqlite-dev \
+    libzip-dev \
+    oniguruma-dev \
+    libpng-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    icu-dev \
+    git \
+    $PHPIZE_DEPS \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install \
+        pdo_pgsql \
+        pgsql \
+        pdo_sqlite \
+        mbstring \
+        zip \
+        bcmath \
+        pcntl \
+        gd \
+        intl \
+ && apk del $PHPIZE_DEPS
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
