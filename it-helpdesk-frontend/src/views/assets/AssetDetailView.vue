@@ -76,15 +76,89 @@
     <div class="space-y-6">
       <!-- Actions -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
-        <div>
+        <div ref="assignPicker" class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.actions.assign') }}</label>
-          <select v-model="assignTo" class="input">
-            <option :value="null">{{ t('asset.actions.returnToStock') }}</option>
-            <option v-for="u in itStaff" :key="u.id" :value="u.id">{{ u.name }}</option>
-          </select>
-          <button @click="doAssign" class="mt-2 w-full px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
-            {{ t('asset.actions.assign') }}
-          </button>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1 min-w-0">
+              <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <input
+                v-model="assigneeSearch"
+                type="search"
+                class="assignee-search-input"
+                :placeholder="selectedAssigneeName || t('asset.selectUser')"
+                autocomplete="off"
+                @focus="openAssigneePicker"
+                @input="onAssigneeSearchInput"
+                @keydown.down.prevent="moveAssigneeHighlight(1)"
+                @keydown.up.prevent="moveAssigneeHighlight(-1)"
+                @keydown.enter.prevent="chooseHighlightedAssignee"
+                @keydown.esc="closeAssigneePicker"
+              />
+              <button
+                v-if="assignTo !== null"
+                type="button"
+                class="absolute right-2 top-2 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                @click="selectAssignee(null)"
+              >
+                <XMarkIcon class="h-4 w-4" />
+              </button>
+
+              <div
+                v-if="assigneePickerOpen"
+                class="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+              >
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50"
+                  :class="highlightedAssigneeIndex === 0 ? 'bg-gray-50' : ''"
+                  @mouseenter="highlightedAssigneeIndex = 0"
+                  @mousedown.prevent="selectAssignee(null)"
+                >
+                  <span class="font-medium text-gray-700">{{ t('asset.actions.returnToStock') }}</span>
+                  <CheckIcon v-if="assignTo === null" class="h-4 w-4 text-red-600" />
+                </button>
+
+                <div class="max-h-64 overflow-y-auto border-t border-gray-100">
+                  <button
+                    v-for="(u, index) in assignableUsers"
+                    :key="u.id"
+                    type="button"
+                    class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-gray-50"
+                    :class="highlightedAssigneeIndex === index + 1 ? 'bg-gray-50' : ''"
+                    @mouseenter="highlightedAssigneeIndex = index + 1"
+                    @mousedown.prevent="selectAssignee(u)"
+                  >
+                    <span class="min-w-0">
+                      <span class="block truncate font-medium text-gray-800">{{ u.name }}</span>
+                      <span v-if="u.email" class="block truncate text-xs text-gray-500">{{ u.email }}</span>
+                    </span>
+                    <span class="flex shrink-0 items-center gap-2">
+                      <span v-if="u.role" class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                        {{ roleLabel(u.role) }}
+                      </span>
+                      <CheckIcon v-if="assignTo === u.id" class="h-4 w-4 text-red-600" />
+                    </span>
+                  </button>
+                  <div v-if="assignableLoading" class="px-3 py-2 text-sm text-gray-400">
+                    {{ t('common.loading') }}
+                  </div>
+                  <div v-else-if="!assignableUsers.length" class="px-3 py-2 text-sm text-gray-400">
+                    {{ t('asset.noAssignableUsers') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              @click="doAssign"
+              :disabled="assignButtonDisabled"
+              class="inline-flex min-w-[8.5rem] items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <CheckIcon class="h-4 w-4" />
+              <span>{{ assignSaving ? t('common.loading') : assignButtonLabel }}</span>
+            </button>
+          </div>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.actions.changeStatus') }}</label>
@@ -121,10 +195,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
+import { CheckIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi, assetCategoryApi } from '@/api'
@@ -135,10 +210,26 @@ const router = useRouter()
 const store = useAssetStore()
 const auth = useAuthStore()
 
+interface AssignableUser {
+  id: number
+  name: string
+  email?: string | null
+  role?: string | null
+  avatar?: string | null
+}
+
 const asset = computed(() => store.currentAsset)
 const statuses = ASSET_STATUSES
-const itStaff = ref<any[]>([])
+const assignableUsers = ref<AssignableUser[]>([])
+const assignPicker = ref<HTMLElement | null>(null)
+const assigneeSearch = ref('')
+const assigneePickerOpen = ref(false)
+const assignableLoading = ref(false)
+const assignSaving = ref(false)
+const highlightedAssigneeIndex = ref(0)
 const categories = ref<any[]>([])
+let assignableRequestId = 0
+let assigneeSearchTimer: ReturnType<typeof setTimeout> | null = null
 
 function categoryLabel(name: string) {
   if (locale.value === 'zh') {
@@ -151,12 +242,24 @@ const assignTo = ref<number | null>(null)
 const newStatus = ref<string>('in_stock')
 const qrDataUrl = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
+const selectedAssigneeName = computed(() => {
+  if (assignTo.value === null) return ''
+  return assignableUsers.value.find(u => u.id === assignTo.value)?.name || asset.value?.assignee?.name || ''
+})
+const assignButtonLabel = computed(() =>
+  assignTo.value === null ? t('asset.actions.returnToStock') : t('asset.actions.assign')
+)
+const assignButtonDisabled = computed(() =>
+  assignSaving.value || !asset.value || assignTo.value === asset.value.assigned_to
+)
 
 async function reload() {
   const a = await store.fetchAsset(Number(route.params.id))
   assignTo.value = a.assigned_to
+  assigneeSearch.value = a.assignee?.name ?? ''
   newStatus.value = a.status
   qrDataUrl.value = await QRCode.toDataURL(`${window.location.origin}/assets/${a.id}`)
+  await loadAssignableUsers(assigneeSearch.value, a.assigned_to)
 }
 
 async function handleDelete() {
@@ -170,13 +273,99 @@ async function handleDelete() {
 }
 
 async function doAssign() {
-  await store.assignAsset(asset.value!.id, assignTo.value)
-  await reload()
+  if (!asset.value || assignSaving.value) return
+
+  assignSaving.value = true
+  try {
+    await store.assignAsset(asset.value.id, assignTo.value)
+    assigneePickerOpen.value = false
+    await reload()
+  } finally {
+    assignSaving.value = false
+  }
 }
 
 async function doStatus() {
   await store.changeStatus(asset.value!.id, newStatus.value)
   await reload()
+}
+
+async function loadAssignableUsers(search = assigneeSearch.value, selectedId = assignTo.value) {
+  const requestId = ++assignableRequestId
+  assignableLoading.value = true
+
+  try {
+    const { data } = await userApi.assignable({
+      search: search.trim() || undefined,
+      selected_id: selectedId ?? undefined,
+      limit: 25,
+    })
+
+    if (requestId === assignableRequestId) {
+      assignableUsers.value = data
+      highlightedAssigneeIndex.value = 0
+    }
+  } finally {
+    if (requestId === assignableRequestId) {
+      assignableLoading.value = false
+    }
+  }
+}
+
+function openAssigneePicker() {
+  assigneePickerOpen.value = true
+  void loadAssignableUsers()
+}
+
+function closeAssigneePicker() {
+  assigneePickerOpen.value = false
+}
+
+function onAssigneeSearchInput() {
+  assigneePickerOpen.value = true
+  if (assigneeSearchTimer) clearTimeout(assigneeSearchTimer)
+  assigneeSearchTimer = setTimeout(() => {
+    void loadAssignableUsers()
+  }, 200)
+}
+
+function selectAssignee(user: AssignableUser | null) {
+  assignTo.value = user?.id ?? null
+  assigneeSearch.value = user?.name ?? ''
+  assigneePickerOpen.value = false
+}
+
+function moveAssigneeHighlight(delta: number) {
+  assigneePickerOpen.value = true
+  const optionCount = assignableUsers.value.length + 1
+  highlightedAssigneeIndex.value = (highlightedAssigneeIndex.value + delta + optionCount) % optionCount
+}
+
+function chooseHighlightedAssignee() {
+  if (!assigneePickerOpen.value) {
+    openAssigneePicker()
+    return
+  }
+
+  if (highlightedAssigneeIndex.value === 0) {
+    selectAssignee(null)
+    return
+  }
+
+  const user = assignableUsers.value[highlightedAssigneeIndex.value - 1]
+  if (user) selectAssignee(user)
+}
+
+function onDocumentClick(event: MouseEvent) {
+  if (!assignPicker.value?.contains(event.target as Node)) {
+    closeAssigneePicker()
+  }
+}
+
+function roleLabel(role: string) {
+  if (role === 'admin') return t('admin.users.admin')
+  if (role === 'it_staff') return t('admin.users.it_staff')
+  return t('admin.users.user')
 }
 
 async function onUpload(e: Event) {
@@ -231,17 +420,27 @@ function valueLabel(h: { field: string | null }, value: string | null) {
   return value
 }
 
-watch(() => route.params.id, reload)
+watch(() => route.params.id, () => {
+  void reload()
+})
 onMounted(async () => {
-  await reload()
-  const [staffRes, catRes] = await Promise.all([userApi.itStaff(), assetCategoryApi.list()])
-  itStaff.value = staffRes.data
+  document.addEventListener('click', onDocumentClick)
+  const [, catRes] = await Promise.all([reload(), assetCategoryApi.list()])
   categories.value = catRes.data
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick)
+  if (assigneeSearchTimer) clearTimeout(assigneeSearchTimer)
 })
 </script>
 
 <style scoped>
 .input {
   @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none;
+}
+
+.assignee-search-input {
+  @apply w-full py-2 pl-9 pr-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none;
 }
 </style>

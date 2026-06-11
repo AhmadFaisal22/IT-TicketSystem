@@ -222,6 +222,7 @@ export default {
     deleteConfirm: '确定删除 {tag} 吗？注意：删除后无法恢复，这台资产及其流转记录将永久消失。',
     selectUser: '选择用户',
     selectDept: '选择部门',
+    noAssignableUsers: '未找到用户',
     category_labels: {
       laptop: '笔记本', desktop: '台式机', monitor: '显示器', printer: '打印机',
       network: '网络设备', phone: '手机', peripheral: '外设',

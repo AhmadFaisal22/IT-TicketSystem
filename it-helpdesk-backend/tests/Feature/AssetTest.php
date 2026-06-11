@@ -51,6 +51,41 @@ class AssetTest extends TestCase
         $this->getJson('/api/assets')->assertStatus(403);
     }
 
+    public function test_it_staff_can_search_assignable_active_users_for_assets(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+
+        $selected = User::factory()->create([
+            'name' => 'Zoe Selected',
+            'email' => 'zoe.selected@example.test',
+            'role' => 'user',
+            'active' => true,
+        ]);
+        $match = User::factory()->create([
+            'name' => 'Alice Holder',
+            'email' => 'alice.holder@example.test',
+            'role' => 'user',
+            'active' => true,
+        ]);
+        User::factory()->create([
+            'name' => 'Inactive Alice',
+            'email' => 'inactive.alice@example.test',
+            'active' => false,
+        ]);
+
+        $this->getJson("/api/users/assignable?search=alice&selected_id={$selected->id}&limit=1")
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['id' => $selected->id, 'name' => 'Zoe Selected'])
+            ->assertJsonFragment([
+                'id' => $match->id,
+                'name' => 'Alice Holder',
+                'email' => 'alice.holder@example.test',
+                'role' => 'user',
+            ])
+            ->assertJsonMissing(['name' => 'Inactive Alice']);
+    }
+
     public function test_it_staff_can_list_assets_with_filters(): void
     {
         Sanctum::actingAs($this->itStaff());
@@ -261,4 +296,3 @@ class AssetTest extends TestCase
         $this->assertTrue($asset->fresh()->tickets->first()->is($ticket));
     }
 }
-

@@ -33,6 +33,49 @@ class UserController extends Controller
         );
     }
 
+    /** Search active users for asset assignment (IT staff only). */
+    public function assignable(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->isItStaff(), 403);
+
+        $data = $request->validate([
+            'search'      => 'nullable|string|max:100',
+            'limit'       => 'nullable|integer|min:1|max:50',
+            'selected_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $limit = (int) ($data['limit'] ?? 25);
+        $search = trim((string) ($data['search'] ?? ''));
+
+        $query = User::where('active', true);
+
+        if ($search !== '') {
+            $like = '%' . mb_strtolower($search) . '%';
+            $query->where(function ($q) use ($like) {
+                $q->whereRaw('LOWER(name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(email) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(role) LIKE ?', [$like]);
+            });
+        }
+
+        $users = $query
+            ->orderBy('name')
+            ->limit($limit)
+            ->get(['id', 'name', 'email', 'role', 'avatar']);
+
+        if (!empty($data['selected_id']) && !$users->contains('id', (int) $data['selected_id'])) {
+            $selectedUser = User::where('active', true)
+                ->whereKey($data['selected_id'])
+                ->first(['id', 'name', 'email', 'role', 'avatar']);
+
+            if ($selectedUser) {
+                $users->prepend($selectedUser);
+            }
+        }
+
+        return response()->json($users->values());
+    }
+
     public function updateRole(Request $request, User $user): JsonResponse
     {
         abort_unless($request->user()->isAdmin(), 403);

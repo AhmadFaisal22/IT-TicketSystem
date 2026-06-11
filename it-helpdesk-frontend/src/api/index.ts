@@ -68,6 +68,7 @@ export const departmentApi = {
 export const userApi = {
   list: (params?: object) => api.get('/users', { params }),
   itStaff: () => api.get('/users/it-staff'),
+  assignable: (params?: object) => api.get('/users/assignable', { params }),
   create: (data: object) => api.post('/users', data),
   update: (id: number, data: object) => api.put(`/users/${id}`, data),
   delete: (id: number) => api.delete(`/users/${id}`),

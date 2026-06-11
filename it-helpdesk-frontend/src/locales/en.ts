@@ -222,6 +222,7 @@ export default {
     deleteConfirm: 'Delete {tag}? Warning: this is permanent — once deleted, the asset and its history are gone for good.',
     selectUser: 'Select a user',
     selectDept: 'Select a department',
+    noAssignableUsers: 'No users found',
     category_labels: {
       laptop: 'Laptop', desktop: 'Desktop', monitor: 'Monitor', printer: 'Printer',
       network: 'Network Device', phone: 'Phone', peripheral: 'Peripheral',
