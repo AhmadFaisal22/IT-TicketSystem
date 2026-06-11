@@ -44,7 +44,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('tickets/{ticket}/comments/{comment}', [CommentController::class, 'destroy']);
 
     // Assets (IT only — enforced in controller)
+    // Static paths MUST precede assets/{asset} so they are not captured as a wildcard.
     Route::get('assets', [AssetController::class, 'index']);
+    Route::get('assets/meta', [AssetController::class, 'meta']);
+    Route::get('assets/export', [AssetController::class, 'export']);
+    Route::post('assets/import', [AssetController::class, 'import']);
     Route::get('assets/{asset}', [AssetController::class, 'show']);
     Route::post('assets', [AssetController::class, 'store']);
     Route::put('assets/{asset}', [AssetController::class, 'update']);

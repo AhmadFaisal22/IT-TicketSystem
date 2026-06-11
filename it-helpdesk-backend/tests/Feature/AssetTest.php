@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
+use Maatwebsite\Excel\Facades\Excel;
 use Tests\TestCase;
 
 class AssetTest extends TestCase
@@ -176,5 +177,46 @@ class AssetTest extends TestCase
 
         $this->deleteJson("/api/assets/{$asset->id}/attachments/{$attachmentId}")->assertNoContent();
         $this->assertDatabaseMissing('attachments', ['id' => $attachmentId]);
+    }
+
+    public function test_meta_returns_categories_and_status_counts(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        Asset::factory()->create(['status' => 'in_stock']);
+        Asset::factory()->create(['status' => 'in_stock']);
+        Asset::factory()->create(['status' => 'assigned', 'assigned_to' => User::factory()->create()->id]);
+
+        $this->getJson('/api/assets/meta')
+            ->assertOk()
+            ->assertJsonPath('categories', AssetCategories::KEYS)
+            ->assertJsonPath('status_counts.in_stock', 2)
+            ->assertJsonPath('status_counts.assigned', 1);
+    }
+
+    public function test_export_downloads_a_file(): void
+    {
+        Excel::fake();
+        Sanctum::actingAs($this->itStaff());
+        Asset::factory()->count(3)->create();
+
+        $this->get('/api/assets/export')->assertOk();
+        Excel::assertDownloaded('assets.xlsx');
+    }
+
+    public function test_import_creates_assets_from_rows(): void
+    {
+        $rows = collect([
+            collect(['name' => 'Imported Laptop', 'category' => 'laptop', 'serial_number' => 'IMP-1']),
+            collect(['name' => 'Imported Monitor', 'category' => 'monitor', 'serial_number' => 'IMP-2']),
+            collect(['name' => '', 'category' => 'laptop']), // invalid -> rejected
+        ]);
+
+        $import = new \App\Imports\AssetsImport();
+        $import->collection($rows);
+
+        $this->assertSame(2, $import->created);
+        $this->assertCount(1, $import->rejected);
+        $this->assertDatabaseHas('assets', ['name' => 'Imported Laptop', 'category' => 'laptop']);
+        $this->assertDatabaseHas('assets', ['name' => 'Imported Monitor', 'category' => 'monitor']);
     }
 }

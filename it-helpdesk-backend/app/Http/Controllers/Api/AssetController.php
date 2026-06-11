@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\AssetsExport;
 use App\Http\Controllers\Controller;
+use App\Imports\AssetsImport;
 use App\Models\Asset;
 use App\Models\Attachment;
 use App\Support\AssetCategories;
@@ -10,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AssetController extends Controller
 {
@@ -64,6 +67,52 @@ class AssetController extends Controller
         return response()->json(
             $asset->load(['assignee', 'department', 'histories.user', 'attachments', 'tickets'])
         );
+    }
+
+    public function meta(Request $request): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+
+        $counts = Asset::selectRaw('status, count(*) as c')->groupBy('status')->pluck('c', 'status');
+        $statusCounts = [];
+        foreach (AssetCategories::STATUSES as $s) {
+            $statusCounts[$s] = (int) ($counts[$s] ?? 0);
+        }
+
+        return response()->json([
+            'categories'    => AssetCategories::KEYS,
+            'statuses'      => AssetCategories::STATUSES,
+            'status_counts' => $statusCounts,
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $this->authorizeItStaff($request);
+
+        $query = Asset::query()->orderByDesc('created_at');
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+        if ($request->filled('category')) {
+            $query->where('category', $request->string('category'));
+        }
+
+        return Excel::download(new AssetsExport($query), 'assets.xlsx');
+    }
+
+    public function import(Request $request): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+        $request->validate(['file' => 'required|file|mimes:xlsx,xls,csv']);
+
+        $import = new AssetsImport();
+        Excel::import($import, $request->file('file'));
+
+        return response()->json([
+            'created'  => $import->created,
+            'rejected' => $import->rejected,
+        ]);
     }
 
     public function store(Request $request): JsonResponse
