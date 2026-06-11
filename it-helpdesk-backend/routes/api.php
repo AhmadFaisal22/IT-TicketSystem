@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApprovalLevelController;
+use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\CommentController;
@@ -41,6 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('tickets/{ticket}/comments', [CommentController::class, 'index']);
     Route::post('tickets/{ticket}/comments', [CommentController::class, 'store']);
     Route::delete('tickets/{ticket}/comments/{comment}', [CommentController::class, 'destroy']);
+
+    // Assets (IT only — enforced in controller)
+    Route::get('assets', [AssetController::class, 'index']);
+    Route::get('assets/{asset}', [AssetController::class, 'show']);
 
     // Departments
     Route::apiResource('departments', DepartmentController::class);

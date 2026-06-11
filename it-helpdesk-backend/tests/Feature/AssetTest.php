@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\User;
 use App\Support\AssetCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AssetTest extends TestCase
@@ -34,5 +35,37 @@ class AssetTest extends TestCase
 
         $this->assertTrue($asset->assignee->is($user));
         $this->assertTrue($user->assignedAssets->first()->is($asset));
+    }
+
+    private function itStaff(): User
+    {
+        return User::factory()->create(['role' => 'it_staff']);
+    }
+
+    public function test_regular_user_is_forbidden_from_listing_assets(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'user']));
+        $this->getJson('/api/assets')->assertStatus(403);
+    }
+
+    public function test_it_staff_can_list_assets_with_filters(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        Asset::factory()->create(['category' => 'laptop', 'status' => 'in_stock']);
+        Asset::factory()->create(['category' => 'monitor', 'status' => 'assigned']);
+
+        $this->getJson('/api/assets')->assertOk()->assertJsonPath('total', 2);
+        $this->getJson('/api/assets?category=laptop')->assertOk()->assertJsonPath('total', 1);
+        $this->getJson('/api/assets?status=assigned')->assertOk()->assertJsonPath('total', 1);
+    }
+
+    public function test_it_staff_can_view_an_asset(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $asset = Asset::factory()->create();
+
+        $this->getJson("/api/assets/{$asset->id}")
+            ->assertOk()
+            ->assertJsonPath('asset_tag', $asset->asset_tag);
     }
 }
