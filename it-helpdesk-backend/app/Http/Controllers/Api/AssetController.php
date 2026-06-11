@@ -219,6 +219,7 @@ class AssetController extends Controller
                     $asset->department_id = $data['department_id'];
                 }
                 $asset->status = 'assigned';
+                $asset->assign_date = now()->toDateString();
                 $asset->save();
                 $asset->logHistory($request->user()->id, 'assigned', 'assigned_to', $previousHolderName, $newHolder->name);
             } else {

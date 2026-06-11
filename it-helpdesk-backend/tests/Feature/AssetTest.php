@@ -8,6 +8,7 @@ use App\Support\AssetCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\Sanctum;
 use Maatwebsite\Excel\Facades\Excel;
 use Tests\TestCase;
@@ -167,8 +168,9 @@ class AssetTest extends TestCase
     {
         $staff = $this->itStaff();
         Sanctum::actingAs($staff);
+        Carbon::setTestNow('2026-06-11 10:00:00');
         $holder = User::factory()->create();
-        $asset = Asset::factory()->create(['status' => 'in_stock']);
+        $asset = Asset::factory()->create(['status' => 'in_stock', 'assign_date' => now()->subMonth()->toDateString()]);
 
         $this->patchJson("/api/assets/{$asset->id}/assign", ['assigned_to' => $holder->id])
             ->assertOk()
@@ -179,6 +181,11 @@ class AssetTest extends TestCase
             'asset_id' => $asset->id, 'action' => 'assigned',
             'old_value' => null, 'new_value' => $holder->name,
         ]);
+        $this->assertDatabaseHas('assets', [
+            'id' => $asset->id,
+            'assign_date' => now()->toDateString(),
+        ]);
+        Carbon::setTestNow();
 
         // Re-assigning the same holder is a no-op and must not add history noise.
         $this->patchJson("/api/assets/{$asset->id}/assign", ['assigned_to' => $holder->id])->assertOk();
