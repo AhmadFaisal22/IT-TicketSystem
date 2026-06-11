@@ -181,7 +181,7 @@ export default {
     assetTag: 'Fixed Assets Tag#',
     lastName: 'Last Name',
     firstName: 'First Name',
-    name: 'Name',
+    name: 'Model',
     category: 'Category',
     manufacturer: 'Manufacturer',
     model: 'Model',
