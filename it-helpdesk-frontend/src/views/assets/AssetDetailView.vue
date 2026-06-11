@@ -8,10 +8,16 @@
             <p class="text-sm font-mono text-red-600">{{ asset.asset_tag }}</p>
             <h1 class="text-xl font-semibold text-gray-800">{{ asset.name || t(`asset.category_labels.${asset.category}`) }}</h1>
           </div>
-          <router-link :to="`/assets/${asset.id}/edit`"
-            class="px-3 py-1.5 text-sm border rounded-lg text-gray-700 hover:bg-gray-50">
-            {{ t('asset.actions.edit') }}
-          </router-link>
+          <div class="flex gap-2">
+            <router-link :to="`/assets/${asset.id}/edit`"
+              class="px-3 py-1.5 text-sm border rounded-lg text-gray-700 hover:bg-gray-50">
+              {{ t('asset.actions.edit') }}
+            </router-link>
+            <button v-if="auth.isAdmin" @click="handleDelete"
+              class="px-3 py-1.5 text-sm border border-red-300 rounded-lg text-red-600 hover:bg-red-50">
+              {{ t('common.delete') }}
+            </button>
+          </div>
         </div>
 
         <dl class="grid grid-cols-2 gap-x-6 gap-y-3 mt-5 text-sm">
@@ -112,15 +118,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
 import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
+import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi } from '@/api'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const store = useAssetStore()
+const auth = useAuthStore()
 
 const asset = computed(() => store.currentAsset)
 const statuses = ASSET_STATUSES
@@ -135,6 +144,16 @@ async function reload() {
   assignTo.value = a.assigned_to
   newStatus.value = a.status
   qrDataUrl.value = await QRCode.toDataURL(`${window.location.origin}/assets/${a.id}`)
+}
+
+async function handleDelete() {
+  if (!confirm(t('asset.deleteConfirm', { tag: asset.value!.asset_tag }))) return
+  try {
+    await assetApi.remove(asset.value!.id)
+    router.replace('/assets')
+  } catch (e: any) {
+    alert(e?.response?.data?.message || t('common.error'))
+  }
 }
 
 async function doAssign() {
