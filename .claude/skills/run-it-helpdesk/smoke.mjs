@@ -237,6 +237,14 @@ async function smokeApi() {
   const rDash = await httpGet(`${BACKEND_URL}/api/dashboard/stats`, { Authorization: `Bearer ${TOKEN}` });
   if (rDash.status !== 200) throw new Error(`/api/dashboard/stats → ${rDash.status}`);
   console.log(`  ✓ /api/dashboard/stats → 200`);
+
+  const rAssets = await httpGet(`${BACKEND_URL}/api/assets`, { Authorization: `Bearer ${TOKEN}` });
+  if (rAssets.status !== 200) throw new Error(`/api/assets → ${rAssets.status}`);
+  console.log(`  ✓ /api/assets → total=${JSON.parse(rAssets.body).total}`);
+
+  const rAssetMeta = await httpGet(`${BACKEND_URL}/api/assets/meta`, { Authorization: `Bearer ${TOKEN}` });
+  if (rAssetMeta.status !== 200) throw new Error(`/api/assets/meta → ${rAssetMeta.status}`);
+  console.log(`  ✓ /api/assets/meta → 200`);
 }
 
 // ── Screenshot flow ───────────────────────────────────────────────────────────
@@ -287,6 +295,18 @@ async function smokeScreenshots() {
     // 5. Admin users
     await cdp.navigate(`${FRONTEND_URL}/admin/users`, 2000);
     await cdp.screenshot(path.join(SCREENSHOT_DIR, '05-admin-users.png'));
+
+    // 6. Assets list (IT-only)
+    await cdp.navigate(`${FRONTEND_URL}/assets`, 2500);
+    await cdp.screenshot(path.join(SCREENSHOT_DIR, '06-assets.png'));
+
+    // 7. Asset detail (first seeded asset)
+    await cdp.navigate(`${FRONTEND_URL}/assets/1`, 2500);
+    await cdp.screenshot(path.join(SCREENSHOT_DIR, '07-asset-detail.png'));
+
+    // 8. Create asset form
+    await cdp.navigate(`${FRONTEND_URL}/assets/create`, 2000);
+    await cdp.screenshot(path.join(SCREENSHOT_DIR, '08-create-asset.png'));
 
   } finally {
     cdp?.close();
