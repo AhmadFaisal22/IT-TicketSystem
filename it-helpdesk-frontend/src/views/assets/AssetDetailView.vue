@@ -26,6 +26,7 @@
             <dd><span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="statusClass(asset.status)">{{ t(`asset.status_labels.${asset.status}`) }}</span></dd></div>
           <div><dt class="text-gray-400">{{ t('asset.lastName') }}</dt><dd class="text-gray-800">{{ asset.last_name || '—' }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.firstName') }}</dt><dd class="text-gray-800">{{ asset.first_name || '—' }}</dd></div>
+          <div><dt class="text-gray-400">{{ t('asset.department') }}</dt><dd class="text-gray-800">{{ (locale === 'zh' ? asset.department?.name_zh : asset.department?.name) || '—' }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.serialNumber') }}</dt><dd class="text-gray-800">{{ asset.serial_number || '—' }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.assignee') }}</dt><dd class="text-gray-800">{{ asset.assignee?.name || t('asset.unassigned') }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.manufacturer') }}</dt><dd class="text-gray-800">{{ asset.manufacturer || '—' }}</dd></div>
@@ -128,7 +129,7 @@ import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi } from '@/api'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useAssetStore()
