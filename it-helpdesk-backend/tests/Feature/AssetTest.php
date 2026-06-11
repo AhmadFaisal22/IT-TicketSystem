@@ -219,4 +219,22 @@ class AssetTest extends TestCase
         $this->assertDatabaseHas('assets', ['name' => 'Imported Laptop', 'category' => 'laptop']);
         $this->assertDatabaseHas('assets', ['name' => 'Imported Monitor', 'category' => 'monitor']);
     }
+
+    public function test_ticket_can_reference_an_asset_and_asset_exposes_related_tickets(): void
+    {
+        $asset = Asset::factory()->create();
+        $department = \App\Models\Department::create(['name' => 'IT', 'name_zh' => 'IT部门']);
+        $ticket = \App\Models\Ticket::create([
+            'title'         => 'Screen flickers',
+            'description'   => 'Monitor flickers intermittently',
+            'status'        => 'open',
+            'priority'      => 'medium',
+            'department_id' => $department->id,
+            'created_by'    => $this->itStaff()->id,
+            'asset_id'      => $asset->id,
+        ]);
+
+        $this->assertTrue($ticket->asset->is($asset));
+        $this->assertTrue($asset->fresh()->tickets->first()->is($ticket));
+    }
 }
