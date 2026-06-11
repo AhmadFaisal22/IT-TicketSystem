@@ -109,7 +109,7 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label for="password" class="block text-sm font-medium text-gray-700">{{ t('auth.password') }}</label>
-              <a href="#" @click.prevent class="text-sm text-red-600 hover:text-red-700 font-medium">{{ t('auth.forgotPassword') }}</a>
+              <router-link to="/forgot-password" class="text-sm text-red-600 hover:text-red-700 font-medium">{{ t('auth.forgotPassword') }}</router-link>
             </div>
             <div class="relative">
               <input

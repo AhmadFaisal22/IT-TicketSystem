@@ -161,6 +161,119 @@
         </dl>
       </div>
 
+      <!-- Approval card (shown when ticket is pending_approval or has approvals) -->
+      <div v-if="ticket.approvals && ticket.approvals.length"
+        class="bg-white rounded-xl shadow-sm border border-amber-200 p-4 sm:p-5">
+        <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          {{ t('admin.approval.approvalChain') }}
+        </h3>
+
+        <!-- Steps timeline -->
+        <div class="space-y-2 mb-4">
+          <div v-for="approval in ticket.approvals" :key="approval.id"
+            class="flex items-start gap-3 text-sm">
+            <!-- Status icon -->
+            <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+              :class="{
+                'bg-green-100': approval.status === 'approved',
+                'bg-red-100': approval.status === 'rejected',
+                'bg-gray-100': approval.status === 'cancelled',
+                'bg-amber-100': approval.status === 'pending',
+              }">
+              <svg v-if="approval.status === 'approved'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              <svg v-else-if="approval.status === 'rejected'" class="w-3.5 h-3.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+              <svg v-else-if="approval.status === 'cancelled'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+              </svg>
+              <div v-else class="w-2 h-2 rounded-full bg-amber-400"></div>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-medium text-gray-800">{{ approval.approver?.name }}</span>
+                <span class="text-xs px-1.5 py-0.5 rounded font-medium"
+                  :class="{
+                    'bg-green-100 text-green-700': approval.status === 'approved',
+                    'bg-red-100 text-red-700': approval.status === 'rejected',
+                    'bg-gray-100 text-gray-500': approval.status === 'cancelled',
+                    'bg-amber-100 text-amber-700': approval.status === 'pending',
+                  }">
+                  {{ t(`admin.approval.${approval.status === 'pending' ? 'pendingLabel' : approval.status === 'approved' ? 'approved' : approval.status === 'rejected' ? 'rejectedLabel' : 'cancelledLabel'}`) }}
+                </span>
+                <span v-if="approval.responded_at" class="text-xs text-gray-400 ml-auto">
+                  {{ formatDateTime(approval.responded_at) }}
+                </span>
+              </div>
+              <p v-if="approval.notes" class="text-xs text-gray-500 mt-0.5 italic">{{ approval.notes }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approve / Reject buttons — only for the current pending approver -->
+        <div v-if="isCurrentApprover" class="border-t pt-4 space-y-3">
+          <p class="text-xs font-semibold text-amber-700 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ t('admin.approval.approvalRequired') }}
+          </p>
+          <textarea v-model="approvalNotes" rows="2"
+            :placeholder="t('admin.approval.notesPlaceholder')"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none resize-none" />
+          <div v-if="approvalError" class="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {{ approvalError }}
+          </div>
+          <div class="flex gap-2">
+            <button @click="handleApprove" :disabled="approvalLoading"
+              class="flex-1 px-3 py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition flex items-center justify-center gap-1.5">
+              <svg v-if="!approvalLoading" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              {{ t('admin.approval.approveBtn') }}
+            </button>
+            <button @click="openRejectModal" :disabled="approvalLoading"
+              class="flex-1 px-3 py-2.5 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition flex items-center justify-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+              {{ t('admin.approval.rejectBtn') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reject confirmation modal -->
+      <Teleport to="body">
+        <div v-if="showRejectModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/50" @click="showRejectModal = false"></div>
+          <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <h3 class="font-semibold text-gray-800">{{ t('admin.approval.rejectBtn') }} {{ ticket.ticket_number }}</h3>
+            <textarea v-model="rejectNotes" rows="3" :placeholder="t('admin.approval.rejectNotesPlaceholder')"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none resize-none" />
+            <div class="flex gap-3">
+              <button @click="showRejectModal = false"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
+                {{ t('common.cancel') }}
+              </button>
+              <button @click="handleReject" :disabled="!rejectNotes.trim() || approvalLoading"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">
+                {{ t('admin.approval.rejectBtn') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
       <!-- IT Actions (staff only) -->
       <div v-if="auth.isItStaff" class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
         <h3 class="font-semibold text-gray-700 mb-4">Actions</h3>
@@ -198,8 +311,8 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useTicketStore } from '@/stores/tickets'
 import { useAuthStore } from '@/stores/auth'
-import { userApi, commentApi } from '@/api'
-import type { Ticket, Comment } from '@/stores/tickets'
+import { userApi, commentApi, approvalApi } from '@/api'
+import type { Ticket, Comment, TicketApproval } from '@/stores/tickets'
 import { CATEGORIES, getCategoryLabel, getSubCategoryLabel } from '@/constants/categories'
 
 const { t, locale } = useI18n()
@@ -219,6 +332,22 @@ const assignedTo = ref<number | null>(null)
 
 const statuses = ['open', 'in_progress', 'pending', 'resolved', 'closed']
 const availableStatuses = computed(() => statuses.filter(s => s !== ticket.value?.status))
+
+// Approval
+const approvalNotes = ref('')
+const rejectNotes = ref('')
+const approvalError = ref('')
+const showRejectModal = ref(false)
+const approvalLoading = ref(false)
+
+// Use Number() on both sides — JSON can return IDs as strings in some edge cases
+const currentPendingApproval = computed((): TicketApproval | null =>
+  ticket.value?.approvals?.find(a => a.status === 'pending') ?? null
+)
+const isCurrentApprover = computed(() =>
+  !!currentPendingApproval.value &&
+  Number(currentPendingApproval.value.approver_id) === Number(auth.user?.id)
+)
 const categoryEmoji = computed(() =>
   CATEGORIES.find(c => c.id === ticket.value?.category)?.emoji ?? ''
 )
@@ -249,11 +378,48 @@ async function handleStatusChange(status: string) {
   await ticketStore.updateStatus(Number(route.params.id), status)
 }
 
+async function handleApprove() {
+  approvalLoading.value = true
+  approvalError.value = ''
+  try {
+    await approvalApi.approve(Number(route.params.id), approvalNotes.value || undefined)
+    approvalNotes.value = ''
+    await ticketStore.fetchTicket(Number(route.params.id))
+  } catch (e: any) {
+    approvalError.value = e?.response?.data?.message || 'Failed to approve. Please try again.'
+  } finally {
+    approvalLoading.value = false
+  }
+}
+
+function openRejectModal() {
+  rejectNotes.value = ''
+  showRejectModal.value = true
+}
+
+async function handleReject() {
+  if (!rejectNotes.value.trim()) return
+  approvalLoading.value = true
+  approvalError.value = ''
+  try {
+    await approvalApi.reject(Number(route.params.id), rejectNotes.value)
+    showRejectModal.value = false
+    rejectNotes.value = ''
+    await ticketStore.fetchTicket(Number(route.params.id))
+  } catch (e: any) {
+    showRejectModal.value = false
+    approvalError.value = e?.response?.data?.message || 'Failed to reject. Please try again.'
+  } finally {
+    approvalLoading.value = false
+  }
+}
+
 function statusClass(s: string) {
   const map: Record<string, string> = {
     open: 'bg-sky-100 text-sky-700', in_progress: 'bg-yellow-100 text-yellow-700',
     pending: 'bg-purple-100 text-purple-700', resolved: 'bg-green-100 text-green-700',
-    closed: 'bg-gray-100 text-gray-600'
+    closed: 'bg-gray-100 text-gray-600', pending_approval: 'bg-amber-100 text-amber-700',
+    rejected: 'bg-red-100 text-red-700'
   }
   return map[s] || 'bg-gray-100'
 }

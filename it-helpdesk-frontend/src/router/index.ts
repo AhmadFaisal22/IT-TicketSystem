@@ -11,6 +11,18 @@ const router = createRouter({
       meta: { guest: true }
     },
     {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/auth/ForgotPasswordView.vue'),
+      meta: { guest: true }
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/auth/ResetPasswordView.vue'),
+      meta: { guest: true }
+    },
+    {
       path: '/auth/callback',
       name: 'auth-callback',
       component: () => import('@/views/auth/CallbackView.vue'),
@@ -64,6 +76,11 @@ const router = createRouter({
               path: 'sla',
               name: 'admin-sla',
               component: () => import('@/views/admin/SlaView.vue')
+            },
+            {
+              path: 'approval-levels',
+              name: 'admin-approval',
+              component: () => import('@/views/admin/ApprovalLevelsView.vue')
             }
           ]
         }

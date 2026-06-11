@@ -146,6 +146,7 @@ const adminItems = computed((): NavItem[] => {
   ]
   if (auth.isAdmin) {
     items.unshift({ name: 'admin-users', to: '/admin/users', label: 'nav.users', iconImg: '/Users.png' })
+    items.push({ name: 'admin-approval', to: '/admin/approval-levels', label: 'nav.approval', iconImg: '/Approved.png' })
   }
   return items
 })
@@ -165,6 +166,7 @@ const pageTitle = computed(() => {
     'admin-users': t('admin.users.title'),
     'admin-departments': t('admin.departments.title'),
     'admin-sla': t('admin.sla.title'),
+    'admin-approval': t('admin.approval.title'),
   }
   return map[String(route.name)] || ''
 })

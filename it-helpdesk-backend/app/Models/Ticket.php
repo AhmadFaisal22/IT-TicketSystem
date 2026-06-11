@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\TicketApproval;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
@@ -68,6 +69,16 @@ class Ticket extends Model
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable');
+    }
+
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(TicketApproval::class)->orderBy('level_order');
+    }
+
+    public function needsApproval(): bool
+    {
+        return $this->status === 'pending_approval';
     }
 
     public function setSlaDeadlines(): void

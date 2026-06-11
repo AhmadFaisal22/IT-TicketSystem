@@ -36,7 +36,10 @@ export const authApi = {
   redirectMicrosoft: () => api.get('/auth/redirect/microsoft'),
   me: () => api.get('/auth/me'),
   logout: () => api.post('/auth/logout'),
-  updateLocale: (locale: string) => api.patch('/auth/locale', { locale })
+  updateLocale: (locale: string) => api.patch('/auth/locale', { locale }),
+  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, email: string, password: string, password_confirmation: string) =>
+    api.post('/auth/reset-password', { token, email, password, password_confirmation }),
 }
 
 export const ticketApi = {
@@ -90,4 +93,17 @@ export const slaApi = {
   list: () => api.get('/sla-policies'),
   save: (data: object) => api.post('/sla-policies', data),
   delete: (id: number) => api.delete(`/sla-policies/${id}`)
+}
+
+export const approvalApi = {
+  list: () => api.get('/approval-levels'),
+  create: (data: object) => api.post('/approval-levels', data),
+  update: (id: number, data: object) => api.put(`/approval-levels/${id}`, data),
+  delete: (id: number) => api.delete(`/approval-levels/${id}`),
+  reorder: (levels: { id: number; level_order: number }[]) =>
+    api.post('/approval-levels/reorder', { levels }),
+  approve: (ticketId: number, notes?: string) =>
+    api.post(`/tickets/${ticketId}/approve`, { notes }),
+  reject: (ticketId: number, notes: string) =>
+    api.post(`/tickets/${ticketId}/reject`, { notes }),
 }

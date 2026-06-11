@@ -198,7 +198,7 @@ const auth = useAuthStore()
 const departments = ref<any[]>([])
 const currentPage = ref(1)
 
-const statuses = ['open', 'in_progress', 'pending', 'resolved', 'closed']
+const statuses = ['open', 'in_progress', 'pending', 'pending_approval', 'resolved', 'closed', 'rejected']
 const priorities = ['critical', 'high', 'medium', 'low']
 
 const filters = reactive({
@@ -240,7 +240,9 @@ function statusClass(s: string) {
     in_progress: 'bg-yellow-100 text-yellow-700',
     pending: 'bg-purple-100 text-purple-700',
     resolved: 'bg-green-100 text-green-700',
-    closed: 'bg-gray-100 text-gray-600'
+    closed: 'bg-gray-100 text-gray-600',
+    pending_approval: 'bg-amber-100 text-amber-700',
+    rejected: 'bg-red-100 text-red-700'
   }
   return map[s] || 'bg-gray-100 text-gray-600'
 }

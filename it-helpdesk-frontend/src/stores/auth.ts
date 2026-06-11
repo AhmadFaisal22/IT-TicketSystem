@@ -27,7 +27,8 @@ export const useAuthStore = defineStore('auth', () => {
       const { data } = await authApi.me()
       user.value = data
     } catch {
-      logout()
+      // Token is already rejected by server — skip the logout API call to avoid 401 noise
+      logout(false)
     }
   }
 
@@ -36,8 +37,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', t)
   }
 
-  function logout() {
-    if (token.value) authApi.logout().catch(() => {})
+  function logout(callApi = true) {
+    if (callApi && token.value) authApi.logout().catch(() => {})
     token.value = null
     user.value = null
     localStorage.removeItem('token')

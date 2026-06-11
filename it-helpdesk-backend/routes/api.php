@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\ApprovalLevelController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\SlaController;
+use App\Http\Controllers\Api\TicketApprovalController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 // OAuth + password login
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->middleware('throttle:5,1');
+    Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword'])->middleware('throttle:5,1');
     Route::get('redirect/google', [AuthController::class, 'redirectToGoogle']);
     Route::get('redirect/microsoft', [AuthController::class, 'redirectToMicrosoft']);
     Route::get('callback/google', [AuthController::class, 'handleGoogleCallback'])->middleware('throttle:10,1');
@@ -64,4 +69,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('sla-policies', [SlaController::class, 'index']);
     Route::post('sla-policies', [SlaController::class, 'store']);
     Route::delete('sla-policies/{slaPolicy}', [SlaController::class, 'destroy']);
+
+    // Approval Levels (admin only)
+    Route::get('approval-levels', [ApprovalLevelController::class, 'index']);
+    Route::post('approval-levels', [ApprovalLevelController::class, 'store']);
+    Route::put('approval-levels/{approvalLevel}', [ApprovalLevelController::class, 'update']);
+    Route::delete('approval-levels/{approvalLevel}', [ApprovalLevelController::class, 'destroy']);
+    Route::post('approval-levels/reorder', [ApprovalLevelController::class, 'reorder']);
+
+    // Ticket Approvals
+    Route::post('tickets/{ticket}/approve', [TicketApprovalController::class, 'approve']);
+    Route::post('tickets/{ticket}/reject', [TicketApprovalController::class, 'reject']);
 });

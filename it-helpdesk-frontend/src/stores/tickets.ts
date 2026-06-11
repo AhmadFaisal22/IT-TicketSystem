@@ -10,12 +10,27 @@ export interface Attachment {
   url: string
 }
 
+export interface TicketApproval {
+  id: number
+  ticket_id: number
+  approval_level_id: number
+  level_order: number
+  approver_id: number
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  notes: string | null
+  responded_by: number | null
+  responded_at: string | null
+  created_at: string
+  approver?: { id: number; name: string; avatar: string | null }
+  responder?: { id: number; name: string } | null
+}
+
 export interface Ticket {
   id: number
   ticket_number: string
   title: string
   description: string
-  status: 'open' | 'in_progress' | 'pending' | 'resolved' | 'closed'
+  status: 'open' | 'in_progress' | 'pending' | 'resolved' | 'closed' | 'pending_approval' | 'rejected'
   priority: 'low' | 'medium' | 'high' | 'critical'
   category: string | null
   subcategory: string | null
@@ -35,6 +50,7 @@ export interface Ticket {
   comments?: Comment[]
   histories?: TicketHistory[]
   attachments?: Attachment[]
+  approvals?: TicketApproval[]
 }
 
 export interface Comment {

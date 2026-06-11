@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -56,5 +57,12 @@ class User extends Authenticatable
     public function isItStaff(): bool
     {
         return in_array($this->role, ['admin', 'it_staff']);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $frontend = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
+        $url = $frontend . '/reset-password?token=' . $token . '&email=' . urlencode($this->email);
+        $this->notify(new ResetPasswordNotification($url));
     }
 }

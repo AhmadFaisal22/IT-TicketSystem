@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLevel;
 use App\Models\Attachment;
 use App\Models\SlaPolicy;
 use App\Models\Ticket;
+use App\Models\TicketApproval;
 use App\Models\TicketHistory;
 use App\Models\User;
+use App\Notifications\TicketApprovalRequested;
 use App\Notifications\TicketCreated;
 use App\Notifications\TicketStatusChanged;
 use App\Notifications\TicketAssigned;
@@ -23,7 +26,7 @@ class TicketController extends Controller
     public function index(Request $request): JsonResponse
     {
         $f = $request->validate([
-            'status'        => 'nullable|in:open,in_progress,pending,resolved,closed',
+            'status'        => 'nullable|in:open,in_progress,pending,pending_approval,resolved,closed,rejected',
             'priority'      => 'nullable|in:low,medium,high,critical',
             'department_id' => 'nullable|integer|exists:departments,id',
             'assigned_to'   => 'nullable|integer|exists:users,id',
@@ -36,7 +39,11 @@ class TicketController extends Controller
             ->orderByDesc('created_at');
 
         if (!$user->isItStaff()) {
-            $query->where('created_by', $user->id);
+            // Regular users see their own tickets OR tickets they are an approver for
+            $query->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereHas('approvals', fn ($a) => $a->where('approver_id', $user->id));
+            });
         }
 
         if (!empty($f['status'])) {
@@ -113,8 +120,34 @@ class TicketController extends Controller
             return $ticket;
         });
 
-        $notifyStaff = User::whereIn('role', ['it_staff', 'admin'])->where('active', true)->get();
-        Notification::send($notifyStaff, new TicketCreated($ticket));
+        // Check if this department has active approval levels
+        $approvalLevels = ApprovalLevel::where('department_id', $ticket->department_id)
+            ->where('is_active', true)
+            ->orderBy('level_order')
+            ->get();
+
+        if ($approvalLevels->isNotEmpty()) {
+            // Route through approval workflow
+            $ticket->update(['status' => 'pending_approval']);
+
+            foreach ($approvalLevels as $level) {
+                TicketApproval::create([
+                    'ticket_id'         => $ticket->id,
+                    'approval_level_id' => $level->id,
+                    'level_order'       => $level->level_order,
+                    'approver_id'       => $level->approver_id,
+                    'status'            => 'pending',
+                ]);
+            }
+
+            // Notify first-level approver
+            $firstApprover = User::find($approvalLevels->first()->approver_id);
+            $firstApprover?->notify(new TicketApprovalRequested($ticket, $approvalLevels->first()));
+        } else {
+            // No approvals needed — notify IT directly
+            $notifyStaff = User::whereIn('role', ['it_staff', 'admin'])->where('active', true)->get();
+            Notification::send($notifyStaff, new TicketCreated($ticket));
+        }
 
         return response()->json($ticket->load(['creator', 'department', 'attachments']), 201);
     }
@@ -123,7 +156,7 @@ class TicketController extends Controller
     {
         $this->authorize('view', $ticket);
         return response()->json(
-            $ticket->load(['creator', 'assignee', 'department', 'comments.user', 'histories.user', 'attachments'])
+            $ticket->load(['creator', 'assignee', 'department', 'comments.user', 'histories.user', 'attachments', 'approvals.approver', 'approvals.responder'])
         );
     }
 
