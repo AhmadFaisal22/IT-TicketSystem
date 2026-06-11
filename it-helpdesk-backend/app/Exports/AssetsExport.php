@@ -18,9 +18,8 @@ class AssetsExport implements FromQuery, WithHeadings, WithMapping
 
     public function headings(): array
     {
-        return ['Asset Tag', 'Last Name', 'First Name', 'Name', 'Category', 'Manufacturer', 'Model', 'Serial Number',
-            'Status', 'Assignee', 'Department', 'Location', 'Purchase Date', 'Purchase Cost',
-            'Warranty Expiry', 'Notes'];
+        return ['Asset Tag', 'Last Name', 'First Name', 'Department', 'Category', 'Manufacturer', 'Model', 'Serial Number',
+            'Status', 'Assignee', 'Location', 'Notes'];
     }
 
     public function map($asset): array
@@ -29,18 +28,14 @@ class AssetsExport implements FromQuery, WithHeadings, WithMapping
             $asset->asset_tag,
             $asset->last_name,
             $asset->first_name,
-            $asset->name,
+            $asset->department?->name,
             $asset->category,
             $asset->manufacturer,
             $asset->model,
             $asset->serial_number,
             $asset->status,
             $asset->assignee?->name,
-            $asset->department?->name,
             $asset->location,
-            optional($asset->purchase_date)->format('Y-m-d'),
-            $asset->purchase_cost,
-            optional($asset->warranty_expiry)->format('Y-m-d'),
             $asset->notes,
         ];
     }
