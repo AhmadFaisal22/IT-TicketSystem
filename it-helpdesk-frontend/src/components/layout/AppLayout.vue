@@ -170,7 +170,7 @@ const pageTitle = computed(() => {
     'ticket-create': t('ticket.actions.create'),
     'ticket-edit': t('ticket.actions.edit'),
     'ticket-detail': `${t('ticket.ticketNumber')}`,
-    assets: t('asset.title'),
+    assets: t('nav.assets'),
     'asset-create': t('asset.actions.create'),
     'asset-edit': t('asset.actions.edit'),
     'asset-detail': t('asset.title'),

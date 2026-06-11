@@ -2,7 +2,7 @@ export default {
   nav: {
     dashboard: 'Dashboard',
     tickets: 'Tickets',
-    assets: 'Assets',
+    assets: 'Inventory',
     newTicket: 'New Ticket',
     admin: 'Admin',
     users: 'Users',
