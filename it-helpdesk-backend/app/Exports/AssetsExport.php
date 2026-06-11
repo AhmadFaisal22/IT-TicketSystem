@@ -18,7 +18,7 @@ class AssetsExport implements FromQuery, WithHeadings, WithMapping
 
     public function headings(): array
     {
-        return ['Asset Tag', 'Name', 'Category', 'Manufacturer', 'Model', 'Serial Number',
+        return ['Asset Tag', 'Last Name', 'First Name', 'Name', 'Category', 'Manufacturer', 'Model', 'Serial Number',
             'Status', 'Assignee', 'Department', 'Location', 'Purchase Date', 'Purchase Cost',
             'Warranty Expiry', 'Notes'];
     }
@@ -27,6 +27,8 @@ class AssetsExport implements FromQuery, WithHeadings, WithMapping
     {
         return [
             $asset->asset_tag,
+            $asset->last_name,
+            $asset->first_name,
             $asset->name,
             $asset->category,
             $asset->manufacturer,

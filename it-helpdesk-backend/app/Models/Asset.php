@@ -13,7 +13,7 @@ class Asset extends Model
     use HasFactory;
 
     protected $fillable = [
-        'asset_tag', 'name', 'category', 'manufacturer', 'model',
+        'asset_tag', 'last_name', 'first_name', 'name', 'category', 'manufacturer', 'model',
         'serial_number', 'status', 'assigned_to', 'department_id',
         'location', 'purchase_date', 'purchase_cost', 'warranty_expiry', 'notes',
     ];

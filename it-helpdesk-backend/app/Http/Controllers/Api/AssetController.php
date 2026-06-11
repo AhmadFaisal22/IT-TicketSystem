@@ -54,7 +54,9 @@ class AssetController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('asset_tag', 'like', "%{$search}%")
-                  ->orWhere('serial_number', 'like', "%{$search}%");
+                  ->orWhere('serial_number', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('first_name', 'like', "%{$search}%");
             });
         }
 
@@ -122,6 +124,8 @@ class AssetController extends Controller
 
         $data = $request->validate([
             'name'            => 'required|string|max:255',
+            'last_name'       => 'nullable|string|max:255',
+            'first_name'      => 'nullable|string|max:255',
             'category'        => 'required|' . AssetCategories::categoryRule(),
             'manufacturer'    => 'nullable|string|max:255',
             'model'           => 'nullable|string|max:255',
@@ -151,6 +155,8 @@ class AssetController extends Controller
 
         $data = $request->validate([
             'name'            => 'sometimes|string|max:255',
+            'last_name'       => 'nullable|string|max:255',
+            'first_name'      => 'nullable|string|max:255',
             'category'        => 'sometimes|' . AssetCategories::categoryRule(),
             'manufacturer'    => 'nullable|string|max:255',
             'model'           => 'nullable|string|max:255',

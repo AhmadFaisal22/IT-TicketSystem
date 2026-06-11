@@ -18,6 +18,8 @@
           <div><dt class="text-gray-400">{{ t('asset.category') }}</dt><dd class="text-gray-800">{{ t(`asset.category_labels.${asset.category}`) }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.status') }}</dt>
             <dd><span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="statusClass(asset.status)">{{ t(`asset.status_labels.${asset.status}`) }}</span></dd></div>
+          <div><dt class="text-gray-400">{{ t('asset.lastName') }}</dt><dd class="text-gray-800">{{ asset.last_name || '—' }}</dd></div>
+          <div><dt class="text-gray-400">{{ t('asset.firstName') }}</dt><dd class="text-gray-800">{{ asset.first_name || '—' }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.serialNumber') }}</dt><dd class="text-gray-800">{{ asset.serial_number || '—' }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.assignee') }}</dt><dd class="text-gray-800">{{ asset.assignee?.name || t('asset.unassigned') }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.manufacturer') }}</dt><dd class="text-gray-800">{{ asset.manufacturer || '—' }}</dd></div>

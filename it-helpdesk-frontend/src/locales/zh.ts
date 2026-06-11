@@ -179,6 +179,8 @@ export default {
   asset: {
     title: '资产',
     assetTag: '资产编号',
+    lastName: '姓',
+    firstName: '名',
     name: '名称',
     category: '类别',
     manufacturer: '厂商',

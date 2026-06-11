@@ -178,7 +178,9 @@ export default {
   },
   asset: {
     title: 'Assets',
-    assetTag: 'Asset Tag',
+    assetTag: 'Fixed Assets Tag#',
+    lastName: 'Last Name',
+    firstName: 'First Name',
     name: 'Name',
     category: 'Category',
     manufacturer: 'Manufacturer',

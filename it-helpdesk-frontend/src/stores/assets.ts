@@ -34,6 +34,8 @@ export interface AssetAttachment {
 export interface Asset {
   id: number
   asset_tag: string
+  last_name: string | null
+  first_name: string | null
   name: string
   category: string
   manufacturer: string | null

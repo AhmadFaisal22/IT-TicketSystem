@@ -32,6 +32,8 @@ class AssetsImport implements ToCollection, WithHeadingRow
 
             Asset::create([
                 'name'          => $name,
+                'last_name'     => $row['last_name'] ?? null,
+                'first_name'    => $row['first_name'] ?? null,
                 'category'      => $category,
                 'manufacturer'  => $row['manufacturer'] ?? null,
                 'model'         => $row['model'] ?? null,

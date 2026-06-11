@@ -54,11 +54,14 @@
         <thead class="bg-gray-50 border-b">
           <tr>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.assetTag') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.lastName') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.firstName') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.name') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.category') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.manufacturer') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.model') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.serialNumber') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.status') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.assignee') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.location') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -66,15 +69,18 @@
             @click="$router.push(`/assets/${a.id}`)"
             class="hover:bg-gray-50 cursor-pointer transition">
             <td class="px-4 py-3 text-sm font-mono text-red-600">{{ a.asset_tag }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">{{ a.last_name || '—' }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">{{ a.first_name || '—' }}</td>
             <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ a.name }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ t(`asset.category_labels.${a.category}`) }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ a.manufacturer || '—' }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ a.model || '—' }}</td>
+            <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ a.serial_number || '—' }}</td>
             <td class="px-4 py-3">
               <span class="px-2 py-1 rounded-full text-xs font-medium" :class="statusClass(a.status)">
                 {{ t(`asset.status_labels.${a.status}`) }}
               </span>
             </td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ a.assignee?.name || t('asset.unassigned') }}</td>
-            <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ a.location || '—' }}</td>
           </tr>
         </tbody>
       </table>

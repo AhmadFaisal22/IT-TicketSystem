@@ -7,6 +7,16 @@
       </div>
 
       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.lastName') }}</label>
+        <input v-model="form.last_name" class="input" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.firstName') }}</label>
+        <input v-model="form.first_name" class="input" />
+      </div>
+
+      <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.category') }} *</label>
         <select v-model="form.category" class="input">
           <option v-for="c in categories" :key="c" :value="c">{{ t(`asset.category_labels.${c}`) }}</option>
@@ -97,6 +107,8 @@ const error = ref('')
 
 const form = reactive({
   name: props.asset?.name ?? '',
+  last_name: props.asset?.last_name ?? '',
+  first_name: props.asset?.first_name ?? '',
   category: props.asset?.category ?? 'laptop',
   serial_number: props.asset?.serial_number ?? '',
   manufacturer: props.asset?.manufacturer ?? '',
@@ -112,6 +124,8 @@ const form = reactive({
 function payload() {
   return {
     name: form.name,
+    last_name: form.last_name || null,
+    first_name: form.first_name || null,
     category: form.category,
     serial_number: form.serial_number || null,
     manufacturer: form.manufacturer || null,
