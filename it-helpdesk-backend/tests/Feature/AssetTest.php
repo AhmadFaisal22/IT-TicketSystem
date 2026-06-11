@@ -6,6 +6,8 @@ use App\Models\Asset;
 use App\Models\User;
 use App\Support\AssetCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -155,5 +157,24 @@ class AssetTest extends TestCase
             'asset_id' => $asset->id, 'action' => 'status_changed', 'field' => 'status',
             'old_value' => 'in_stock', 'new_value' => 'in_repair',
         ]);
+    }
+
+    public function test_it_staff_can_upload_and_delete_an_asset_attachment(): void
+    {
+        Storage::fake('public');
+        Sanctum::actingAs($this->itStaff());
+        $asset = Asset::factory()->create();
+
+        $res = $this->postJson("/api/assets/{$asset->id}/attachments", [
+            'attachments' => [UploadedFile::fake()->create('invoice.pdf', 100, 'application/pdf')],
+        ])->assertCreated();
+
+        $attachmentId = $res->json('0.id');
+        $this->assertDatabaseHas('attachments', [
+            'id' => $attachmentId, 'attachable_type' => \App\Models\Asset::class, 'attachable_id' => $asset->id,
+        ]);
+
+        $this->deleteJson("/api/assets/{$asset->id}/attachments/{$attachmentId}")->assertNoContent();
+        $this->assertDatabaseMissing('attachments', ['id' => $attachmentId]);
     }
 }

@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
+use App\Models\Attachment;
 use App\Support\AssetCategories;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AssetController extends Controller
 {
@@ -154,6 +156,45 @@ class AssetController extends Controller
         });
 
         return response()->json($asset->fresh()->load(['assignee', 'department']));
+    }
+
+    public function storeAttachments(Request $request, Asset $asset): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+
+        $request->validate([
+            'attachments'   => 'required|array|max:5',
+            'attachments.*' => 'file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240',
+        ]);
+
+        $created = [];
+        foreach ($request->file('attachments') as $file) {
+            $path = $file->store('asset-attachments', 'public');
+            $created[] = $asset->attachments()->create([
+                'user_id'       => $request->user()->id,
+                'filename'      => basename($path),
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type'     => $file->getMimeType(),
+                'size'          => $file->getSize(),
+                'path'          => $path,
+            ]);
+        }
+
+        return response()->json($created, 201);
+    }
+
+    public function destroyAttachment(Request $request, Asset $asset, Attachment $attachment): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+        abort_unless(
+            $attachment->attachable_type === Asset::class && $attachment->attachable_id === $asset->id,
+            404
+        );
+
+        Storage::disk('public')->delete($attachment->path);
+        $attachment->delete();
+
+        return response()->json(null, 204);
     }
 
     public function updateStatus(Request $request, Asset $asset): JsonResponse
