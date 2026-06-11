@@ -115,6 +115,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { ComputerDesktopIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import NotificationBell from '@/components/ui/NotificationBell.vue'
@@ -133,11 +134,17 @@ watch(() => route.name, () => {
   sidebarOpen.value = false
 })
 
-type NavItem = { name: string; to: string; label: string; icon?: string; iconImg?: string; prefix?: string }
-const navItems: NavItem[] = [
-  { name: 'dashboard', to: '/', label: 'nav.dashboard', iconImg: '/Dash.png' },
-  { name: 'tickets', to: '/tickets', label: 'nav.tickets', iconImg: '/icons8-ticket-50.png', prefix: 'ticket' },
-]
+type NavItem = { name: string; to: string; label: string; icon?: any; iconImg?: string; prefix?: string }
+const navItems = computed((): NavItem[] => {
+  const items: NavItem[] = [
+    { name: 'dashboard', to: '/', label: 'nav.dashboard', iconImg: '/Dash.png' },
+    { name: 'tickets', to: '/tickets', label: 'nav.tickets', iconImg: '/icons8-ticket-50.png', prefix: 'ticket' },
+  ]
+  if (auth.isItStaff) {
+    items.push({ name: 'assets', to: '/assets', label: 'nav.assets', icon: ComputerDesktopIcon, prefix: 'asset' })
+  }
+  return items
+})
 
 const adminItems = computed((): NavItem[] => {
   const items: NavItem[] = [
@@ -163,6 +170,10 @@ const pageTitle = computed(() => {
     'ticket-create': t('ticket.actions.create'),
     'ticket-edit': t('ticket.actions.edit'),
     'ticket-detail': `${t('ticket.ticketNumber')}`,
+    assets: t('asset.title'),
+    'asset-create': t('asset.actions.create'),
+    'asset-edit': t('asset.actions.edit'),
+    'asset-detail': t('asset.title'),
     'admin-users': t('admin.users.title'),
     'admin-departments': t('admin.departments.title'),
     'admin-sla': t('admin.sla.title'),
