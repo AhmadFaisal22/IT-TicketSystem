@@ -68,4 +68,48 @@ class AssetTest extends TestCase
             ->assertOk()
             ->assertJsonPath('asset_tag', $asset->asset_tag);
     }
+
+    public function test_it_staff_can_create_an_asset_and_logs_created_history(): void
+    {
+        $staff = $this->itStaff();
+        Sanctum::actingAs($staff);
+
+        $res = $this->postJson('/api/assets', [
+            'name'     => 'Dell Latitude 5440',
+            'category' => 'laptop',
+        ])->assertCreated();
+
+        $id = $res->json('id');
+        $this->assertDatabaseHas('assets', ['id' => $id, 'name' => 'Dell Latitude 5440', 'status' => 'in_stock']);
+        $this->assertDatabaseHas('asset_histories', ['asset_id' => $id, 'action' => 'created', 'user_id' => $staff->id]);
+    }
+
+    public function test_create_rejects_invalid_category(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $this->postJson('/api/assets', ['name' => 'X', 'category' => 'spaceship'])
+            ->assertStatus(422);
+    }
+
+    public function test_it_staff_can_update_an_asset(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $asset = Asset::factory()->create(['name' => 'Old']);
+
+        $this->putJson("/api/assets/{$asset->id}", ['name' => 'New', 'location' => 'HQ-3F'])
+            ->assertOk()->assertJsonPath('name', 'New');
+        $this->assertDatabaseHas('assets', ['id' => $asset->id, 'name' => 'New', 'location' => 'HQ-3F']);
+    }
+
+    public function test_only_admin_can_delete_an_asset(): void
+    {
+        $asset = Asset::factory()->create();
+
+        Sanctum::actingAs($this->itStaff());
+        $this->deleteJson("/api/assets/{$asset->id}")->assertStatus(403);
+
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']));
+        $this->deleteJson("/api/assets/{$asset->id}")->assertNoContent();
+        $this->assertDatabaseMissing('assets', ['id' => $asset->id]);
+    }
 }

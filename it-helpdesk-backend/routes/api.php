@@ -46,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Assets (IT only — enforced in controller)
     Route::get('assets', [AssetController::class, 'index']);
     Route::get('assets/{asset}', [AssetController::class, 'show']);
+    Route::post('assets', [AssetController::class, 'store']);
+    Route::put('assets/{asset}', [AssetController::class, 'update']);
+    Route::delete('assets/{asset}', [AssetController::class, 'destroy']);
 
     // Departments
     Route::apiResource('departments', DepartmentController::class);

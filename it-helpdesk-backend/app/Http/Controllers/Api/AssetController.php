@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Support\AssetCategories;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AssetController extends Controller
 {
@@ -61,5 +62,66 @@ class AssetController extends Controller
         return response()->json(
             $asset->load(['assignee', 'department', 'histories.user', 'attachments', 'tickets'])
         );
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+
+        $data = $request->validate([
+            'name'            => 'required|string|max:255',
+            'category'        => 'required|' . AssetCategories::categoryRule(),
+            'manufacturer'    => 'nullable|string|max:255',
+            'model'           => 'nullable|string|max:255',
+            'serial_number'   => 'nullable|string|max:255|unique:assets,serial_number',
+            'status'          => 'nullable|' . AssetCategories::statusRule(),
+            'assigned_to'     => 'nullable|exists:users,id',
+            'department_id'   => 'nullable|exists:departments,id',
+            'location'        => 'nullable|string|max:255',
+            'purchase_date'   => 'nullable|date',
+            'purchase_cost'   => 'nullable|numeric|min:0',
+            'warranty_expiry' => 'nullable|date',
+            'notes'           => 'nullable|string|max:10000',
+        ]);
+
+        $asset = DB::transaction(function () use ($data, $request) {
+            $asset = Asset::create($data);
+            $asset->logHistory($request->user()->id, 'created');
+            return $asset;
+        });
+
+        return response()->json($asset->load(['assignee', 'department']), 201);
+    }
+
+    public function update(Request $request, Asset $asset): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+
+        $data = $request->validate([
+            'name'            => 'sometimes|string|max:255',
+            'category'        => 'sometimes|' . AssetCategories::categoryRule(),
+            'manufacturer'    => 'nullable|string|max:255',
+            'model'           => 'nullable|string|max:255',
+            'serial_number'   => 'nullable|string|max:255|unique:assets,serial_number,' . $asset->id,
+            'location'        => 'nullable|string|max:255',
+            'purchase_date'   => 'nullable|date',
+            'purchase_cost'   => 'nullable|numeric|min:0',
+            'warranty_expiry' => 'nullable|date',
+            'notes'           => 'nullable|string|max:10000',
+        ]);
+
+        DB::transaction(function () use ($asset, $data, $request) {
+            $asset->update($data);
+            $asset->logHistory($request->user()->id, 'updated');
+        });
+
+        return response()->json($asset->load(['assignee', 'department']));
+    }
+
+    public function destroy(Request $request, Asset $asset): JsonResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $asset->delete();
+        return response()->json(null, 204);
     }
 }
