@@ -68,6 +68,7 @@ export const departmentApi = {
 export const userApi = {
   list: (params?: object) => api.get('/users', { params }),
   itStaff: () => api.get('/users/it-staff'),
+  assignable: (params?: object) => api.get('/users/assignable', { params }),
   create: (data: object) => api.post('/users', data),
   update: (id: number, data: object) => api.put(`/users/${id}`, data),
   delete: (id: number) => api.delete(`/users/${id}`),
@@ -106,4 +107,35 @@ export const approvalApi = {
     api.post(`/tickets/${ticketId}/approve`, { notes }),
   reject: (ticketId: number, notes: string) =>
     api.post(`/tickets/${ticketId}/reject`, { notes }),
+}
+
+export const assetCategoryApi = {
+  list: () => api.get('/asset-categories'),
+  create: (data: object) => api.post('/asset-categories', data),
+  update: (id: number, data: object) => api.put(`/asset-categories/${id}`, data),
+  delete: (id: number) => api.delete(`/asset-categories/${id}`),
+}
+
+export const assetLocationApi = {
+  list: () => api.get('/asset-locations'),
+  create: (data: object) => api.post('/asset-locations', data),
+  update: (id: number, data: object) => api.put(`/asset-locations/${id}`, data),
+  delete: (id: number) => api.delete(`/asset-locations/${id}`),
+}
+
+export const assetApi = {
+  list: (params?: object) => api.get('/assets', { params }),
+  meta: () => api.get('/assets/meta'),
+  get: (id: number) => api.get(`/assets/${id}`),
+  create: (data: object) => api.post('/assets', data),
+  update: (id: number, data: object) => api.put(`/assets/${id}`, data),
+  remove: (id: number) => api.delete(`/assets/${id}`),
+  assign: (id: number, assigned_to: number | null, department_id?: number | null) =>
+    api.patch(`/assets/${id}/assign`, { assigned_to, department_id }),
+  updateStatus: (id: number, status: string) => api.patch(`/assets/${id}/status`, { status }),
+  uploadAttachments: (id: number, formData: FormData) => api.post(`/assets/${id}/attachments`, formData),
+  deleteAttachment: (id: number, attachmentId: number) =>
+    api.delete(`/assets/${id}/attachments/${attachmentId}`),
+  export: (params?: object) => api.get('/assets/export', { params, responseType: 'blob' }),
+  import: (formData: FormData) => api.post('/assets/import', formData),
 }

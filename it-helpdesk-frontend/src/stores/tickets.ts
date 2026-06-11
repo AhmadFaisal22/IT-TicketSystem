@@ -35,6 +35,7 @@ export interface Ticket {
   category: string | null
   subcategory: string | null
   department_id: number
+  asset_id: number | null
   created_by: number
   assigned_to: number | null
   sla_response_due_at: string | null
@@ -47,6 +48,7 @@ export interface Ticket {
   creator?: { id: number; name: string; avatar: string | null }
   assignee?: { id: number; name: string; avatar: string | null } | null
   department?: { id: number; name: string; name_zh: string }
+  asset?: { id: number; asset_tag: string; name: string | null } | null
   comments?: Comment[]
   histories?: TicketHistory[]
   attachments?: Attachment[]

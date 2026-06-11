@@ -59,6 +59,30 @@ const router = createRouter({
           component: () => import('@/views/tickets/EditTicketView.vue')
         },
         {
+          path: 'assets',
+          name: 'assets',
+          component: () => import('@/views/assets/AssetsView.vue'),
+          meta: { requiresItStaff: true }
+        },
+        {
+          path: 'assets/create',
+          name: 'asset-create',
+          component: () => import('@/views/assets/CreateAssetView.vue'),
+          meta: { requiresItStaff: true }
+        },
+        {
+          path: 'assets/:id',
+          name: 'asset-detail',
+          component: () => import('@/views/assets/AssetDetailView.vue'),
+          meta: { requiresItStaff: true }
+        },
+        {
+          path: 'assets/:id/edit',
+          name: 'asset-edit',
+          component: () => import('@/views/assets/EditAssetView.vue'),
+          meta: { requiresItStaff: true }
+        },
+        {
           path: 'admin',
           meta: { requiresAdmin: true },
           children: [
@@ -81,6 +105,11 @@ const router = createRouter({
               path: 'approval-levels',
               name: 'admin-approval',
               component: () => import('@/views/admin/ApprovalLevelsView.vue')
+            },
+            {
+              path: 'asset-options',
+              name: 'admin-asset-options',
+              component: () => import('@/views/admin/AssetOptionsView.vue')
             }
           ]
         }
@@ -104,6 +133,9 @@ router.beforeEach(async (to, _from, next) => {
     return next({ name: 'dashboard' })
   }
   if (to.meta.requiresAdmin && !auth.isAdmin) {
+    return next({ name: 'dashboard' })
+  }
+  if (to.meta.requiresItStaff && !auth.isItStaff) {
     return next({ name: 'dashboard' })
   }
 

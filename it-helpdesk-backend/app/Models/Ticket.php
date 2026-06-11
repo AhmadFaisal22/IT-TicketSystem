@@ -12,7 +12,7 @@ class Ticket extends Model
 {
     protected $fillable = [
         'ticket_number', 'title', 'description', 'status', 'priority',
-        'category', 'subcategory', 'department_id', 'created_by', 'assigned_to',
+        'category', 'subcategory', 'department_id', 'asset_id', 'created_by', 'assigned_to',
         'sla_response_due_at', 'sla_resolution_due_at',
         'first_response_at', 'resolved_at', 'closed_at',
         'sla_response_breached', 'sla_resolution_breached',
@@ -44,6 +44,11 @@ class Ticket extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function asset(): BelongsTo
+    {
+        return $this->belongsTo(Asset::class);
     }
 
     public function creator(): BelongsTo

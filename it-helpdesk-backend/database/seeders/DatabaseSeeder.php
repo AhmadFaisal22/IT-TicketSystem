@@ -68,5 +68,8 @@ class DatabaseSeeder extends Seeder
                 'active'        => true,
             ]
         );
+
+        // Sample IT assets
+        $this->call(AssetSeeder::class);
     }
 }

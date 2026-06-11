@@ -44,6 +44,11 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class, 'assigned_to');
     }
 
+    public function assignedAssets(): HasMany
+    {
+        return $this->hasMany(Asset::class, 'assigned_to');
+    }
+
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);

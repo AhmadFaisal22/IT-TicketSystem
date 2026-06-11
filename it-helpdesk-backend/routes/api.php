@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\ApprovalLevelController;
+use App\Http\Controllers\Api\AssetController;
+use App\Http\Controllers\Api\AssetOptionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\CommentController;
@@ -42,12 +44,38 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('tickets/{ticket}/comments', [CommentController::class, 'store']);
     Route::delete('tickets/{ticket}/comments/{comment}', [CommentController::class, 'destroy']);
 
+    // Assets (IT only — enforced in controller)
+    // Static paths MUST precede assets/{asset} so they are not captured as a wildcard.
+    Route::get('assets', [AssetController::class, 'index']);
+    Route::get('assets/meta', [AssetController::class, 'meta']);
+    Route::get('assets/export', [AssetController::class, 'export']);
+    Route::post('assets/import', [AssetController::class, 'import']);
+    Route::get('assets/{asset}', [AssetController::class, 'show']);
+    Route::post('assets', [AssetController::class, 'store']);
+    Route::put('assets/{asset}', [AssetController::class, 'update']);
+    Route::delete('assets/{asset}', [AssetController::class, 'destroy']);
+    Route::patch('assets/{asset}/assign', [AssetController::class, 'assign']);
+    Route::patch('assets/{asset}/status', [AssetController::class, 'updateStatus']);
+    Route::post('assets/{asset}/attachments', [AssetController::class, 'storeAttachments']);
+    Route::delete('assets/{asset}/attachments/{attachment}', [AssetController::class, 'destroyAttachment']);
+
+    // Asset options (categories/locations — list: IT staff, manage: admin)
+    Route::get('asset-categories', [AssetOptionController::class, 'categories']);
+    Route::post('asset-categories', [AssetOptionController::class, 'storeCategory']);
+    Route::put('asset-categories/{assetCategory}', [AssetOptionController::class, 'updateCategory']);
+    Route::delete('asset-categories/{assetCategory}', [AssetOptionController::class, 'destroyCategory']);
+    Route::get('asset-locations', [AssetOptionController::class, 'locations']);
+    Route::post('asset-locations', [AssetOptionController::class, 'storeLocation']);
+    Route::put('asset-locations/{assetLocation}', [AssetOptionController::class, 'updateLocation']);
+    Route::delete('asset-locations/{assetLocation}', [AssetOptionController::class, 'destroyLocation']);
+
     // Departments
     Route::apiResource('departments', DepartmentController::class);
 
     // Users (admin only)
     Route::get('users', [UserController::class, 'index']);
     Route::get('users/it-staff', [UserController::class, 'itStaff']);
+    Route::get('users/assignable', [UserController::class, 'assignable']);
     Route::post('users', [UserController::class, 'store']);
     Route::put('users/{user}', [UserController::class, 'update']);
     Route::delete('users/{user}', [UserController::class, 'destroy']);
