@@ -124,4 +124,55 @@ class AssetController extends Controller
         $asset->delete();
         return response()->json(null, 204);
     }
+
+    public function assign(Request $request, Asset $asset): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+
+        $data = $request->validate([
+            'assigned_to'   => 'nullable|exists:users,id',
+            'department_id' => 'nullable|exists:departments,id',
+        ]);
+
+        DB::transaction(function () use ($asset, $data, $request) {
+            $previousHolder = $asset->assigned_to;
+
+            if (!empty($data['assigned_to'])) {
+                $asset->assigned_to = $data['assigned_to'];
+                if (array_key_exists('department_id', $data)) {
+                    $asset->department_id = $data['department_id'];
+                }
+                $asset->status = 'assigned';
+                $asset->save();
+                $asset->logHistory($request->user()->id, 'assigned', 'assigned_to', (string) $previousHolder, (string) $data['assigned_to']);
+            } else {
+                $asset->assigned_to = null;
+                $asset->status = 'in_stock';
+                $asset->save();
+                $asset->logHistory($request->user()->id, 'returned', 'assigned_to', (string) $previousHolder, null);
+            }
+        });
+
+        return response()->json($asset->fresh()->load(['assignee', 'department']));
+    }
+
+    public function updateStatus(Request $request, Asset $asset): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+
+        $data = $request->validate(['status' => 'required|' . AssetCategories::statusRule()]);
+        $old = $asset->status;
+
+        DB::transaction(function () use ($asset, $data, $old, $request) {
+            $asset->status = $data['status'];
+            // Returning to stock via status also clears the holder.
+            if ($data['status'] === 'in_stock') {
+                $asset->assigned_to = null;
+            }
+            $asset->save();
+            $asset->logHistory($request->user()->id, 'status_changed', 'status', $old, $data['status']);
+        });
+
+        return response()->json($asset->fresh()->load(['assignee', 'department']));
+    }
 }

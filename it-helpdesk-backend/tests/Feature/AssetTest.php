@@ -112,4 +112,48 @@ class AssetTest extends TestCase
         $this->deleteJson("/api/assets/{$asset->id}")->assertNoContent();
         $this->assertDatabaseMissing('assets', ['id' => $asset->id]);
     }
+
+    public function test_assign_sets_holder_status_and_logs_history(): void
+    {
+        $staff = $this->itStaff();
+        Sanctum::actingAs($staff);
+        $holder = User::factory()->create();
+        $asset = Asset::factory()->create(['status' => 'in_stock']);
+
+        $this->patchJson("/api/assets/{$asset->id}/assign", ['assigned_to' => $holder->id])
+            ->assertOk()
+            ->assertJsonPath('status', 'assigned')
+            ->assertJsonPath('assigned_to', $holder->id);
+
+        $this->assertDatabaseHas('asset_histories', ['asset_id' => $asset->id, 'action' => 'assigned']);
+    }
+
+    public function test_returning_clears_holder_and_sets_in_stock(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $holder = User::factory()->create();
+        $asset = Asset::factory()->create(['status' => 'assigned', 'assigned_to' => $holder->id]);
+
+        $this->patchJson("/api/assets/{$asset->id}/assign", ['assigned_to' => null])
+            ->assertOk()
+            ->assertJsonPath('status', 'in_stock')
+            ->assertJsonPath('assigned_to', null);
+
+        $this->assertDatabaseHas('asset_histories', ['asset_id' => $asset->id, 'action' => 'returned']);
+    }
+
+    public function test_status_change_logs_status_changed_history(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $asset = Asset::factory()->create(['status' => 'in_stock']);
+
+        $this->patchJson("/api/assets/{$asset->id}/status", ['status' => 'in_repair'])
+            ->assertOk()
+            ->assertJsonPath('status', 'in_repair');
+
+        $this->assertDatabaseHas('asset_histories', [
+            'asset_id' => $asset->id, 'action' => 'status_changed', 'field' => 'status',
+            'old_value' => 'in_stock', 'new_value' => 'in_repair',
+        ]);
+    }
 }

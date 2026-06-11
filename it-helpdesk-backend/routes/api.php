@@ -49,6 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('assets', [AssetController::class, 'store']);
     Route::put('assets/{asset}', [AssetController::class, 'update']);
     Route::delete('assets/{asset}', [AssetController::class, 'destroy']);
+    Route::patch('assets/{asset}/assign', [AssetController::class, 'assign']);
+    Route::patch('assets/{asset}/status', [AssetController::class, 'updateStatus']);
 
     // Departments
     Route::apiResource('departments', DepartmentController::class);
