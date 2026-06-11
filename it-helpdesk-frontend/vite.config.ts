@@ -21,6 +21,10 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
+      // 'static' instead of the default 'assets' — the /assets URL path is
+      // taken by the inventory SPA route, and a real /assets directory makes
+      // nginx skip the SPA fallback (404 on refresh).
+      assetsDir: 'static',
       chunkSizeWarningLimit: 600,
       rollupOptions: {
         output: {
