@@ -10,6 +10,84 @@ Bilingual (English / 中文) internal IT ticketing system built for **SEG Solar 
 
 ---
 
+## Clone & Run in 5 Minutes (Windows)
+
+> **Prerequisites:** [Git](https://git-scm.com/downloads) · [PHP 8.2+](https://windows.php.net/download/) · [Composer](https://getcomposer.org/download/) · [Node.js 18+](https://nodejs.org/)
+
+### Step 1 — Clone the repository
+
+```bash
+git clone https://github.com/AhmadFaisal22/IT-TicketSystem.git
+cd IT-TicketSystem
+```
+
+### Step 2 — Set up the backend
+
+```bash
+cd it-helpdesk-backend
+
+# Install PHP dependencies
+composer install
+
+# Create environment file
+copy .env.example .env
+
+# Generate app key
+php artisan key:generate
+
+# (Optional) Use SQLite for zero-config local dev — edit .env:
+#   DB_CONNECTION=sqlite
+#   DB_DATABASE=database/database.sqlite
+echo "" > database\database.sqlite
+
+# Run database migrations
+php artisan migrate
+
+# (Optional) Seed demo users and departments
+php artisan db:seed
+
+cd ..
+```
+
+### Step 3 — Set up the frontend
+
+```bash
+cd it-helpdesk-frontend
+npm install
+cd ..
+```
+
+### Step 4 — Start everything with one double-click
+
+Double-click **`start-helpdesk.bat`** in the root folder.
+
+It will open two terminal windows and launch your browser automatically:
+
+```
+start-helpdesk.bat
+  ├── Opens "Laravel Backend"  window → php artisan serve  (http://localhost:8000)
+  └── Opens "Vite Frontend"    window → npm run dev        (http://localhost:5173)
+  └── Opens browser at http://localhost:5173  after 4 seconds
+```
+
+Or run it from a terminal:
+
+```cmd
+start-helpdesk.bat
+```
+
+### Step 5 — Bootstrap your admin account
+
+After your first login, promote your account to admin:
+
+```bash
+cd it-helpdesk-backend
+php artisan tinker
+>>> \App\Models\User::where('email','your@email.com')->update(['role'=>'admin']);
+```
+
+---
+
 ## Table of Contents
 
 1. [Features](#features)
