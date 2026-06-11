@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Imports\AssetsImport;
 use App\Models\Asset;
 use App\Models\Attachment;
+use App\Models\User;
 use App\Support\AssetCategories;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -186,21 +187,34 @@ class AssetController extends Controller
         ]);
 
         DB::transaction(function () use ($asset, $data, $request) {
-            $previousHolder = $asset->assigned_to;
+            // History stores holder names (not IDs) so the trail reads naturally.
+            $previousHolderName = $asset->assignee?->name;
 
             if (!empty($data['assigned_to'])) {
-                $asset->assigned_to = $data['assigned_to'];
+                if ((int) $data['assigned_to'] === (int) $asset->assigned_to) {
+                    // Re-assigning the same holder: sync department if given, no history noise.
+                    if (array_key_exists('department_id', $data)) {
+                        $asset->department_id = $data['department_id'];
+                        $asset->save();
+                    }
+                    return;
+                }
+                $newHolder = User::findOrFail($data['assigned_to']);
+                $asset->assigned_to = $newHolder->id;
                 if (array_key_exists('department_id', $data)) {
                     $asset->department_id = $data['department_id'];
                 }
                 $asset->status = 'assigned';
                 $asset->save();
-                $asset->logHistory($request->user()->id, 'assigned', 'assigned_to', (string) $previousHolder, (string) $data['assigned_to']);
+                $asset->logHistory($request->user()->id, 'assigned', 'assigned_to', $previousHolderName, $newHolder->name);
             } else {
+                if ($asset->assigned_to === null && $asset->status === 'in_stock') {
+                    return; // already in stock — nothing to do
+                }
                 $asset->assigned_to = null;
                 $asset->status = 'in_stock';
                 $asset->save();
-                $asset->logHistory($request->user()->id, 'returned', 'assigned_to', (string) $previousHolder, null);
+                $asset->logHistory($request->user()->id, 'returned', 'assigned_to', $previousHolderName, null);
             }
         });
 

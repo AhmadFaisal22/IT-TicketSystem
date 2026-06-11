@@ -51,8 +51,8 @@
           <li v-for="h in asset.histories" :key="h.id" class="text-sm flex gap-3">
             <span class="text-gray-400 whitespace-nowrap">{{ formatDate(h.created_at) }}</span>
             <span class="text-gray-700">
-              <b>{{ h.user?.name }}</b> — {{ h.action }}
-              <template v-if="h.field">({{ h.old_value || '∅' }} → {{ h.new_value || '∅' }})</template>
+              <b>{{ h.user?.name }}</b> — {{ actionLabel(h.action) }}
+              <template v-if="h.field">({{ valueLabel(h, h.old_value) }} → {{ valueLabel(h, h.new_value) }})</template>
             </span>
           </li>
           <li v-if="!asset.histories?.length" class="text-sm text-gray-400">—</li>
@@ -182,6 +182,19 @@ function statusClass(s: string) {
 
 function formatDate(dt: string) {
   return new Date(dt).toLocaleString()
+}
+
+const KNOWN_ACTIONS = ['created', 'updated', 'assigned', 'returned', 'status_changed']
+function actionLabel(action: string) {
+  return KNOWN_ACTIONS.includes(action) ? t(`asset.history_actions.${action}`) : action
+}
+
+function valueLabel(h: { field: string | null }, value: string | null) {
+  if (!value) return '∅'
+  if (h.field === 'status' && (ASSET_STATUSES as readonly string[]).includes(value)) {
+    return t(`asset.status_labels.${value}`)
+  }
+  return value
 }
 
 watch(() => route.params.id, reload)

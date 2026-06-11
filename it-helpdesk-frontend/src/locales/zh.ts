@@ -215,6 +215,10 @@ export default {
       in_stock: '在库', assigned: '已分配', in_repair: '维修中',
       retired: '已报废', lost: '丢失',
     },
+    history_actions: {
+      created: '创建了资产', updated: '更新了资产', assigned: '分配',
+      returned: '回收入库', status_changed: '修改状态',
+    },
     actions: {
       create: '添加资产', edit: '编辑资产', assign: '分配',
       returnToStock: '回收入库', changeStatus: '改状态', uploadFile: '上传文件',

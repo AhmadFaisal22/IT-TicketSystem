@@ -215,6 +215,10 @@ export default {
       in_stock: 'In Stock', assigned: 'Assigned', in_repair: 'In Repair',
       retired: 'Retired', lost: 'Lost',
     },
+    history_actions: {
+      created: 'created the asset', updated: 'updated the asset', assigned: 'assigned',
+      returned: 'returned to stock', status_changed: 'changed status',
+    },
     actions: {
       create: 'Add Asset', edit: 'Edit Asset', assign: 'Assign',
       returnToStock: 'Return to Stock', changeStatus: 'Change Status', uploadFile: 'Upload File',

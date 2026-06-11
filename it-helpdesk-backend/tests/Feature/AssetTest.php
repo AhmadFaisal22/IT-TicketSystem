@@ -128,7 +128,14 @@ class AssetTest extends TestCase
             ->assertJsonPath('status', 'assigned')
             ->assertJsonPath('assigned_to', $holder->id);
 
-        $this->assertDatabaseHas('asset_histories', ['asset_id' => $asset->id, 'action' => 'assigned']);
+        $this->assertDatabaseHas('asset_histories', [
+            'asset_id' => $asset->id, 'action' => 'assigned',
+            'old_value' => null, 'new_value' => $holder->name,
+        ]);
+
+        // Re-assigning the same holder is a no-op and must not add history noise.
+        $this->patchJson("/api/assets/{$asset->id}/assign", ['assigned_to' => $holder->id])->assertOk();
+        $this->assertSame(1, $asset->histories()->where('action', 'assigned')->count());
     }
 
     public function test_returning_clears_holder_and_sets_in_stock(): void
@@ -142,7 +149,10 @@ class AssetTest extends TestCase
             ->assertJsonPath('status', 'in_stock')
             ->assertJsonPath('assigned_to', null);
 
-        $this->assertDatabaseHas('asset_histories', ['asset_id' => $asset->id, 'action' => 'returned']);
+        $this->assertDatabaseHas('asset_histories', [
+            'asset_id' => $asset->id, 'action' => 'returned',
+            'old_value' => $holder->name, 'new_value' => null,
+        ]);
     }
 
     public function test_status_change_logs_status_changed_history(): void
