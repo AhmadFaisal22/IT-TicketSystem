@@ -53,15 +53,25 @@
       <table v-else class="w-full">
         <thead class="bg-gray-50 border-b">
           <tr>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.assetTag') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.lastName') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.firstName') }}</th>
+            <th @click="toggleSort('asset_tag')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer select-none hover:text-gray-700">
+              {{ t('asset.assetTag') }}<span v-if="sortBy === 'asset_tag'"> {{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th @click="toggleSort('last_name')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer select-none hover:text-gray-700">
+              {{ t('asset.lastName') }}<span v-if="sortBy === 'last_name'"> {{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th @click="toggleSort('first_name')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer select-none hover:text-gray-700">
+              {{ t('asset.firstName') }}<span v-if="sortBy === 'first_name'"> {{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.department') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.category') }}</th>
+            <th @click="toggleSort('category')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer select-none hover:text-gray-700">
+              {{ t('asset.category') }}<span v-if="sortBy === 'category'"> {{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.manufacturer') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.model') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.serialNumber') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.status') }}</th>
+            <th @click="toggleSort('status')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer select-none hover:text-gray-700">
+              {{ t('asset.status') }}<span v-if="sortBy === 'status'"> {{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
             <th v-if="auth.isAdmin" class="px-4 py-3 w-12"></th>
           </tr>
         </thead>
@@ -129,9 +139,21 @@ const currentPage = ref(1)
 const importInput = ref<HTMLInputElement | null>(null)
 
 const filters = reactive({ search: '', status: '', category: '' })
+const sortBy = ref('asset_tag')
+const sortDir = ref<'asc' | 'desc'>('asc')
 
 function fetchData() {
-  store.fetchAssets({ ...filters, page: currentPage.value })
+  store.fetchAssets({ ...filters, page: currentPage.value, sort: sortBy.value, dir: sortDir.value })
+}
+
+function toggleSort(column: string) {
+  if (sortBy.value === column) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = column
+    sortDir.value = 'asc'
+  }
+  fetchData()
 }
 const debouncedFetch = useDebounceFn(fetchData, 350)
 

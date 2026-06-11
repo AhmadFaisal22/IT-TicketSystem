@@ -35,7 +35,11 @@ class AssetController extends Controller
             'search'        => 'nullable|string|max:255',
         ]);
 
-        $query = Asset::with(['assignee', 'department'])->orderByDesc('created_at');
+        $sortable = ['asset_tag', 'last_name', 'first_name', 'category', 'status', 'created_at'];
+        $sort = in_array($request->query('sort'), $sortable, true) ? $request->query('sort') : 'created_at';
+        $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
+
+        $query = Asset::with(['assignee', 'department'])->orderBy($sort, $dir);
 
         if (!empty($f['status'])) {
             $query->where('status', $f['status']);
@@ -135,8 +139,9 @@ class AssetController extends Controller
             'assigned_to'     => 'nullable|exists:users,id',
             'department_id'   => 'nullable|exists:departments,id',
             'location'        => 'nullable|string|max:255',
-            'purchase_date'   => 'nullable|date',
+            'assign_date'     => 'nullable|date',
             'purchase_cost'   => 'nullable|numeric|min:0',
+            'purchase_link'   => 'nullable|string|max:2048',
             'warranty_expiry' => 'nullable|date',
             'notes'           => 'nullable|string|max:10000',
         ]);
@@ -164,8 +169,9 @@ class AssetController extends Controller
             'model'           => 'nullable|string|max:255',
             'serial_number'   => 'nullable|string|max:255|unique:assets,serial_number,' . $asset->id,
             'location'        => 'nullable|string|max:255',
-            'purchase_date'   => 'nullable|date',
+            'assign_date'     => 'nullable|date',
             'purchase_cost'   => 'nullable|numeric|min:0',
+            'purchase_link'   => 'nullable|string|max:2048',
             'warranty_expiry' => 'nullable|date',
             'notes'           => 'nullable|string|max:10000',
         ]);

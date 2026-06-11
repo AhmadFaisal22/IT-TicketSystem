@@ -32,6 +32,9 @@
           <div><dt class="text-gray-400">{{ t('asset.model') }}</dt><dd class="text-gray-800">{{ asset.model || '—' }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.location') }}</dt><dd class="text-gray-800">{{ asset.location || '—' }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.warrantyExpiry') }}</dt><dd class="text-gray-800">{{ asset.warranty_expiry?.slice(0,10) || '—' }}</dd></div>
+          <div><dt class="text-gray-400">{{ t('asset.assignDate') }}</dt><dd class="text-gray-800">{{ asset.assign_date?.slice(0,10) || '—' }}</dd></div>
+          <div><dt class="text-gray-400">{{ t('asset.purchaseLink') }}</dt>
+            <dd><a v-if="asset.purchase_link" :href="asset.purchase_link" target="_blank" class="text-blue-600 hover:underline break-all">{{ asset.purchase_link }}</a><span v-else class="text-gray-800">—</span></dd></div>
           <div class="col-span-2" v-if="asset.notes"><dt class="text-gray-400">{{ t('asset.notes') }}</dt><dd class="text-gray-800 whitespace-pre-wrap">{{ asset.notes }}</dd></div>
         </dl>
       </div>

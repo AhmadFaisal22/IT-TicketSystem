@@ -54,13 +54,18 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.purchaseDate') }}</label>
-        <input v-model="form.purchase_date" type="date" class="input" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.assignDate') }}</label>
+        <input v-model="form.assign_date" type="date" class="input" />
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.purchaseCost') }}</label>
         <input v-model="form.purchase_cost" type="number" step="0.01" min="0" class="input" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.purchaseLink') }}</label>
+        <input v-model="form.purchase_link" type="url" placeholder="https://..." class="input" />
       </div>
 
       <div>
@@ -115,8 +120,9 @@ const form = reactive({
   model: props.asset?.model ?? '',
   location: props.asset?.location ?? '',
   department_id: props.asset?.department_id ?? null,
-  purchase_date: props.asset?.purchase_date?.slice(0, 10) ?? '',
+  assign_date: props.asset?.assign_date?.slice(0, 10) ?? '',
   purchase_cost: props.asset?.purchase_cost ?? '',
+  purchase_link: props.asset?.purchase_link ?? '',
   warranty_expiry: props.asset?.warranty_expiry?.slice(0, 10) ?? '',
   notes: props.asset?.notes ?? '',
 })
@@ -132,8 +138,9 @@ function payload() {
     model: form.model || null,
     location: form.location || null,
     department_id: form.department_id,
-    purchase_date: form.purchase_date || null,
+    assign_date: form.assign_date || null,
     purchase_cost: form.purchase_cost === '' ? null : form.purchase_cost,
+    purchase_link: form.purchase_link || null,
     warranty_expiry: form.warranty_expiry || null,
     notes: form.notes || null,
   }

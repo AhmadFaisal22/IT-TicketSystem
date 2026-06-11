@@ -17,7 +17,7 @@ class AssetFactory extends Factory
             'serial_number' => $this->faker->unique()->bothify('SN-########'),
             'status'        => 'in_stock',
             'location'      => $this->faker->city(),
-            'purchase_date' => $this->faker->date(),
+            'assign_date'   => $this->faker->date(),
         ];
     }
 }

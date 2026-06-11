@@ -45,8 +45,9 @@ export interface Asset {
   assigned_to: number | null
   department_id: number | null
   location: string | null
-  purchase_date: string | null
+  assign_date: string | null
   purchase_cost: string | null
+  purchase_link: string | null
   warranty_expiry: string | null
   notes: string | null
   created_at: string
