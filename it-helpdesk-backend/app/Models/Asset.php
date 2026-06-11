@@ -18,8 +18,8 @@ class Asset extends Model
         'location', 'assign_date', 'purchase_cost', 'purchase_link', 'warranty_expiry', 'notes',
     ];
 
+    // assign_date is stored as a plain Y-m-d string (set automatically on assign).
     protected $casts = [
-        'assign_date' => 'date',
         'warranty_expiry' => 'date',
         'purchase_cost' => 'decimal:2',
     ];

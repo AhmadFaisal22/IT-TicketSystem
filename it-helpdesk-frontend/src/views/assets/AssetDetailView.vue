@@ -94,15 +94,6 @@
                 @keydown.enter.prevent="chooseHighlightedAssignee"
                 @keydown.esc="closeAssigneePicker"
               />
-              <button
-                v-if="assignTo !== null"
-                type="button"
-                class="absolute right-2 top-2 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                @click="selectAssignee(null)"
-              >
-                <XMarkIcon class="h-4 w-4" />
-              </button>
-
               <div
                 v-if="assigneePickerOpen"
                 class="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
@@ -199,7 +190,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
-import { CheckIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { CheckIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi, assetCategoryApi } from '@/api'
@@ -323,6 +314,9 @@ function closeAssigneePicker() {
 
 function onAssigneeSearchInput() {
   assigneePickerOpen.value = true
+  if (!assigneeSearch.value.trim()) {
+    assignTo.value = null
+  }
   if (assigneeSearchTimer) clearTimeout(assigneeSearchTimer)
   assigneeSearchTimer = setTimeout(() => {
     void loadAssignableUsers()
