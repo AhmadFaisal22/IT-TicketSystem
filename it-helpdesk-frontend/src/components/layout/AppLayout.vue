@@ -10,8 +10,8 @@
       class="w-64 bg-gray-900 text-white flex flex-col fixed h-full z-30 transition-transform duration-300 ease-in-out"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
 
-      <div class="px-4 sm:px-6 py-5 border-b border-gray-700">
-        <div class="flex items-center justify-between">
+      <div class="h-16 flex items-center px-4 sm:px-6 border-b border-gray-700">
+        <div class="flex items-center justify-between w-full">
           <div class="flex items-center gap-3">
             <img src="/SEG Logo.png" alt="SEG Solar" class="h-8 w-auto object-contain" />
             <span class="font-bold text-sm leading-tight text-white">IT Ticketing<br/>System</span>
@@ -82,7 +82,7 @@
     <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
 
       <!-- Top bar -->
-      <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+      <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 h-16 flex items-center justify-between sticky top-0 z-10">
         <div class="flex items-center gap-3">
           <!-- Hamburger (mobile only) -->
           <button @click="sidebarOpen = true"
