@@ -148,7 +148,7 @@
             <dt class="text-gray-500">{{ t('asset.title') }}</dt>
             <dd class="font-medium">
               <router-link :to="`/assets/${ticket.asset.id}`" class="text-blue-600 hover:underline">
-                {{ ticket.asset.asset_tag }} — {{ ticket.asset.name }}
+                {{ ticket.asset.asset_tag }}{{ ticket.asset.name ? ` — ${ticket.asset.name}` : '' }}
               </router-link>
             </dd>
           </div>

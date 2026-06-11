@@ -2,7 +2,12 @@
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="sm:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.name') }} *</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.assetTag') }} *</label>
+        <input v-model="form.asset_tag" placeholder="US02-ADOM001-011" class="input" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.name') }}</label>
         <input v-model="form.name" class="input" />
       </div>
 
@@ -106,6 +111,7 @@ const saving = ref(false)
 const error = ref('')
 
 const form = reactive({
+  asset_tag: props.asset?.asset_tag ?? '',
   name: props.asset?.name ?? '',
   last_name: props.asset?.last_name ?? '',
   first_name: props.asset?.first_name ?? '',
@@ -123,7 +129,8 @@ const form = reactive({
 
 function payload() {
   return {
-    name: form.name,
+    asset_tag: form.asset_tag,
+    name: form.name || null,
     last_name: form.last_name || null,
     first_name: form.first_name || null,
     category: form.category,

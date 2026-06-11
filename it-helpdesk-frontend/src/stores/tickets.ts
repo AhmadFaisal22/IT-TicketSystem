@@ -48,7 +48,7 @@ export interface Ticket {
   creator?: { id: number; name: string; avatar: string | null }
   assignee?: { id: number; name: string; avatar: string | null } | null
   department?: { id: number; name: string; name_zh: string }
-  asset?: { id: number; asset_tag: string; name: string } | null
+  asset?: { id: number; asset_tag: string; name: string | null } | null
   comments?: Comment[]
   histories?: TicketHistory[]
   attachments?: Attachment[]

@@ -6,7 +6,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm font-mono text-red-600">{{ asset.asset_tag }}</p>
-            <h1 class="text-xl font-semibold text-gray-800">{{ asset.name }}</h1>
+            <h1 class="text-xl font-semibold text-gray-800">{{ asset.name || t(`asset.category_labels.${asset.category}`) }}</h1>
           </div>
           <router-link :to="`/assets/${asset.id}/edit`"
             class="px-3 py-1.5 text-sm border rounded-lg text-gray-700 hover:bg-gray-50">
@@ -168,7 +168,7 @@ function printLabel() {
   w.document.write(`<div style="text-align:center;font-family:sans-serif">
     <img src="${qrDataUrl.value}" style="width:200px;height:200px" />
     <p style="font:14px monospace">${asset.value!.asset_tag}</p>
-    <p>${asset.value!.name}</p></div>`)
+    <p>${asset.value!.name || ''}</p></div>`)
   w.document.close()
   w.print()
 }

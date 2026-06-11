@@ -60,7 +60,7 @@ class AssetController extends Controller
             });
         }
 
-        return response()->json($query->paginate(20));
+        return response()->json($query->paginate(15));
     }
 
     public function show(Request $request, Asset $asset): JsonResponse
@@ -123,7 +123,8 @@ class AssetController extends Controller
         $this->authorizeItStaff($request);
 
         $data = $request->validate([
-            'name'            => 'required|string|max:255',
+            'asset_tag'       => 'required|string|max:255|unique:assets,asset_tag',
+            'name'            => 'nullable|string|max:255',
             'last_name'       => 'nullable|string|max:255',
             'first_name'      => 'nullable|string|max:255',
             'category'        => 'required|' . AssetCategories::categoryRule(),
@@ -154,7 +155,8 @@ class AssetController extends Controller
         $this->authorizeItStaff($request);
 
         $data = $request->validate([
-            'name'            => 'sometimes|string|max:255',
+            'asset_tag'       => 'sometimes|string|max:255|unique:assets,asset_tag,' . $asset->id,
+            'name'            => 'nullable|string|max:255',
             'last_name'       => 'nullable|string|max:255',
             'first_name'      => 'nullable|string|max:255',
             'category'        => 'sometimes|' . AssetCategories::categoryRule(),

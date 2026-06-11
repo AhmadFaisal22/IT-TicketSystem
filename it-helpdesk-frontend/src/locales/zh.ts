@@ -206,6 +206,7 @@ export default {
     importBtn: '导入',
     exportBtn: '导出',
     importResult: '成功 {created} 条，失败 {rejected} 条',
+    deleteConfirm: '确定删除 {tag} 吗？注意：删除后无法恢复，这台资产及其流转记录将永久消失。',
     selectUser: '选择用户',
     selectDept: '选择部门',
     category_labels: {

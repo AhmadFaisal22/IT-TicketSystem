@@ -36,7 +36,7 @@ export interface Asset {
   asset_tag: string
   last_name: string | null
   first_name: string | null
-  name: string
+  name: string | null
   category: string
   manufacturer: string | null
   model: string | null

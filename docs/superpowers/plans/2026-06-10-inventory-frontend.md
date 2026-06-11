@@ -210,7 +210,7 @@ In the `nav` object add `assets: 'Assets',` (after `tickets`). Then add this top
 ```ts
   asset: {
     title: 'Assets',
-    assetTag: 'Asset Tag',
+    assetTag: 'Fixed Assets Tag#',
     name: 'Name',
     category: 'Category',
     manufacturer: 'Manufacturer',

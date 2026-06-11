@@ -48,7 +48,7 @@
           <select v-model="selectedAssetId"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
             <option :value="null">—</option>
-            <option v-for="a in assets" :key="a.id" :value="a.id">{{ a.asset_tag }} — {{ a.name }}</option>
+            <option v-for="a in assets" :key="a.id" :value="a.id">{{ a.asset_tag }}{{ a.name ? ` — ${a.name}` : '' }}</option>
           </select>
         </div>
 

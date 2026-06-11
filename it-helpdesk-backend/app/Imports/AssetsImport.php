@@ -20,9 +20,14 @@ class AssetsImport implements ToCollection, WithHeadingRow
             $name = trim((string) ($row['name'] ?? ''));
             $category = trim((string) ($row['category'] ?? ''));
             $serial = $row['serial_number'] ?? null;
+            $tag = trim((string) ($row['asset_tag'] ?? $row['fixed_assets_tag'] ?? ''));
 
-            if ($name === '' || !in_array($category, AssetCategories::KEYS, true)) {
-                $this->rejected[] = ['row' => $i + 2, 'reason' => 'Missing name or invalid category'];
+            if (!in_array($category, AssetCategories::KEYS, true)) {
+                $this->rejected[] = ['row' => $i + 2, 'reason' => 'Invalid category'];
+                continue;
+            }
+            if ($tag !== '' && Asset::where('asset_tag', $tag)->exists()) {
+                $this->rejected[] = ['row' => $i + 2, 'reason' => "Duplicate asset_tag {$tag}"];
                 continue;
             }
             if (!empty($serial) && Asset::where('serial_number', $serial)->exists()) {
@@ -31,7 +36,8 @@ class AssetsImport implements ToCollection, WithHeadingRow
             }
 
             Asset::create([
-                'name'          => $name,
+                'asset_tag'     => $tag !== '' ? $tag : null, // null -> auto-generated fallback
+                'name'          => $name !== '' ? $name : null,
                 'last_name'     => $row['last_name'] ?? null,
                 'first_name'    => $row['first_name'] ?? null,
                 'category'      => $category,

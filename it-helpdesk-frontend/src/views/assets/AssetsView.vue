@@ -56,12 +56,13 @@
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.assetTag') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.lastName') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.firstName') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.name') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.department') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.category') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.manufacturer') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.model') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">{{ t('asset.serialNumber') }}</th>
             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('asset.status') }}</th>
+            <th v-if="auth.isAdmin" class="px-4 py-3 w-12"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -71,7 +72,7 @@
             <td class="px-4 py-3 text-sm font-mono text-red-600">{{ a.asset_tag }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ a.last_name || '—' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ a.first_name || '—' }}</td>
-            <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ a.name }}</td>
+            <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ (locale === 'zh' ? a.department?.name_zh : a.department?.name) || '—' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ t(`asset.category_labels.${a.category}`) }}</td>
             <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ a.manufacturer || '—' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ a.model || '—' }}</td>
@@ -80,6 +81,16 @@
               <span class="px-2 py-1 rounded-full text-xs font-medium" :class="statusClass(a.status)">
                 {{ t(`asset.status_labels.${a.status}`) }}
               </span>
+            </td>
+            <td v-if="auth.isAdmin" class="px-3 py-3" @click.stop>
+              <button @click="handleDelete(a)"
+                class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                :title="t('common.delete')">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -104,11 +115,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
-import { useAssetStore, ASSET_CATEGORIES, ASSET_STATUSES } from '@/stores/assets'
+import { useAssetStore, ASSET_CATEGORIES, ASSET_STATUSES, type Asset } from '@/stores/assets'
+import { useAuthStore } from '@/stores/auth'
 import { assetApi } from '@/api'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const store = useAssetStore()
+const auth = useAuthStore()
 
 const categories = ASSET_CATEGORIES
 const statuses = ASSET_STATUSES
@@ -155,6 +168,16 @@ async function onExport() {
   link.download = 'assets.xlsx'
   link.click()
   URL.revokeObjectURL(url)
+}
+
+async function handleDelete(a: Asset) {
+  if (!confirm(t('asset.deleteConfirm', { tag: a.asset_tag }))) return
+  try {
+    await assetApi.remove(a.id)
+    fetchData()
+  } catch (e: any) {
+    alert(e?.response?.data?.message || t('common.error'))
+  }
 }
 
 function statusClass(s: string) {

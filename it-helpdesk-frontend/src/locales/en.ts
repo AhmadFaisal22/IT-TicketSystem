@@ -181,7 +181,7 @@ export default {
     assetTag: 'Fixed Assets Tag#',
     lastName: 'Last Name',
     firstName: 'First Name',
-    name: 'Model',
+    name: 'Name',
     category: 'Category',
     manufacturer: 'Manufacturer',
     model: 'Model',
@@ -206,6 +206,7 @@ export default {
     importBtn: 'Import',
     exportBtn: 'Export',
     importResult: '{created} created, {rejected} rejected',
+    deleteConfirm: 'Delete {tag}? Warning: this is permanent — once deleted, the asset and its history are gone for good.',
     selectUser: 'Select a user',
     selectDept: 'Select a department',
     category_labels: {

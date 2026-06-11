@@ -78,9 +78,17 @@ class AssetTest extends TestCase
         Sanctum::actingAs($staff);
 
         $res = $this->postJson('/api/assets', [
-            'name'     => 'Dell Latitude 5440',
-            'category' => 'laptop',
+            'asset_tag' => 'US02-ADOM001-011',
+            'name'      => 'Dell Latitude 5440',
+            'category'  => 'laptop',
         ])->assertCreated();
+
+        // Tag is taken verbatim from input — no auto-increment.
+        $this->assertSame('US02-ADOM001-011', $res->json('asset_tag'));
+
+        // A missing tag is rejected; a duplicate tag is rejected.
+        $this->postJson('/api/assets', ['category' => 'laptop'])->assertStatus(422);
+        $this->postJson('/api/assets', ['asset_tag' => 'US02-ADOM001-011', 'category' => 'laptop'])->assertStatus(422);
 
         $id = $res->json('id');
         $this->assertDatabaseHas('assets', ['id' => $id, 'name' => 'Dell Latitude 5440', 'status' => 'in_stock']);
@@ -90,7 +98,7 @@ class AssetTest extends TestCase
     public function test_create_rejects_invalid_category(): void
     {
         Sanctum::actingAs($this->itStaff());
-        $this->postJson('/api/assets', ['name' => 'X', 'category' => 'spaceship'])
+        $this->postJson('/api/assets', ['asset_tag' => 'T-1', 'name' => 'X', 'category' => 'spaceship'])
             ->assertStatus(422);
     }
 
@@ -218,13 +226,14 @@ class AssetTest extends TestCase
         $rows = collect([
             collect(['name' => 'Imported Laptop', 'category' => 'laptop', 'serial_number' => 'IMP-1']),
             collect(['name' => 'Imported Monitor', 'category' => 'monitor', 'serial_number' => 'IMP-2']),
-            collect(['name' => '', 'category' => 'laptop']), // invalid -> rejected
+            collect(['name' => '', 'category' => 'laptop']), // name optional -> created
+            collect(['name' => 'Bad Category', 'category' => 'spaceship']), // invalid -> rejected
         ]);
 
         $import = new \App\Imports\AssetsImport();
         $import->collection($rows);
 
-        $this->assertSame(2, $import->created);
+        $this->assertSame(3, $import->created);
         $this->assertCount(1, $import->rejected);
         $this->assertDatabaseHas('assets', ['name' => 'Imported Laptop', 'category' => 'laptop']);
         $this->assertDatabaseHas('assets', ['name' => 'Imported Monitor', 'category' => 'monitor']);
