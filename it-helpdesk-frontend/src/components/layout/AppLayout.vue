@@ -7,17 +7,17 @@
 
     <!-- Sidebar -->
     <aside
-      class="w-64 bg-gray-900 text-white flex flex-col fixed h-full z-30 transition-transform duration-300 ease-in-out"
+      class="w-64 bg-white text-gray-700 dark:bg-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 flex flex-col fixed h-full z-30 transition-transform duration-300 ease-in-out"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
 
-      <div class="h-16 flex items-center px-4 sm:px-6 border-b border-gray-700">
+      <div class="h-16 flex items-center px-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between w-full">
           <div class="flex items-center gap-3">
             <img src="/SEG Logo.png" alt="SEG Solar" class="h-8 w-auto object-contain" />
-            <span class="font-bold text-sm leading-tight text-white">IT Ticketing<br/>System</span>
+            <span class="font-bold text-sm leading-tight text-gray-900 dark:text-white">IT Ticketing<br/>System</span>
           </div>
           <button @click="sidebarOpen = false"
-            class="lg:hidden p-1.5 rounded text-gray-400 hover:text-white hover:bg-gray-700 transition">
+            class="lg:hidden p-1.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -28,22 +28,20 @@
       <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <router-link v-for="item in navItems" :key="item.name" :to="item.to"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          :class="$route.name === item.name || String($route.name).startsWith(item.prefix || item.name)
-            ? 'bg-red-600 text-white'
-            : 'text-gray-300 hover:bg-gray-800'">
-          <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain" />
+          :class="navLinkClass(item)">
+          <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain" :class="navImageClass(item)" />
           <component v-else :is="item.icon" class="w-5 h-5" />
           {{ t(item.label) }}
         </router-link>
 
         <template v-if="auth.isItStaff">
-          <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
             {{ t('admin.users.title').split(' ')[0] }}
           </div>
           <router-link v-for="item in adminItems" :key="item.name" :to="item.to"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="$route.name === item.name ? 'bg-red-600 text-white' : 'text-gray-300 hover:bg-gray-800'">
-            <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain" />
+            :class="navLinkClass(item)">
+            <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain" :class="navImageClass(item)" />
             <component v-else :is="item.icon" class="w-5 h-5" />
             {{ t(item.label) }}
           </router-link>
@@ -51,15 +49,15 @@
       </nav>
 
       <!-- User section -->
-      <div class="px-3 py-4 border-t border-gray-700">
+      <div class="px-3 py-4 border-t border-gray-200 dark:border-gray-700">
         <div class="flex items-center gap-3 px-3 mb-3">
           <img v-if="auth.user?.avatar" :src="auth.user.avatar" class="w-8 h-8 rounded-full" />
           <div v-else class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
             {{ auth.user?.name?.[0]?.toUpperCase() }}
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-white truncate">{{ auth.user?.name }}</p>
-            <p class="text-xs text-gray-400">{{ roleLabel }}</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ auth.user?.name }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ roleLabel }}</p>
           </div>
         </div>
         <div class="flex items-center justify-between px-3">
@@ -67,13 +65,13 @@
             <ThemeToggle />
             <div class="flex gap-2">
               <button @click="setLocale('en')"
-                :class="currentLocale === 'en' ? 'text-red-400 font-bold' : 'text-gray-500 hover:text-gray-300'">EN</button>
-              <span class="text-gray-600">|</span>
+                :class="currentLocale === 'en' ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'">EN</button>
+              <span class="text-gray-300 dark:text-gray-600">|</span>
               <button @click="setLocale('zh')"
-                :class="currentLocale === 'zh' ? 'text-red-400 font-bold' : 'text-gray-500 hover:text-gray-300'">中文</button>
+                :class="currentLocale === 'zh' ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'">中文</button>
             </div>
           </div>
-          <button @click="handleLogout" class="text-gray-400 hover:text-white text-xs">{{ t('nav.logout') }}</button>
+          <button @click="handleLogout" class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-xs">{{ t('nav.logout') }}</button>
         </div>
       </div>
     </aside>
@@ -135,6 +133,23 @@ watch(() => route.name, () => {
 })
 
 type NavItem = { name: string; to: string; label: string; icon?: any; iconImg?: string; prefix?: string }
+
+function isNavActive(item: NavItem) {
+  return route.name === item.name || String(route.name).startsWith(item.prefix || item.name)
+}
+
+function navLinkClass(item: NavItem) {
+  return isNavActive(item)
+    ? 'bg-red-600 text-white'
+    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+}
+
+function navImageClass(item: NavItem) {
+  return isNavActive(item)
+    ? 'brightness-0 invert'
+    : 'brightness-0 opacity-75 dark:brightness-100 dark:invert-0 dark:opacity-100'
+}
+
 const navItems = computed((): NavItem[] => {
   const items: NavItem[] = [
     { name: 'dashboard', to: '/', label: 'nav.dashboard', iconImg: '/Dash.png' },
