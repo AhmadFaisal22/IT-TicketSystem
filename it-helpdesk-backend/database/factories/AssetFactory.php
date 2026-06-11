@@ -11,7 +11,7 @@ class AssetFactory extends Factory
     {
         return [
             'name'          => $this->faker->words(2, true),
-            'category'      => $this->faker->randomElement(AssetCategories::KEYS),
+            'category'      => AssetCategories::DEFAULTS[array_rand(AssetCategories::DEFAULTS)][0],
             'manufacturer'  => $this->faker->company(),
             'model'         => $this->faker->bothify('Model-####'),
             'serial_number' => $this->faker->unique()->bothify('SN-########'),

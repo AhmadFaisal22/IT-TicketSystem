@@ -6,7 +6,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm font-mono text-red-600">{{ asset.asset_tag }}</p>
-            <h1 class="text-xl font-semibold text-gray-800">{{ asset.name || t(`asset.category_labels.${asset.category}`) }}</h1>
+            <h1 class="text-xl font-semibold text-gray-800">{{ asset.name || categoryLabel(asset.category) }}</h1>
           </div>
           <div class="flex gap-2">
             <router-link :to="`/assets/${asset.id}/edit`"
@@ -21,7 +21,7 @@
         </div>
 
         <dl class="grid grid-cols-2 gap-x-6 gap-y-3 mt-5 text-sm">
-          <div><dt class="text-gray-400">{{ t('asset.category') }}</dt><dd class="text-gray-800">{{ t(`asset.category_labels.${asset.category}`) }}</dd></div>
+          <div><dt class="text-gray-400">{{ t('asset.category') }}</dt><dd class="text-gray-800">{{ categoryLabel(asset.category) }}</dd></div>
           <div><dt class="text-gray-400">{{ t('asset.status') }}</dt>
             <dd><span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="statusClass(asset.status)">{{ t(`asset.status_labels.${asset.status}`) }}</span></dd></div>
           <div><dt class="text-gray-400">{{ t('asset.lastName') }}</dt><dd class="text-gray-800">{{ asset.last_name || '—' }}</dd></div>
@@ -127,7 +127,7 @@ import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
 import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
-import { assetApi, userApi } from '@/api'
+import { assetApi, userApi, assetCategoryApi } from '@/api'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -138,6 +138,15 @@ const auth = useAuthStore()
 const asset = computed(() => store.currentAsset)
 const statuses = ASSET_STATUSES
 const itStaff = ref<any[]>([])
+const categories = ref<any[]>([])
+
+function categoryLabel(name: string) {
+  if (locale.value === 'zh') {
+    const match = categories.value.find(c => c.name === name)
+    if (match?.name_zh) return match.name_zh
+  }
+  return name
+}
 const assignTo = ref<number | null>(null)
 const newStatus = ref<string>('in_stock')
 const qrDataUrl = ref('')
@@ -225,8 +234,9 @@ function valueLabel(h: { field: string | null }, value: string | null) {
 watch(() => route.params.id, reload)
 onMounted(async () => {
   await reload()
-  const { data } = await userApi.itStaff()
-  itStaff.value = data
+  const [staffRes, catRes] = await Promise.all([userApi.itStaff(), assetCategoryApi.list()])
+  itStaff.value = staffRes.data
+  categories.value = catRes.data
 })
 </script>
 

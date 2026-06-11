@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Asset;
+use App\Models\AssetCategory;
 use App\Support\AssetCategories;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -22,7 +23,7 @@ class AssetsImport implements ToCollection, WithHeadingRow
             $serial = $row['serial_number'] ?? null;
             $tag = trim((string) ($row['asset_tag'] ?? $row['fixed_assets_tag'] ?? ''));
 
-            if (!in_array($category, AssetCategories::KEYS, true)) {
+            if ($category === '' || !AssetCategory::where('name', $category)->exists()) {
                 $this->rejected[] = ['row' => $i + 2, 'reason' => 'Invalid category'];
                 continue;
             }

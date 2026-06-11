@@ -87,7 +87,7 @@ class AssetController extends Controller
         }
 
         return response()->json([
-            'categories'    => AssetCategories::KEYS,
+            'categories'    => \App\Models\AssetCategory::orderBy('name')->pluck('name'),
             'statuses'      => AssetCategories::STATUSES,
             'status_counts' => $statusCounts,
         ]);
@@ -138,7 +138,7 @@ class AssetController extends Controller
             'status'          => 'nullable|' . AssetCategories::statusRule(),
             'assigned_to'     => 'nullable|exists:users,id',
             'department_id'   => 'nullable|exists:departments,id',
-            'location'        => 'nullable|string|max:255',
+            'location'        => 'nullable|exists:asset_locations,name',
             'assign_date'     => 'nullable|date',
             'purchase_cost'   => 'nullable|numeric|min:0',
             'purchase_link'   => 'nullable|string|max:2048',
@@ -168,7 +168,7 @@ class AssetController extends Controller
             'manufacturer'    => 'nullable|string|max:255',
             'model'           => 'nullable|string|max:255',
             'serial_number'   => 'nullable|string|max:255|unique:assets,serial_number,' . $asset->id,
-            'location'        => 'nullable|string|max:255',
+            'location'        => 'nullable|exists:asset_locations,name',
             'assign_date'     => 'nullable|date',
             'purchase_cost'   => 'nullable|numeric|min:0',
             'purchase_link'   => 'nullable|string|max:2048',

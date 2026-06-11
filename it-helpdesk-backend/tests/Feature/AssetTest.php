@@ -18,7 +18,7 @@ class AssetTest extends TestCase
 
     public function test_category_and_status_rules_are_built_from_constants(): void
     {
-        $this->assertSame('in:laptop,desktop,monitor,printer,network,phone,peripheral,software_license,other', AssetCategories::categoryRule());
+        $this->assertSame('exists:asset_categories,name', AssetCategories::categoryRule());
         $this->assertSame('in:in_stock,assigned,in_repair,retired,lost', AssetCategories::statusRule());
     }
 
@@ -54,11 +54,11 @@ class AssetTest extends TestCase
     public function test_it_staff_can_list_assets_with_filters(): void
     {
         Sanctum::actingAs($this->itStaff());
-        Asset::factory()->create(['category' => 'laptop', 'status' => 'in_stock']);
-        Asset::factory()->create(['category' => 'monitor', 'status' => 'assigned']);
+        Asset::factory()->create(['category' => 'Laptop', 'status' => 'in_stock']);
+        Asset::factory()->create(['category' => 'Monitor', 'status' => 'assigned']);
 
         $this->getJson('/api/assets')->assertOk()->assertJsonPath('total', 2);
-        $this->getJson('/api/assets?category=laptop')->assertOk()->assertJsonPath('total', 1);
+        $this->getJson('/api/assets?category=Laptop')->assertOk()->assertJsonPath('total', 1);
         $this->getJson('/api/assets?status=assigned')->assertOk()->assertJsonPath('total', 1);
     }
 
@@ -80,15 +80,15 @@ class AssetTest extends TestCase
         $res = $this->postJson('/api/assets', [
             'asset_tag' => 'US02-ADOM001-011',
             'name'      => 'Dell Latitude 5440',
-            'category'  => 'laptop',
+            'category'  => 'Laptop',
         ])->assertCreated();
 
-        // Tag is taken verbatim from input — no auto-increment.
+        // Tag is taken verbatim from input - no auto-increment.
         $this->assertSame('US02-ADOM001-011', $res->json('asset_tag'));
 
         // A missing tag is rejected; a duplicate tag is rejected.
-        $this->postJson('/api/assets', ['category' => 'laptop'])->assertStatus(422);
-        $this->postJson('/api/assets', ['asset_tag' => 'US02-ADOM001-011', 'category' => 'laptop'])->assertStatus(422);
+        $this->postJson('/api/assets', ['category' => 'Laptop'])->assertStatus(422);
+        $this->postJson('/api/assets', ['asset_tag' => 'US02-ADOM001-011', 'category' => 'Laptop'])->assertStatus(422);
 
         $id = $res->json('id');
         $this->assertDatabaseHas('assets', ['id' => $id, 'name' => 'Dell Latitude 5440', 'status' => 'in_stock']);
@@ -107,9 +107,13 @@ class AssetTest extends TestCase
         Sanctum::actingAs($this->itStaff());
         $asset = Asset::factory()->create(['name' => 'Old']);
 
+        \App\Models\AssetLocation::create(['name' => 'HQ-3F']);
         $this->putJson("/api/assets/{$asset->id}", ['name' => 'New', 'location' => 'HQ-3F'])
             ->assertOk()->assertJsonPath('name', 'New');
         $this->assertDatabaseHas('assets', ['id' => $asset->id, 'name' => 'New', 'location' => 'HQ-3F']);
+
+        // A location that is not in the admin-managed list is rejected.
+        $this->putJson("/api/assets/{$asset->id}", ['location' => 'Nowhere'])->assertStatus(422);
     }
 
     public function test_only_admin_can_delete_an_asset(): void
@@ -206,7 +210,7 @@ class AssetTest extends TestCase
 
         $this->getJson('/api/assets/meta')
             ->assertOk()
-            ->assertJsonPath('categories', AssetCategories::KEYS)
+            ->assertJsonCount(count(AssetCategories::DEFAULTS), 'categories')
             ->assertJsonPath('status_counts.in_stock', 2)
             ->assertJsonPath('status_counts.assigned', 1);
     }
@@ -224,9 +228,9 @@ class AssetTest extends TestCase
     public function test_import_creates_assets_from_rows(): void
     {
         $rows = collect([
-            collect(['name' => 'Imported Laptop', 'category' => 'laptop', 'serial_number' => 'IMP-1']),
-            collect(['name' => 'Imported Monitor', 'category' => 'monitor', 'serial_number' => 'IMP-2']),
-            collect(['name' => '', 'category' => 'laptop']), // name optional -> created
+            collect(['name' => 'Imported Laptop', 'category' => 'Laptop', 'serial_number' => 'IMP-1']),
+            collect(['name' => 'Imported Monitor', 'category' => 'Monitor', 'serial_number' => 'IMP-2']),
+            collect(['name' => '', 'category' => 'Laptop']), // name optional -> created
             collect(['name' => 'Bad Category', 'category' => 'spaceship']), // invalid -> rejected
         ]);
 
@@ -235,14 +239,14 @@ class AssetTest extends TestCase
 
         $this->assertSame(3, $import->created);
         $this->assertCount(1, $import->rejected);
-        $this->assertDatabaseHas('assets', ['name' => 'Imported Laptop', 'category' => 'laptop']);
-        $this->assertDatabaseHas('assets', ['name' => 'Imported Monitor', 'category' => 'monitor']);
+        $this->assertDatabaseHas('assets', ['name' => 'Imported Laptop', 'category' => 'Laptop']);
+        $this->assertDatabaseHas('assets', ['name' => 'Imported Monitor', 'category' => 'Monitor']);
     }
 
     public function test_ticket_can_reference_an_asset_and_asset_exposes_related_tickets(): void
     {
         $asset = Asset::factory()->create();
-        $department = \App\Models\Department::create(['name' => 'IT', 'name_zh' => 'IT部门']);
+        $department = \App\Models\Department::create(['name' => 'IT', 'name_zh' => 'IT閮ㄩ棬']);
         $ticket = \App\Models\Ticket::create([
             'title'         => 'Screen flickers',
             'description'   => 'Monitor flickers intermittently',
@@ -257,3 +261,4 @@ class AssetTest extends TestCase
         $this->assertTrue($asset->fresh()->tickets->first()->is($ticket));
     }
 }
+

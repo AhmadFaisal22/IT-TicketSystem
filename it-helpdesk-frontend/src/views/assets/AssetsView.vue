@@ -15,7 +15,9 @@
         <select v-model="filters.category" @change="fetchData"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
           <option value="">{{ t('common.all') }} {{ t('asset.category') }}</option>
-          <option v-for="c in categories" :key="c" :value="c">{{ t(`asset.category_labels.${c}`) }}</option>
+          <option v-for="c in categories" :key="c.id" :value="c.name">
+            {{ locale === 'zh' && c.name_zh ? c.name_zh : c.name }}
+          </option>
         </select>
 
         <button @click="triggerImport"
@@ -83,7 +85,7 @@
             <td class="px-4 py-3 text-sm text-gray-600">{{ a.last_name || '—' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ a.first_name || '—' }}</td>
             <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ (locale === 'zh' ? a.department?.name_zh : a.department?.name) || '—' }}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ t(`asset.category_labels.${a.category}`) }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">{{ categoryLabel(a.category) }}</td>
             <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ a.manufacturer || '—' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ a.model || '—' }}</td>
             <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ a.serial_number || '—' }}</td>
@@ -125,16 +127,24 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
-import { useAssetStore, ASSET_CATEGORIES, ASSET_STATUSES, type Asset } from '@/stores/assets'
+import { useAssetStore, ASSET_STATUSES, type Asset } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
-import { assetApi } from '@/api'
+import { assetApi, assetCategoryApi } from '@/api'
 
 const { t, locale } = useI18n()
 const store = useAssetStore()
 const auth = useAuthStore()
 
-const categories = ASSET_CATEGORIES
+const categories = ref<any[]>([])
 const statuses = ASSET_STATUSES
+
+function categoryLabel(name: string) {
+  if (locale.value === 'zh') {
+    const match = categories.value.find(c => c.name === name)
+    if (match?.name_zh) return match.name_zh
+  }
+  return name
+}
 const currentPage = ref(1)
 const importInput = ref<HTMLInputElement | null>(null)
 
@@ -213,5 +223,9 @@ function statusClass(s: string) {
   return map[s] || 'bg-gray-100 text-gray-600'
 }
 
-onMounted(fetchData)
+onMounted(async () => {
+  fetchData()
+  const { data } = await assetCategoryApi.list()
+  categories.value = data
+})
 </script>

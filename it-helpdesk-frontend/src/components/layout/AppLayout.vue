@@ -115,7 +115,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ComputerDesktopIcon } from '@heroicons/vue/24/outline'
+import { ComputerDesktopIcon, AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import NotificationBell from '@/components/ui/NotificationBell.vue'
@@ -154,6 +154,7 @@ const adminItems = computed((): NavItem[] => {
   if (auth.isAdmin) {
     items.unshift({ name: 'admin-users', to: '/admin/users', label: 'nav.users', iconImg: '/Users.png' })
     items.push({ name: 'admin-approval', to: '/admin/approval-levels', label: 'nav.approval', iconImg: '/Approved.png' })
+    items.push({ name: 'admin-asset-options', to: '/admin/asset-options', label: 'nav.assetOptions', icon: AdjustmentsHorizontalIcon })
   }
   return items
 })
@@ -178,6 +179,7 @@ const pageTitle = computed(() => {
     'admin-departments': t('admin.departments.title'),
     'admin-sla': t('admin.sla.title'),
     'admin-approval': t('admin.approval.title'),
+    'admin-asset-options': t('admin.assetOptions.title'),
   }
   return map[String(route.name)] || ''
 })

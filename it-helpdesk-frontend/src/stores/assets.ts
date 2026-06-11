@@ -2,11 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { assetApi } from '@/api'
 
-export const ASSET_CATEGORIES = [
-  'laptop', 'desktop', 'monitor', 'printer', 'network',
-  'phone', 'peripheral', 'software_license', 'other',
-] as const
-
+// Categories and locations are admin-managed lists fetched from the API
+// (assetCategoryApi / assetLocationApi); only statuses remain a fixed enum.
 export const ASSET_STATUSES = [
   'in_stock', 'assigned', 'in_repair', 'retired', 'lost',
 ] as const

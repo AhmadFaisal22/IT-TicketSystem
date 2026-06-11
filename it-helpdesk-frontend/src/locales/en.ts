@@ -9,6 +9,7 @@ export default {
     departments: 'Departments',
     sla: 'SLA Policies',
     approval: 'Approval Levels',
+    assetOptions: 'Inventory Options',
     logout: 'Logout'
   },
   auth: {
@@ -142,6 +143,17 @@ export default {
       add: 'Add Policy',
       edit: 'Edit Policy',
       default: 'Default (all departments)'
+    },
+    assetOptions: {
+      title: 'Inventory Options',
+      categories: 'Categories',
+      locations: 'Locations',
+      addCategory: 'Add Category',
+      addLocation: 'Add Location',
+      editCategory: 'Edit Category',
+      editLocation: 'Edit Location',
+      name: 'Name (EN)',
+      nameChinese: 'Name (中文)',
     },
     approval: {
       title: 'Approval Levels',

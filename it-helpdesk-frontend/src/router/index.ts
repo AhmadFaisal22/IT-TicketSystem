@@ -105,6 +105,11 @@ const router = createRouter({
               path: 'approval-levels',
               name: 'admin-approval',
               component: () => import('@/views/admin/ApprovalLevelsView.vue')
+            },
+            {
+              path: 'asset-options',
+              name: 'admin-asset-options',
+              component: () => import('@/views/admin/AssetOptionsView.vue')
             }
           ]
         }

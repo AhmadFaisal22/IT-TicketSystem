@@ -308,6 +308,10 @@ async function smokeScreenshots() {
     await cdp.navigate(`${FRONTEND_URL}/assets/create`, 2000);
     await cdp.screenshot(path.join(SCREENSHOT_DIR, '08-create-asset.png'));
 
+    // 9. Admin inventory options (categories/locations)
+    await cdp.navigate(`${FRONTEND_URL}/admin/asset-options`, 2000);
+    await cdp.screenshot(path.join(SCREENSHOT_DIR, '09-asset-options.png'));
+
   } finally {
     cdp?.close();
     await sleep(300);

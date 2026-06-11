@@ -108,6 +108,20 @@ export const approvalApi = {
     api.post(`/tickets/${ticketId}/reject`, { notes }),
 }
 
+export const assetCategoryApi = {
+  list: () => api.get('/asset-categories'),
+  create: (data: object) => api.post('/asset-categories', data),
+  update: (id: number, data: object) => api.put(`/asset-categories/${id}`, data),
+  delete: (id: number) => api.delete(`/asset-categories/${id}`),
+}
+
+export const assetLocationApi = {
+  list: () => api.get('/asset-locations'),
+  create: (data: object) => api.post('/asset-locations', data),
+  update: (id: number, data: object) => api.put(`/asset-locations/${id}`, data),
+  delete: (id: number) => api.delete(`/asset-locations/${id}`),
+}
+
 export const assetApi = {
   list: (params?: object) => api.get('/assets', { params }),
   meta: () => api.get('/assets/meta'),

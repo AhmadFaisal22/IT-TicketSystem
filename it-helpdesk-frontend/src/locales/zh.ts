@@ -9,6 +9,7 @@ export default {
     departments: '部门管理',
     sla: 'SLA 策略',
     approval: '审批级别',
+    assetOptions: '资产选项',
     logout: '退出登录'
   },
   auth: {
@@ -142,6 +143,17 @@ export default {
       add: '添加策略',
       edit: '编辑策略',
       default: '默认（适用所有部门）'
+    },
+    assetOptions: {
+      title: '资产选项管理',
+      categories: '类别',
+      locations: '位置',
+      addCategory: '添加类别',
+      addLocation: '添加位置',
+      editCategory: '编辑类别',
+      editLocation: '编辑位置',
+      name: '名称（英文）',
+      nameChinese: '名称（中文）',
     },
     approval: {
       title: '审批级别',

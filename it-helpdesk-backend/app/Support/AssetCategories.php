@@ -4,17 +4,20 @@ namespace App\Support;
 
 class AssetCategories
 {
-    /** Fixed category keys. Bilingual labels live in the frontend i18n (asset.category.<key>). */
-    public const KEYS = [
-        'laptop',
-        'desktop',
-        'monitor',
-        'printer',
-        'network',
-        'phone',
-        'peripheral',
-        'software_license',
-        'other',
+    /**
+     * Default categories seeded into the admin-managed asset_categories table.
+     * Maps the legacy hardcoded key to [English name, Chinese name].
+     */
+    public const DEFAULTS = [
+        'laptop'           => ['Laptop', '笔记本'],
+        'desktop'          => ['Desktop', '台式机'],
+        'monitor'          => ['Monitor', '显示器'],
+        'printer'          => ['Printer', '打印机'],
+        'network'          => ['Network Device', '网络设备'],
+        'phone'            => ['Phone', '手机'],
+        'peripheral'       => ['Peripheral', '外设'],
+        'software_license' => ['Software License', '软件许可'],
+        'other'            => ['Other', '其他'],
     ];
 
     public const STATUSES = [
@@ -25,10 +28,10 @@ class AssetCategories
         'lost',
     ];
 
-    /** Laravel validation rule fragment, e.g. "in:laptop,desktop,...". */
+    /** Categories now live in the asset_categories table — validate against it. */
     public static function categoryRule(): string
     {
-        return 'in:' . implode(',', self::KEYS);
+        return 'exists:asset_categories,name';
     }
 
     public static function statusRule(): string

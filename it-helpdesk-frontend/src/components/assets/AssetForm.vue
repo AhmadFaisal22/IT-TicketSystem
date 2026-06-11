@@ -19,7 +19,9 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.category') }} *</label>
         <select v-model="form.category" class="input">
-          <option v-for="c in categories" :key="c" :value="c">{{ t(`asset.category_labels.${c}`) }}</option>
+          <option v-for="c in categories" :key="c.id" :value="c.name">
+            {{ locale === 'zh' && c.name_zh ? c.name_zh : c.name }}
+          </option>
         </select>
       </div>
 
@@ -40,7 +42,12 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.location') }}</label>
-        <input v-model="form.location" class="input" />
+        <select v-model="form.location" class="input">
+          <option value="">—</option>
+          <option v-for="l in locations" :key="l.id" :value="l.name">
+            {{ locale === 'zh' && l.name_zh ? l.name_zh : l.name }}
+          </option>
+        </select>
       </div>
 
       <div>
@@ -97,15 +104,16 @@
 import { reactive, ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { useAssetStore, ASSET_CATEGORIES, type Asset } from '@/stores/assets'
-import { departmentApi } from '@/api'
+import { useAssetStore, type Asset } from '@/stores/assets'
+import { departmentApi, assetCategoryApi, assetLocationApi } from '@/api'
 
 const props = defineProps<{ asset?: Asset | null }>()
 const { t, locale } = useI18n()
 const router = useRouter()
 const store = useAssetStore()
 
-const categories = ASSET_CATEGORIES
+const categories = ref<any[]>([])
+const locations = ref<any[]>([])
 const departments = ref<any[]>([])
 const saving = ref(false)
 const error = ref('')
@@ -114,7 +122,7 @@ const form = reactive({
   asset_tag: props.asset?.asset_tag ?? '',
   last_name: props.asset?.last_name ?? '',
   first_name: props.asset?.first_name ?? '',
-  category: props.asset?.category ?? 'laptop',
+  category: props.asset?.category ?? '',
   serial_number: props.asset?.serial_number ?? '',
   manufacturer: props.asset?.manufacturer ?? '',
   model: props.asset?.model ?? '',
@@ -165,8 +173,15 @@ async function submit() {
 }
 
 onMounted(async () => {
-  const { data } = await departmentApi.list()
-  departments.value = data
+  const [deptRes, catRes, locRes] = await Promise.all([
+    departmentApi.list(), assetCategoryApi.list(), assetLocationApi.list(),
+  ])
+  departments.value = deptRes.data
+  categories.value = catRes.data
+  locations.value = locRes.data
+  if (!form.category && categories.value.length) {
+    form.category = categories.value[0].name
+  }
 })
 </script>
 

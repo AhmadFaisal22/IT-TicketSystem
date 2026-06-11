@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ApprovalLevelController;
 use App\Http\Controllers\Api\AssetController;
+use App\Http\Controllers\Api\AssetOptionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\CommentController;
@@ -57,6 +58,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('assets/{asset}/status', [AssetController::class, 'updateStatus']);
     Route::post('assets/{asset}/attachments', [AssetController::class, 'storeAttachments']);
     Route::delete('assets/{asset}/attachments/{attachment}', [AssetController::class, 'destroyAttachment']);
+
+    // Asset options (categories/locations — list: IT staff, manage: admin)
+    Route::get('asset-categories', [AssetOptionController::class, 'categories']);
+    Route::post('asset-categories', [AssetOptionController::class, 'storeCategory']);
+    Route::put('asset-categories/{assetCategory}', [AssetOptionController::class, 'updateCategory']);
+    Route::delete('asset-categories/{assetCategory}', [AssetOptionController::class, 'destroyCategory']);
+    Route::get('asset-locations', [AssetOptionController::class, 'locations']);
+    Route::post('asset-locations', [AssetOptionController::class, 'storeLocation']);
+    Route::put('asset-locations/{assetLocation}', [AssetOptionController::class, 'updateLocation']);
+    Route::delete('asset-locations/{assetLocation}', [AssetOptionController::class, 'destroyLocation']);
 
     // Departments
     Route::apiResource('departments', DepartmentController::class);
