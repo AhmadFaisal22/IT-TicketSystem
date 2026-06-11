@@ -18,3 +18,4 @@ page_source.html
 .idea/
 *.suo
 *.sln
+composer.phar
