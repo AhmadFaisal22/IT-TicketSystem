@@ -9,15 +9,17 @@ class AssetFactory extends Factory
 {
     public function definition(): array
     {
+        $faker = fake();
+
         return [
-            'name'          => $this->faker->words(2, true),
+            'name'          => $faker->words(2, true),
             'category'      => AssetCategories::DEFAULTS[array_rand(AssetCategories::DEFAULTS)][0],
-            'manufacturer'  => $this->faker->company(),
-            'model'         => $this->faker->bothify('Model-####'),
-            'serial_number' => $this->faker->unique()->bothify('SN-########'),
+            'manufacturer'  => $faker->company(),
+            'model'         => $faker->bothify('Model-####'),
+            'serial_number' => $faker->unique()->bothify('SN-########'),
             'status'        => 'in_stock',
-            'location'      => $this->faker->city(),
-            'assign_date'   => $this->faker->date(),
+            'location'      => $faker->city(),
+            'assign_date'   => $faker->date(),
         ];
     }
 }
