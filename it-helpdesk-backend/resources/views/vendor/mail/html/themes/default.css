@@ -112,7 +112,8 @@ img {
     text-align: center;
 }
 
-.header a {
+.header a,
+.header-panel {
     background-color: #111827;
     border: 1px solid #1f2937;
     border-radius: 12px;
@@ -144,23 +145,21 @@ img {
     margin-top: 2px;
 }
 
-/* Logo */
+/* Brand mark */
 
-.logo {
-    display: block;
-    height: 34px;
-    margin: 0 auto;
-    max-height: 34px;
-    width: auto;
-}
-
-.logo-fallback {
-    color: #dc2626;
-    display: block;
-    font-size: 28px;
+.brand-mark {
+    background-color: #dc2626;
+    border-radius: 999px;
+    color: #ffffff;
+    display: inline-block;
+    font-size: 16px;
     font-weight: 800;
-    line-height: 1;
+    height: 38px;
+    letter-spacing: 0;
+    line-height: 38px;
     margin: 0 auto;
+    text-align: center;
+    width: 38px;
 }
 
 /* Body */

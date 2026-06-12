@@ -115,8 +115,6 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
-    'logo_url' => env('MAIL_LOGO_URL'),
-
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings
