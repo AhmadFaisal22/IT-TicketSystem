@@ -4,6 +4,18 @@
     {{ t('common.loading') }}
   </div>
 
+  <div v-else-if="notFound" class="flex flex-col items-center justify-center py-20 text-center">
+    <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <p class="text-gray-500 mb-4">{{ t('common.ticketNotFound') }}</p>
+    <router-link to="/tickets"
+      class="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition">
+      {{ t('common.backToTickets') }}
+    </router-link>
+  </div>
+
   <div v-else-if="ticket" class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
 
     <!-- Main content (left 2/3) -->
@@ -329,6 +341,7 @@ const ticketStore = useTicketStore()
 const auth = useAuthStore()
 
 const loading = ref(true)
+const notFound = ref(false)
 const ticket = computed(() => ticketStore.currentTicket)
 let pollTimer: ReturnType<typeof setInterval> | null = null
 const comments = ref<Comment[]>([])
@@ -446,6 +459,7 @@ function formatDateTime(dt: string) {
 
 onMounted(async () => {
   const id = Number(route.params.id)
+  ticketStore.currentTicket = null
   try {
     await ticketStore.fetchTicket(id)
     assignedTo.value = ticket.value?.assigned_to ?? null
@@ -454,13 +468,26 @@ onMounted(async () => {
       const { data } = await userApi.itStaff()
       itStaff.value = data
     }
+  } catch (e: any) {
+    if (e?.response?.status === 404) notFound.value = true
+    else throw e
   } finally {
     loading.value = false
   }
 
+  if (notFound.value) return
+
   pollTimer = setInterval(async () => {
-    await ticketStore.fetchTicket(id)
-    await loadComments()
+    try {
+      await ticketStore.fetchTicket(id)
+      await loadComments()
+    } catch (e: any) {
+      if (e?.response?.status === 404) {
+        notFound.value = true
+        ticketStore.currentTicket = null
+        if (pollTimer) clearInterval(pollTimer)
+      }
+    }
   }, 30000)
 })
 

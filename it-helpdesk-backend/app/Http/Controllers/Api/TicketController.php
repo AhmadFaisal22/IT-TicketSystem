@@ -16,6 +16,7 @@ use App\Notifications\TicketStatusChanged;
 use App\Notifications\TicketAssigned;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -229,6 +230,7 @@ class TicketController extends Controller
     public function destroy(Ticket $ticket): JsonResponse
     {
         $this->authorize('delete', $ticket);
+        DatabaseNotification::where('data->ticket_id', $ticket->id)->delete();
         $ticket->delete();
         return response()->json(null, 204);
     }

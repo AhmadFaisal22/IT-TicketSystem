@@ -252,6 +252,8 @@ export default {
     success: 'Saved successfully.',
     breached: 'SLA Breached',
     onTime: 'On Time',
-    all: 'All'
+    all: 'All',
+    ticketNotFound: 'This ticket no longer exists. It may have been deleted.',
+    backToTickets: 'Back to Tickets'
   }
 }

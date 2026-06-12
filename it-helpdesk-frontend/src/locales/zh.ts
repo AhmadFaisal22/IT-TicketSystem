@@ -252,6 +252,8 @@ export default {
     success: '保存成功。',
     breached: 'SLA 已超时',
     onTime: '按时',
-    all: '全部'
+    all: '全部',
+    ticketNotFound: '该工单不存在，可能已被删除。',
+    backToTickets: '返回工单列表'
   }
 }
