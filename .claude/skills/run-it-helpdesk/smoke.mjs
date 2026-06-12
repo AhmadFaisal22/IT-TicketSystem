@@ -279,8 +279,11 @@ async function smokeScreenshots() {
       return;
     }
 
-    // 2. Inject token → dashboard
+    // 2. Inject token → dashboard  (THEME=dark to screenshot dark mode)
     await cdp.eval(`localStorage.setItem('token', ${JSON.stringify(TOKEN)})`);
+    if (process.env.THEME) {
+      await cdp.eval(`localStorage.setItem('theme', ${JSON.stringify(process.env.THEME)})`);
+    }
     await cdp.navigate(`${FRONTEND_URL}/`, 4000);
     await cdp.screenshot(path.join(SCREENSHOT_DIR, '02-dashboard.png'));
 

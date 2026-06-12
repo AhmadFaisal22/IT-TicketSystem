@@ -89,6 +89,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { dashboardApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 import { useRouter } from 'vue-router'
 
 const { t, locale } = useI18n()
@@ -112,6 +113,16 @@ async function loadData() {
   slaData.value = sla.data
 }
 
+const theme = useThemeStore()
+
+// ApexCharts defaults to dark text; follow the app theme so legends/axes
+// stay readable in dark mode.
+const baseChart = computed(() => ({
+  toolbar: { show: false },
+  foreColor: theme.isDark ? '#cbd5e1' : '#373d3f',
+}))
+const baseTooltip = computed(() => ({ theme: theme.isDark ? 'dark' : 'light' }))
+
 const trendSeries = computed(() => {
   if (!stats.value?.trends?.length) return []
   return [
@@ -121,7 +132,8 @@ const trendSeries = computed(() => {
 })
 
 const trendOptions = computed(() => ({
-  chart: { toolbar: { show: false } },
+  chart: baseChart.value,
+  tooltip: baseTooltip.value,
   xaxis: { categories: stats.value?.trends?.map((t: any) => t.date) || [] },
   colors: ['#ef4444', '#22c55e'],
   stroke: { curve: 'smooth', width: 2 },
@@ -138,7 +150,8 @@ const statusOptions = computed(() => ({
   labels: statusLabels.map(s => t(`ticket.${s}`)),
   colors: statusColors,
   legend: { position: 'bottom' },
-  chart: { toolbar: { show: false } }
+  tooltip: baseTooltip.value,
+  chart: baseChart.value
 }))
 
 const priorityLabels = ['critical', 'high', 'medium', 'low']
@@ -146,7 +159,8 @@ const prioritySeries = computed(() =>
   stats.value ? [{ name: 'Open', data: priorityLabels.map(p => stats.value.priority_counts[p] || 0) }] : []
 )
 const priorityOptions = computed(() => ({
-  chart: { toolbar: { show: false } },
+  chart: baseChart.value,
+  tooltip: baseTooltip.value,
   xaxis: { categories: priorityLabels.map(p => t(`ticket.${p}`)) },
   colors: ['#ef4444', '#f97316', '#f59e0b', '#6b7280'],
   plotOptions: { bar: { distributed: true, borderRadius: 4 } },
@@ -159,7 +173,8 @@ const deptSeries = computed(() =>
     : []
 )
 const deptOptions = computed(() => ({
-  chart: { toolbar: { show: false } },
+  chart: baseChart.value,
+  tooltip: baseTooltip.value,
   xaxis: {
     categories: stats.value?.department_counts?.map((d: any) =>
       locale.value === 'zh' ? d.department?.name_zh : d.department?.name) || []
