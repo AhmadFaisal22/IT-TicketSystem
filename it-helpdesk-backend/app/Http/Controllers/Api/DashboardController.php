@@ -96,10 +96,10 @@ class DashboardController extends Controller
 
         $total = Ticket::whereBetween('created_at', [$from, now()])->count();
 
-        $responseBreached = Ticket::where('sla_response_breached', 1)
+        $responseBreached = Ticket::where('sla_response_breached', true)
             ->whereBetween('created_at', [$from, now()])->count();
 
-        $resolutionBreached = Ticket::where('sla_resolution_breached', 1)
+        $resolutionBreached = Ticket::where('sla_resolution_breached', true)
             ->whereBetween('created_at', [$from, now()])->count();
 
         $currentlyBreached = Ticket::where(function ($q) {
@@ -114,7 +114,7 @@ class DashboardController extends Controller
 
         $byPriority = Ticket::select('priority',
                 DB::raw('count(*) as total'),
-                DB::raw('SUM(CASE WHEN sla_resolution_breached = 1 THEN 1 ELSE 0 END) as breached')
+                DB::raw('SUM(CASE WHEN sla_resolution_breached THEN 1 ELSE 0 END) as breached')
             )
             ->whereBetween('created_at', [$from, now()])
             ->groupBy('priority')
@@ -122,7 +122,7 @@ class DashboardController extends Controller
 
         $byDepartment = Ticket::select('department_id',
                 DB::raw('count(*) as total'),
-                DB::raw('SUM(CASE WHEN sla_resolution_breached = 1 THEN 1 ELSE 0 END) as breached')
+                DB::raw('SUM(CASE WHEN sla_resolution_breached THEN 1 ELSE 0 END) as breached')
             )
             ->with('department:id,name,name_zh')
             ->whereBetween('created_at', [$from, now()])
