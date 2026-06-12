@@ -260,7 +260,7 @@ async function smokeScreenshots() {
     '--headless=new', '--no-sandbox', '--disable-gpu',
     `--remote-debugging-port=${DEBUG_PORT}`,
     `--user-data-dir=${profileDir}`,
-    '--window-size=1280,800',
+    process.env.MOBILE ? '--window-size=390,844' : '--window-size=1280,800',
     'about:blank',
   ], { stdio: 'ignore' });
 

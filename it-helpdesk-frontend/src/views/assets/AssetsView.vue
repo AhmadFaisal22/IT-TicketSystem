@@ -2,9 +2,9 @@
   <div>
     <!-- Toolbar -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-      <div class="flex flex-wrap gap-3 items-center">
+      <div class="grid grid-cols-2 lg:flex lg:flex-wrap gap-3 lg:items-center">
         <input v-model="filters.search" @input="debouncedFetch" :placeholder="t('asset.search')"
-          class="flex-1 min-w-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          class="col-span-2 lg:flex-1 lg:min-w-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
 
         <select v-model="filters.status" @change="fetchData"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
@@ -32,7 +32,7 @@
         </button>
 
         <router-link to="/assets/create"
-          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">
+          class="col-span-2 lg:col-auto text-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">
           + {{ t('asset.actions.create') }}
         </router-link>
       </div>
@@ -52,7 +52,45 @@
         </router-link>
       </div>
 
-      <table v-else class="w-full">
+      <template v-else>
+        <!-- Mobile cards -->
+        <div class="md:hidden divide-y divide-gray-100">
+          <div v-for="a in store.assets" :key="a.id"
+            @click="$router.push(`/assets/${a.id}`)"
+            class="p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition">
+            <div class="flex items-start justify-between gap-2 mb-1.5">
+              <span class="text-xs font-mono text-red-600 shrink-0">{{ a.asset_tag }}</span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium shrink-0" :class="statusClass(a.status)">
+                {{ t(`asset.status_labels.${a.status}`) }}
+              </span>
+            </div>
+            <p class="text-sm font-medium text-gray-800 mb-2 leading-snug">
+              {{ [a.last_name, a.first_name].filter(Boolean).join(' ') || t('asset.unassigned') }}
+            </p>
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs mb-2">
+              <span class="text-gray-500">{{ (locale === 'zh' ? a.department?.name_zh : a.department?.name) || '—' }}</span>
+              <span class="text-gray-300">•</span>
+              <span class="text-gray-500">{{ categoryLabel(a.category) }}</span>
+              <template v-if="a.model">
+                <span class="text-gray-300">•</span>
+                <span class="text-gray-400">{{ a.model }}</span>
+              </template>
+            </div>
+            <div v-if="auth.isAdmin" class="flex gap-2" @click.stop>
+              <button @click.stop="handleDelete(a)"
+                class="flex items-center gap-1 px-2.5 py-1 text-xs text-gray-600 bg-gray-100 hover:bg-red-50 hover:text-red-600 rounded-lg transition">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                {{ t('common.delete') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop table -->
+        <table class="w-full hidden md:table">
         <thead class="bg-gray-50 border-b">
           <tr>
             <th @click="toggleSort('asset_tag')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase cursor-pointer select-none hover:text-gray-700">
@@ -106,7 +144,8 @@
             </td>
           </tr>
         </tbody>
-      </table>
+        </table>
+      </template>
 
       <div v-if="store.pagination.last_page > 1"
         class="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-600">
