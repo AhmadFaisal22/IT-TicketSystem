@@ -22,3 +22,6 @@ Schedule::call(function () {
         ->update(['sla_resolution_breached' => true]);
 
 })->everyFifteenMinutes()->name('sla:check-breaches');
+
+// Delete tokens that expired more than 24h ago
+Schedule::command('sanctum:prune-expired --hours=24')->daily();
