@@ -25,6 +25,6 @@ class Attachment extends Model
 
     public function getUrlAttribute(): string
     {
-        return Storage::url($this->path);
+        return url("/api/attachments/{$this->id}/download");
     }
 }

@@ -49,7 +49,8 @@
         </div>
         <ul class="space-y-2">
           <li v-for="att in asset.attachments" :key="att.id" class="flex items-center justify-between text-sm">
-            <a :href="att.url" target="_blank" class="text-blue-600 hover:underline truncate">{{ att.original_name }}</a>
+            <button type="button" @click="downloadAttachment(att)"
+              class="text-blue-600 hover:underline truncate text-left cursor-pointer">{{ att.original_name }}</button>
             <button @click="removeAttachment(att.id)" class="text-gray-400 hover:text-red-600">✕</button>
           </li>
           <li v-if="!asset.attachments?.length" class="text-sm text-gray-400">—</li>
@@ -194,6 +195,7 @@ import { CheckIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi, assetCategoryApi } from '@/api'
+import { downloadAttachment } from '@/utils/attachments'
 
 const { t, locale } = useI18n()
 const route = useRoute()

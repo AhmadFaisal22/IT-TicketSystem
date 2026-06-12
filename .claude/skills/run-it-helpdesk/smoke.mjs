@@ -312,6 +312,11 @@ async function smokeScreenshots() {
     await cdp.navigate(`${FRONTEND_URL}/admin/asset-options`, 2000);
     await cdp.screenshot(path.join(SCREENSHOT_DIR, '09-asset-options.png'));
 
+    // 10. Ticket detail (attachment previews load via authenticated blob fetch)
+    const detailId = process.env.TICKET_DETAIL_ID || '1';
+    await cdp.navigate(`${FRONTEND_URL}/tickets/${detailId}`, 3500);
+    await cdp.screenshot(path.join(SCREENSHOT_DIR, '10-ticket-detail.png'));
+
   } finally {
     cdp?.close();
     await sleep(300);

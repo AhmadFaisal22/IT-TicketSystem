@@ -52,6 +52,10 @@ export const ticketApi = {
   delete: (id: number) => api.delete(`/tickets/${id}`)
 }
 
+export const attachmentApi = {
+  download: (id: number) => api.get(`/attachments/${id}/download`, { responseType: 'blob' }),
+}
+
 export const commentApi = {
   list: (ticketId: number) => api.get(`/tickets/${ticketId}/comments`),
   create: (ticketId: number, data: object) => api.post(`/tickets/${ticketId}/comments`, data),

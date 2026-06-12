@@ -247,7 +247,7 @@ class AssetController extends Controller
 
         $created = [];
         foreach ($request->file('attachments') as $file) {
-            $path = $file->store('asset-attachments', 'public');
+            $path = $file->store('asset-attachments', 'local');
             $created[] = $asset->attachments()->create([
                 'user_id'       => $request->user()->id,
                 'filename'      => basename($path),
@@ -269,6 +269,8 @@ class AssetController extends Controller
             404
         );
 
+        // Legacy rows may still live on the public disk
+        Storage::disk('local')->delete($attachment->path);
         Storage::disk('public')->delete($attachment->path);
         $attachment->delete();
 

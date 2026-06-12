@@ -45,10 +45,10 @@
         class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
         <h3 class="font-semibold text-gray-700 mb-4">{{ t('ticket.attachments') }}</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <a v-for="att in ticket.attachments" :key="att.id"
-            :href="att.url" target="_blank" rel="noopener noreferrer"
-            class="group block rounded-lg border border-gray-200 overflow-hidden hover:border-red-300 transition">
-            <img v-if="att.mime_type.startsWith('image/')" :src="att.url" :alt="att.original_name"
+          <button v-for="att in ticket.attachments" :key="att.id" type="button"
+            @click="downloadAttachment(att)"
+            class="group block w-full text-left rounded-lg border border-gray-200 overflow-hidden hover:border-red-300 transition cursor-pointer">
+            <img v-if="att.mime_type.startsWith('image/') && previewUrls[att.id]" :src="previewUrls[att.id]" :alt="att.original_name"
               class="w-full h-28 sm:h-32 object-cover" />
             <div v-else class="w-full h-28 sm:h-32 flex flex-col items-center justify-center bg-gray-50 p-3 gap-2">
               <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,7 +60,7 @@
             <div class="px-2 py-1.5 bg-white border-t border-gray-100">
               <p class="text-xs text-gray-500 truncate">{{ att.original_name }}</p>
             </div>
-          </a>
+          </button>
         </div>
       </div>
 
@@ -326,7 +326,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useTicketStore } from '@/stores/tickets'
@@ -334,6 +334,7 @@ import { useAuthStore } from '@/stores/auth'
 import { userApi, commentApi, approvalApi } from '@/api'
 import type { Ticket, Comment, TicketApproval } from '@/stores/tickets'
 import { CATEGORIES, getCategoryLabel, getSubCategoryLabel } from '@/constants/categories'
+import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -372,6 +373,20 @@ const isCurrentApprover = computed(() =>
 const categoryEmoji = computed(() =>
   CATEGORIES.find(c => c.id === ticket.value?.category)?.emoji ?? ''
 )
+
+const previewUrls = ref<Record<number, string>>({})
+
+watch(() => ticket.value?.attachments, async (attachments) => {
+  for (const att of attachments ?? []) {
+    if (att.mime_type.startsWith('image/') && !previewUrls.value[att.id]) {
+      try {
+        previewUrls.value[att.id] = await attachmentPreviewUrl(att.id)
+      } catch {
+        // leave the generic file tile if the preview fails to load
+      }
+    }
+  }
+}, { immediate: true })
 
 async function loadComments() {
   const { data } = await commentApi.list(Number(route.params.id))
@@ -493,5 +508,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer)
+  Object.values(previewUrls.value).forEach(url => URL.revokeObjectURL(url))
 })
 </script>

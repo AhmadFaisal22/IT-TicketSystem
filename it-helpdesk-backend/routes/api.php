@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApprovalLevelController;
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AssetOptionController;
+use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\CommentController;
@@ -38,6 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tickets', TicketController::class);
     Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
     Route::patch('tickets/{ticket}/assign', [TicketController::class, 'assign']);
+
+    // Attachments (authorization mirrors the parent ticket/asset)
+    Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download']);
 
     // Comments
     Route::get('tickets/{ticket}/comments', [CommentController::class, 'index']);

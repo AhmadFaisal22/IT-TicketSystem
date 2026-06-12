@@ -99,7 +99,7 @@ class TicketController extends Controller
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
-                    $path = $file->store('ticket-attachments', 'public');
+                    $path = $file->store('ticket-attachments', 'local');
                     $ticket->attachments()->create([
                         'user_id'       => $request->user()->id,
                         'filename'      => basename($path),
