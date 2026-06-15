@@ -178,6 +178,13 @@
           </button>
         </form>
 
+        <!-- Register link -->
+        <div class="mt-6 text-center">
+          <router-link to="/register" class="text-sm text-gray-500 hover:text-gray-700">
+            {{ t('auth.noAccount') }} <span class="text-red-600 font-medium">{{ t('auth.register') }}</span>
+          </router-link>
+        </div>
+
         <!-- Locale + theme toggle -->
         <div class="mt-8 flex justify-center items-center gap-4 text-sm border-t border-gray-100 dark:border-gray-700 pt-6">
           <ThemeToggle />
@@ -274,7 +281,7 @@ async function loginWithPassword() {
       const retryAfter = parseInt(e.response.headers?.['retry-after'] ?? '60', 10)
       startLockout(retryAfter || 60)
     } else if (status === 403) {
-      error.value = t('auth.accountDisabled')
+      error.value = e.response?.data?.message || t('auth.accountDisabled')
       triggerShake()
     } else {
       failedAttempts.value = Math.min(failedAttempts.value + 1, MAX_ATTEMPTS)

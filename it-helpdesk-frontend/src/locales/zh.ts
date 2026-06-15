@@ -26,6 +26,8 @@ export default {
     passwordPlaceholder: '············',
     forgotPassword: '忘记密码？',
     rememberMe: '记住我',
+    noAccount: '还没有账号？',
+    register: '注册',
     signingIn: '登录中…',
     loginFailed: '登录失败，请检查您的账号或密码。',
     invalidCredentials: '邮箱或密码不正确。',

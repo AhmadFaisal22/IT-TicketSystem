@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\SlaController;
 use App\Http\Controllers\Api\TicketApprovalController;
 use App\Http\Controllers\Api\TicketController;
@@ -21,6 +22,9 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->middleware('throttle:5,1');
     Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword'])->middleware('throttle:5,1');
+    Route::post('register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('verify-email', [RegisterController::class, 'verifyEmail'])->middleware('throttle:6,1');
+    Route::get('register/departments', [RegisterController::class, 'departments']);
     Route::get('redirect/google', [AuthController::class, 'redirectToGoogle']);
     Route::get('redirect/microsoft', [AuthController::class, 'redirectToMicrosoft']);
     Route::get('callback/google', [AuthController::class, 'handleGoogleCallback'])->middleware('throttle:10,1');

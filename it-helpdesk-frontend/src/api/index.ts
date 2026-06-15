@@ -40,6 +40,10 @@ export const authApi = {
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token: string, email: string, password: string, password_confirmation: string) =>
     api.post('/auth/reset-password', { token, email, password, password_confirmation }),
+  register: (data: { name: string; email: string; password: string; department_id: number }) =>
+    api.post('/auth/register', data),
+  verifyEmail: (token: string, email: string) => api.post('/auth/verify-email', { token, email }),
+  registerDepartments: () => api.get('/auth/register/departments'),
 }
 
 export const ticketApi = {

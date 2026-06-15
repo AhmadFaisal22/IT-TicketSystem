@@ -44,6 +44,7 @@ class AuthController extends Controller
                 'email' => $socialUser->getEmail(),
                 'avatar' => $socialUser->getAvatar(),
                 'active' => true,
+                'email_verified_at' => now(), // SSO provider already verified the address
             ]
         );
 
@@ -70,6 +71,12 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
+        }
+
+        if (is_null($user->email_verified_at)) {
+            return response()->json([
+                'message' => 'Please verify your email address before signing in. Check your inbox for the verification link.',
+            ], 403);
         }
 
         if (!$user->active) {
