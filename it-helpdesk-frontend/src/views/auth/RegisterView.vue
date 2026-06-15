@@ -35,7 +35,7 @@
         <div v-else>
           <div class="mb-6">
             <h2 class="text-xl font-semibold text-gray-800">Create your account</h2>
-            <p class="text-sm text-gray-500 mt-1">Use your <span class="font-medium">@{{ ALLOWED_DOMAIN }}</span> email address.</p>
+            <p class="text-sm text-gray-500 mt-1">Use your <span class="font-medium">{{ domainHint }}</span> email address.</p>
           </div>
 
           <form @submit.prevent="submit" class="space-y-4">
@@ -51,7 +51,7 @@
             <!-- Email -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Email <span class="text-red-500">*</span></label>
-              <input v-model.trim="form.email" type="email" required :placeholder="`user@${ALLOWED_DOMAIN}`"
+              <input v-model.trim="form.email" type="email" required :placeholder="`user@${domains[0] ?? 'company.com'}`"
                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
                 :class="fieldError('email') ? 'border-red-400 bg-red-50' : ''" />
               <p v-if="fieldError('email')" class="text-xs text-red-600 mt-1.5">{{ fieldError('email') }}</p>
@@ -115,10 +115,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { authApi } from '@/api'
-
-const ALLOWED_DOMAIN = 'segsolar.com'
 
 interface DeptOption { id: number; name: string; name_zh: string }
 
@@ -130,16 +128,22 @@ const form = reactive({
 })
 
 const departments  = ref<DeptOption[]>([])
+const domains      = ref<string[]>(['segsolar.com'])
 const loading      = ref(false)
 const showPassword = ref(false)
 const sent         = ref(false)
 const errors       = ref<Record<string, string[]>>({})
 const genericError = ref('')
 
+const domainHint = computed(() =>
+  domains.value.map(d => `@${d}`).join(' or ')
+)
+
 onMounted(async () => {
   try {
     const { data } = await authApi.registerDepartments()
-    departments.value = data
+    departments.value = data.departments ?? []
+    if (Array.isArray(data.domains) && data.domains.length) domains.value = data.domains
   } catch {
     genericError.value = 'Could not load departments. Please refresh the page.'
   }
@@ -153,8 +157,9 @@ async function submit() {
   errors.value = {}
   genericError.value = ''
 
-  if (!form.email.toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`)) {
-    errors.value = { email: [`Email must end with @${ALLOWED_DOMAIN}`] }
+  const email = form.email.toLowerCase()
+  if (!domains.value.some(d => email.endsWith(`@${d}`))) {
+    errors.value = { email: [`Email must end with ${domainHint.value}`] }
     return
   }
   if (form.department_id === null) {

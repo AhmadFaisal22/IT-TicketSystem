@@ -16,6 +16,12 @@ return [
     'name' => env('APP_NAME', 'IT HelpDesk'),
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
 
+    // Email domains allowed to self-register (comma-separated, no leading @).
+    'registration_domains' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('REGISTRATION_DOMAINS', 'segsolar.com,helpdesk.local'))
+    ))),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

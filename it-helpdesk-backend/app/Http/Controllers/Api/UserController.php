@@ -121,6 +121,7 @@ class UserController extends Controller
             'role'          => $data['role'],
             'department_id' => $data['department_id'] ?? null,
             'active'        => true,
+            'email_verified_at' => now(), // admin-created accounts are trusted, no self-verification needed
         ]);
 
         return response()->json($user->load('department'), 201);

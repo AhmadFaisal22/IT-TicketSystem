@@ -15,14 +15,17 @@ use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
-    /** Only company addresses may self-register. */
-    private const ALLOWED_DOMAIN = 'segsolar.com';
-
     /** Verification links are valid for this many minutes. */
     private const TOKEN_TTL_MINUTES = 60;
 
+    /** Email domains allowed to self-register, e.g. ['segsolar.com', 'helpdesk.local']. */
+    private function allowedDomains(): array
+    {
+        return (array) config('app.registration_domains', ['segsolar.com']);
+    }
+
     /**
-     * Public department list for the registration dropdown (no auth).
+     * Public department list + allowed email domains for the registration form (no auth).
      */
     public function departments(): JsonResponse
     {
@@ -30,7 +33,10 @@ class RegisterController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'name_zh']);
 
-        return response()->json($departments);
+        return response()->json([
+            'departments' => $departments,
+            'domains'     => $this->allowedDomains(),
+        ]);
     }
 
     /**
@@ -40,9 +46,11 @@ class RegisterController extends Controller
     {
         $request->merge(['email' => strtolower(trim((string) $request->input('email')))]);
 
+        $endsWith = 'ends_with:' . implode(',', array_map(fn ($d) => '@' . $d, $this->allowedDomains()));
+
         $data = $request->validate([
             'name'          => 'required|string|max:100',
-            'email'         => ['required', 'email', 'ends_with:@' . self::ALLOWED_DOMAIN, 'unique:users,email'],
+            'email'         => ['required', 'email', $endsWith, 'unique:users,email'],
             'password'      => 'required|string|min:8',
             'department_id' => 'required|integer|exists:departments,id',
         ]);

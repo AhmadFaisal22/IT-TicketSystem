@@ -53,6 +53,7 @@ class DatabaseSeeder extends Seeder
                 'department_id' => $itDept?->id,
                 'locale'        => 'en',
                 'active'        => true,
+                'email_verified_at' => now(),
             ]
         );
 
@@ -66,6 +67,7 @@ class DatabaseSeeder extends Seeder
                 'department_id' => $itDept?->id,
                 'locale'        => 'en',
                 'active'        => true,
+                'email_verified_at' => now(),
             ]
         );
 
