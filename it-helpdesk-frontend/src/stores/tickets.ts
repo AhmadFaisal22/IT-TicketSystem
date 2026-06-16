@@ -107,6 +107,9 @@ export const useTicketStore = defineStore('tickets', () => {
     await ticketApi.updateStatus(id, status)
     if (currentTicket.value?.id === id) {
       currentTicket.value.status = status as Ticket['status']
+      // Re-fetch so the History timeline (and SLA fields) reflect the change
+      // immediately, instead of only after a manual page reload.
+      await fetchTicket(id)
     }
   }
 
