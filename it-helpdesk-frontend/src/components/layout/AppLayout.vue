@@ -151,11 +151,13 @@ function navImageClass(item: NavItem) {
 }
 
 const navItems = computed((): NavItem[] => {
+  // Dashboard shows IT-only KPIs/charts, so regular users don't see the link
+  // (the route itself redirects them to Tickets anyway).
   const items: NavItem[] = [
-    { name: 'dashboard', to: '/', label: 'nav.dashboard', iconImg: '/Dash.png' },
     { name: 'tickets', to: '/tickets', label: 'nav.tickets', iconImg: '/icons8-ticket-50.png', prefix: 'ticket' },
   ]
   if (auth.isItStaff) {
+    items.unshift({ name: 'dashboard', to: '/', label: 'nav.dashboard', iconImg: '/Dash.png' })
     items.push({ name: 'assets', to: '/assets', label: 'nav.assets', icon: ComputerDesktopIcon, prefix: 'asset' })
   }
   return items
