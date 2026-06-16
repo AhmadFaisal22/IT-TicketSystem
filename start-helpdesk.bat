@@ -2,7 +2,7 @@
 title IT HelpDesk - Local Dev
 
 echo ================================================
-echo   IT HelpDesk - SEG Solar Manufaktur Indonesia
+echo   IT HelpDesk - SEG Solar Manufactor
 echo   Local Development
 echo ================================================
 echo.

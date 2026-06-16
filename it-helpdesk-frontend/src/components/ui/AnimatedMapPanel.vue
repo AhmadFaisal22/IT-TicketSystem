@@ -61,7 +61,7 @@
     <!-- Tagline — anchored left so it stays in the visible image area -->
     <div class="absolute bottom-7 left-8 space-y-0.5">
       <p class="text-sm font-semibold tracking-wide text-white/80 drop-shadow">IT Ticketing System</p>
-      <p class="text-xs tracking-wider text-white/50 drop-shadow">SEG Solar Manufaktur Indonesia</p>
+      <p class="text-xs tracking-wider text-white/50 drop-shadow">SEG Solar Manufactor</p>
     </div>
 
   </div>

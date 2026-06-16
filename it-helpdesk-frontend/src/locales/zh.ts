@@ -46,6 +46,8 @@ export default {
     category: '类别',
     department: '部门',
     assignee: '负责人',
+    assignTo: '分配给',
+    selectAssignee: '请选择 IT 人员...',
     createdBy: '创建人',
     createdAt: '创建时间',
     ticketNumber: '工单号',

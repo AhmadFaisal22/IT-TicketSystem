@@ -4,7 +4,7 @@
     $baseUrl = trim((string) $url);
     $brandMarkup = '<span class="brand-mark">SEG</span>'
         . '<span class="brand-title">' . e(trim($slot)) . '</span>'
-        . '<span class="brand-subtitle">SEG Solar Manufaktur Indonesia</span>';
+        . '<span class="brand-subtitle">SEG Solar Manufactor</span>';
 @endphp
 
 <tr>

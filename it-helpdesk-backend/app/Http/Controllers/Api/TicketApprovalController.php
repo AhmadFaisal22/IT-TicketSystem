@@ -13,7 +13,6 @@ use App\Notifications\TicketCreated;
 use App\Notifications\TicketRejected;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 
 class TicketApprovalController extends Controller
 {
@@ -77,9 +76,8 @@ class TicketApprovalController extends Controller
             // Notify ticket creator that it's been approved
             $ticket->creator->notify(new TicketApproved($ticket));
 
-            // Notify IT staff
-            $notifyStaff = User::whereIn('role', ['it_staff', 'admin'])->where('active', true)->get();
-            Notification::send($notifyStaff, new TicketCreated($ticket));
+            // Notify only the assigned IT staff member
+            $ticket->assignee?->notify(new TicketCreated($ticket));
         }
 
         return response()->json($ticket->fresh()->load(['creator', 'assignee', 'department', 'approvals.approver', 'approvals.responder', 'histories.user']));

@@ -116,6 +116,7 @@ class AttachmentDownloadTest extends TestCase
         Storage::fake('local');
         Storage::fake('public');
         $department = Department::create(['name' => 'IT', 'name_zh' => 'IT部']);
+        $itStaff = User::factory()->create(['role' => 'it_staff', 'department_id' => $department->id]);
         Sanctum::actingAs(User::factory()->create(['role' => 'user']));
 
         $this->post('/api/tickets', [
@@ -123,6 +124,7 @@ class AttachmentDownloadTest extends TestCase
             'description'   => 'It will not boot',
             'priority'      => 'medium',
             'department_id' => $department->id,
+            'assigned_to'   => $itStaff->id,
             'attachments'   => [UploadedFile::fake()->create('report.pdf', 100, 'application/pdf')],
         ])->assertStatus(201);
 

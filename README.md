@@ -1,6 +1,6 @@
 # IT HelpDesk — Internal IT Ticketing System
 
-Bilingual (English / 中文) internal IT ticketing system built for **SEG Solar Manufaktur Indonesia**.
+Bilingual (English / 中文) internal IT ticketing system built for **SEG Solar Manufactor**.
 
 ![Laravel](https://img.shields.io/badge/Laravel-12-red?logo=laravel)
 ![Vue](https://img.shields.io/badge/Vue-3-brightgreen?logo=vue.js)

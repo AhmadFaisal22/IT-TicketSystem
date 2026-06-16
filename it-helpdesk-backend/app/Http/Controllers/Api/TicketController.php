@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalLevel;
 use App\Models\Attachment;
+use App\Models\Department;
 use App\Models\SlaPolicy;
 use App\Models\Ticket;
 use App\Models\TicketApproval;
@@ -19,8 +20,8 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class TicketController extends Controller
 {
@@ -78,6 +79,9 @@ class TicketController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        // Tickets must be assigned to a member of the IT department on creation.
+        $itDeptId = Department::where('name', 'IT')->value('id');
+
         $data = $request->validate([
             'title'          => 'required|string|max:255',
             'description'    => 'required|string|max:10000',
@@ -85,6 +89,7 @@ class TicketController extends Controller
             'category'       => 'nullable|string|max:100',
             'subcategory'    => 'nullable|string|max:100',
             'department_id'  => 'required|exists:departments,id',
+            'assigned_to'    => ['required', Rule::exists('users', 'id')->where('active', true)->where('department_id', $itDeptId)],
             'attachments'    => 'nullable|array|max:5',
             'attachments.*'  => 'file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240',
         ]);
@@ -145,9 +150,8 @@ class TicketController extends Controller
             $firstApprover = User::find($approvalLevels->first()->approver_id);
             $firstApprover?->notify(new TicketApprovalRequested($ticket, $approvalLevels->first()));
         } else {
-            // No approvals needed — notify IT directly
-            $notifyStaff = User::whereIn('role', ['it_staff', 'admin'])->where('active', true)->get();
-            Notification::send($notifyStaff, new TicketCreated($ticket));
+            // No approvals needed — notify only the assigned IT staff member
+            $ticket->assignee?->notify(new TicketCreated($ticket));
         }
 
         return response()->json($ticket->load(['creator', 'department', 'attachments']), 201);
@@ -213,7 +217,10 @@ class TicketController extends Controller
     {
         $this->authorize('assign', $ticket);
 
-        $data = $request->validate(['assigned_to' => 'nullable|exists:users,id']);
+        $itDeptId = Department::where('name', 'IT')->value('id');
+        $data = $request->validate([
+            'assigned_to' => ['nullable', Rule::exists('users', 'id')->where('active', true)->where('department_id', $itDeptId)],
+        ]);
         $ticket->update(['assigned_to' => $data['assigned_to']]);
 
         if ($data['assigned_to']) {
