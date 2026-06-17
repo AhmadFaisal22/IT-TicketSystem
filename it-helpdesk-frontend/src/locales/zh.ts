@@ -128,7 +128,9 @@ export default {
       editUser: '编辑用户',
       password: '密码',
       passwordHint: '留空则保持当前密码不变',
-      deleteConfirm: '删除用户 {name}？此操作不可撤销。'
+      deleteConfirm: '删除用户 {name}？此操作不可撤销。',
+      searchPlaceholder: '按姓名或邮箱搜索',
+      noResults: '未找到用户'
     },
     departments: {
       title: '部门管理',

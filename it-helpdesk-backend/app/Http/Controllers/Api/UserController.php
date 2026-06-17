@@ -23,6 +23,13 @@ class UserController extends Controller
         if ($request->filled('department_id')) {
             $query->where('department_id', $request->department_id);
         }
+        if ($request->filled('search')) {
+            $like = '%' . mb_strtolower(trim($request->search)) . '%';
+            $query->where(function ($q) use ($like) {
+                $q->whereRaw('LOWER(name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(email) LIKE ?', [$like]);
+            });
+        }
 
         return response()->json($query->paginate(50));
     }

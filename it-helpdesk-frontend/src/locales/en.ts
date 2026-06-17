@@ -126,7 +126,9 @@ export default {
       editUser: 'Edit User',
       password: 'Password',
       passwordHint: 'Leave blank to keep current password',
-      deleteConfirm: 'Delete {name}? This cannot be undone.'
+      deleteConfirm: 'Delete {name}? This cannot be undone.',
+      searchPlaceholder: 'Search by name or email',
+      noResults: 'No users found'
     },
     departments: {
       title: 'Departments',
