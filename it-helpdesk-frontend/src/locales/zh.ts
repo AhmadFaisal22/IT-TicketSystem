@@ -136,7 +136,9 @@ export default {
       nameChinese: '名称（中文）',
       description: '描述',
       add: '添加部门',
-      edit: '编辑部门'
+      edit: '编辑部门',
+      required: '此项为必填',
+      saveFailed: '保存失败，请检查输入后重试。'
     },
     sla: {
       title: 'SLA 策略',

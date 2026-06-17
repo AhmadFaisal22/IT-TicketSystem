@@ -134,7 +134,9 @@ export default {
       nameChinese: 'Name (中文)',
       description: 'Description',
       add: 'Add Department',
-      edit: 'Edit Department'
+      edit: 'Edit Department',
+      required: 'This field is required',
+      saveFailed: 'Could not save. Please check the fields and try again.'
     },
     sla: {
       title: 'SLA Policies',
