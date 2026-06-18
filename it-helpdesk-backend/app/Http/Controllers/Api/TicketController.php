@@ -34,6 +34,7 @@ class TicketController extends Controller
             'assigned_to'   => 'nullable|integer|exists:users,id',
             'search'        => 'nullable|string|max:255',
             'sla_breached'  => 'nullable|boolean',
+            'per_page'      => 'nullable|integer|min:1|max:100',
         ]);
 
         $user = $request->user();
@@ -74,7 +75,7 @@ class TicketController extends Controller
             });
         }
 
-        return response()->json($query->paginate(20));
+        return response()->json($query->paginate((int) ($f['per_page'] ?? 20)));
     }
 
     public function store(Request $request): JsonResponse
