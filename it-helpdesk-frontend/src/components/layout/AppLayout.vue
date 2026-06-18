@@ -10,7 +10,8 @@
       class="w-64 bg-white text-gray-700 dark:bg-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 flex flex-col fixed h-full z-30 transition-all duration-300 ease-in-out"
       :class="[collapsed ? 'lg:w-16' : 'lg:w-64', sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']">
 
-      <div class="h-16 flex items-center px-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+      <div class="h-16 flex items-center px-4 sm:pl-6 sm:pr-3 border-b border-gray-200 dark:border-gray-700"
+        :class="collapsed ? 'lg:px-0' : ''">
         <div class="flex items-center justify-between w-full" :class="collapsed ? 'lg:justify-center' : ''">
           <div class="flex items-center gap-3" :class="collapsed ? 'lg:hidden' : ''">
             <img src="/SEG Logo.png" alt="SEG Solar" class="h-8 w-auto object-contain" />
