@@ -56,6 +56,12 @@ const router = createRouter({
           component: () => import('@/views/tickets/TicketsView.vue')
         },
         {
+          path: 'my-tasks',
+          name: 'my-tasks',
+          component: () => import('@/views/tickets/MyTasksView.vue'),
+          meta: { requiresItStaff: true }
+        },
+        {
           path: 'tickets/create',
           name: 'ticket-create',
           component: () => import('@/views/tickets/CreateTicketView.vue')

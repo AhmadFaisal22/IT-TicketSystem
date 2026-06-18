@@ -2,6 +2,7 @@ export default {
   nav: {
     dashboard: 'Dashboard',
     tickets: 'Tickets',
+    myTasks: 'My Tasks',
     assets: 'Inventory',
     newTicket: 'New Ticket',
     admin: 'Admin',
@@ -11,6 +12,12 @@ export default {
     approval: 'Approval Levels',
     assetOptions: 'Inventory Options',
     logout: 'Logout'
+  },
+  myTasks: {
+    subtitle: 'Tickets assigned to you',
+    showCompleted: 'Show completed',
+    done: 'Done',
+    empty: 'You have no assigned tickets.'
   },
   auth: {
     login: 'Sign In',

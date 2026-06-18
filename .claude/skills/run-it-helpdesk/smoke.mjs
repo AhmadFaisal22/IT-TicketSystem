@@ -259,6 +259,7 @@ async function smokeScreenshots() {
   const chrome = spawn(CHROME_EXE, [
     '--headless=new', '--no-sandbox', '--disable-gpu',
     `--remote-debugging-port=${DEBUG_PORT}`,
+    '--remote-allow-origins=*',
     `--user-data-dir=${profileDir}`,
     process.env.MOBILE ? '--window-size=390,844' : '--window-size=1280,800',
     'about:blank',
@@ -298,6 +299,10 @@ async function smokeScreenshots() {
     // 5. Admin users
     await cdp.navigate(`${FRONTEND_URL}/admin/users`, 2000);
     await cdp.screenshot(path.join(SCREENSHOT_DIR, '05-admin-users.png'));
+
+    // 5b. My Tasks board (Kanban) — new feature
+    await cdp.navigate(`${FRONTEND_URL}/my-tasks`, 2500);
+    await cdp.screenshot(path.join(SCREENSHOT_DIR, '05b-my-tasks.png'));
 
     // 6. Assets list (IT-only)
     await cdp.navigate(`${FRONTEND_URL}/assets`, 2500);
