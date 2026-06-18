@@ -7,13 +7,14 @@
 
     <!-- Sidebar -->
     <aside
-      class="w-64 bg-white text-gray-700 dark:bg-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 flex flex-col fixed h-full z-30 transition-all duration-300 ease-in-out"
+      class="w-64 bg-white text-gray-700 dark:bg-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 flex flex-col fixed h-full z-30 transition-[width,transform] duration-300 ease-in-out"
       :class="[collapsed ? 'lg:w-16' : 'lg:w-64', sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']">
 
       <div class="h-16 flex items-center px-4 sm:pl-6 sm:pr-3 border-b border-gray-200 dark:border-gray-700"
         :class="collapsed ? 'lg:px-0' : ''">
         <div class="flex items-center justify-between w-full" :class="collapsed ? 'lg:justify-center' : ''">
-          <div class="flex items-center gap-3" :class="collapsed ? 'lg:hidden' : ''">
+          <div class="flex items-center gap-3 overflow-hidden transition-[max-width,opacity,transform] duration-200 ease-out"
+            :class="collapsed ? 'lg:max-w-0 lg:opacity-0 lg:-translate-x-1' : 'lg:max-w-48 lg:opacity-100 lg:translate-x-0'">
             <img src="/SEG Logo.png" alt="SEG Solar" class="h-8 w-auto object-contain" />
             <span class="font-bold text-sm leading-tight text-gray-900 dark:text-white">IT Ticketing<br/>System</span>
           </div>
@@ -34,26 +35,26 @@
         </div>
       </div>
 
-      <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav class="flex-1 px-3 py-4 space-y-1 overflow-x-hidden overflow-y-auto">
         <router-link v-for="item in navItems" :key="item.name" :to="item.to" :title="t(item.label)"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          :class="[navLinkClass(item), collapsed ? 'lg:justify-center' : '']">
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-[background-color,color,gap] duration-200"
+          :class="[navLinkClass(item), collapsed ? 'lg:justify-center lg:gap-0' : '']">
           <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain flex-shrink-0" :class="navImageClass(item)" />
           <component v-else :is="item.icon" class="w-5 h-5 flex-shrink-0" />
-          <span :class="collapsed ? 'lg:hidden' : ''">{{ t(item.label) }}</span>
+          <span :class="[sidebarLabelBase, sidebarLabelClass]">{{ t(item.label) }}</span>
         </router-link>
 
         <template v-if="auth.isAdmin">
-          <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
-            :class="collapsed ? 'lg:hidden' : ''">
-            {{ t('nav.admin') }}
+          <div class="h-8 px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center"
+            :class="collapsed ? 'lg:justify-center lg:px-0' : ''">
+            <span :class="[sidebarLabelBase, sidebarLabelClass]">{{ t('nav.admin') }}</span>
           </div>
           <router-link v-for="item in adminItems" :key="item.name" :to="item.to" :title="t(item.label)"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="[navLinkClass(item), collapsed ? 'lg:justify-center' : '']">
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-[background-color,color,gap] duration-200"
+            :class="[navLinkClass(item), collapsed ? 'lg:justify-center lg:gap-0' : '']">
             <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain flex-shrink-0" :class="navImageClass(item)" />
             <component v-else :is="item.icon" class="w-5 h-5 flex-shrink-0" />
-            <span :class="collapsed ? 'lg:hidden' : ''">{{ t(item.label) }}</span>
+            <span :class="[sidebarLabelBase, sidebarLabelClass]">{{ t(item.label) }}</span>
           </router-link>
         </template>
       </nav>
@@ -100,7 +101,7 @@
     </aside>
 
     <!-- Main content -->
-    <div class="flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out"
+    <div class="flex-1 flex flex-col min-h-screen transition-[margin-left] duration-300 ease-in-out"
       :class="collapsed ? 'lg:ml-16' : 'lg:ml-64'">
 
       <!-- Top bar -->
@@ -153,6 +154,12 @@ const sidebarOpen = ref(false)
 // Desktop-only: collapse the sidebar to an icon rail. Persisted across reloads.
 const collapsed = ref(localStorage.getItem('sidebarCollapsed') === '1')
 const currentLocale = computed(() => locale.value)
+const sidebarLabelBase = 'inline-block overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ease-out'
+const sidebarLabelClass = computed(() =>
+  collapsed.value
+    ? 'lg:max-w-0 lg:opacity-0 lg:-translate-x-1'
+    : 'lg:max-w-44 lg:opacity-100 lg:translate-x-0'
+)
 
 function toggleCollapsed() {
   collapsed.value = !collapsed.value
