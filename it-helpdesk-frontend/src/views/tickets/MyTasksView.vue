@@ -1,13 +1,8 @@
 <template>
   <div>
-    <!-- Header / toggle -->
+    <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <p class="text-sm text-gray-500">{{ t('myTasks.subtitle') }}</p>
-      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-        <input type="checkbox" v-model="showCompleted"
-          class="rounded border-gray-300 text-red-600 focus:ring-red-500" />
-        {{ t('myTasks.showCompleted') }}
-      </label>
     </div>
 
     <!-- Loading -->
@@ -59,7 +54,7 @@
                 <option v-for="s in statusOptions" :key="s" :value="s">{{ t(`ticket.${s}`) }}</option>
               </select>
             </div>
-            <p v-if="!col.tickets.length" class="text-xs text-gray-300 text-center py-4">—</p>
+            <p v-if="!col.tickets.length" class="text-xs text-gray-300 text-center py-4">-</p>
           </div>
         </div>
       </div>
@@ -82,26 +77,20 @@ const auth = useAuthStore()
 const tickets = ref<Ticket[]>([])
 const loading = ref(false)
 const error = ref('')
-const showCompleted = ref(false)
 const draggingId = ref<number | null>(null)
 
 const statusOptions = ['open', 'in_progress', 'pending', 'resolved', 'closed'] as const
 
-const columns = computed(() => {
-  const cols = [
-    { key: 'open', labelKey: 'ticket.open', tickets: tickets.value.filter(tk => tk.status === 'open') },
-    { key: 'in_progress', labelKey: 'ticket.in_progress', tickets: tickets.value.filter(tk => tk.status === 'in_progress') },
-    { key: 'pending', labelKey: 'ticket.pending', tickets: tickets.value.filter(tk => tk.status === 'pending') },
-  ]
-  if (showCompleted.value) {
-    cols.push({
-      key: 'done',
-      labelKey: 'myTasks.done',
-      tickets: tickets.value.filter(tk => tk.status === 'resolved' || tk.status === 'closed'),
-    })
-  }
-  return cols
-})
+const columns = computed(() => [
+  { key: 'open', labelKey: 'ticket.open', tickets: tickets.value.filter(tk => tk.status === 'open') },
+  { key: 'in_progress', labelKey: 'ticket.in_progress', tickets: tickets.value.filter(tk => tk.status === 'in_progress') },
+  { key: 'pending', labelKey: 'ticket.pending', tickets: tickets.value.filter(tk => tk.status === 'pending') },
+  {
+    key: 'done',
+    labelKey: 'myTasks.done',
+    tickets: tickets.value.filter(tk => tk.status === 'resolved' || tk.status === 'closed'),
+  },
+])
 
 function priorityClass(p: string) {
   const map: Record<string, string> = {
