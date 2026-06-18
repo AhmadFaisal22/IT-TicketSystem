@@ -113,7 +113,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ComputerDesktopIcon, AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
+import { ComputerDesktopIcon, AdjustmentsHorizontalIcon, ClipboardDocumentCheckIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import NotificationBell from '@/components/ui/NotificationBell.vue'
@@ -157,7 +157,10 @@ const navItems = computed((): NavItem[] => {
     { name: 'tickets', to: '/tickets', label: 'nav.tickets', iconImg: '/icons8-ticket-50.png', prefix: 'ticket' },
   ]
   if (auth.isItStaff) {
-    items.unshift({ name: 'dashboard', to: '/', label: 'nav.dashboard', iconImg: '/Dash.png' })
+    items.unshift(
+      { name: 'dashboard', to: '/', label: 'nav.dashboard', iconImg: '/Dash.png' },
+      { name: 'my-tasks', to: '/my-tasks', label: 'nav.myTasks', icon: ClipboardDocumentCheckIcon, prefix: 'my-task' }
+    )
     items.push({ name: 'assets', to: '/assets', label: 'nav.assets', icon: ComputerDesktopIcon, prefix: 'asset' })
   }
   return items
@@ -185,6 +188,7 @@ const pageTitle = computed(() => {
   const map: Record<string, string> = {
     dashboard: t('nav.dashboard'),
     tickets: t('nav.tickets'),
+    'my-tasks': t('nav.myTasks'),
     'ticket-create': t('ticket.actions.create'),
     'ticket-edit': t('ticket.actions.edit'),
     'ticket-detail': `${t('ticket.ticketNumber')}`,
