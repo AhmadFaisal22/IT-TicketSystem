@@ -11,7 +11,9 @@ export default {
     sla: 'SLA Policies',
     approval: 'Approval Levels',
     assetOptions: 'Inventory Options',
-    logout: 'Logout'
+    logout: 'Logout',
+    collapse: 'Collapse',
+    expand: 'Expand'
   },
   myTasks: {
     subtitle: 'Tickets assigned to you',

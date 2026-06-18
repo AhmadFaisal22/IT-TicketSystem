@@ -7,60 +7,71 @@
 
     <!-- Sidebar -->
     <aside
-      class="w-64 bg-white text-gray-700 dark:bg-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 flex flex-col fixed h-full z-30 transition-transform duration-300 ease-in-out"
-      :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+      class="w-64 bg-white text-gray-700 dark:bg-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 flex flex-col fixed h-full z-30 transition-all duration-300 ease-in-out"
+      :class="[collapsed ? 'lg:w-16' : 'lg:w-64', sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0']">
 
       <div class="h-16 flex items-center px-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex items-center gap-3">
+        <div class="flex items-center justify-between w-full" :class="collapsed ? 'lg:justify-center' : ''">
+          <div class="flex items-center gap-3" :class="collapsed ? 'lg:hidden' : ''">
             <img src="/SEG Logo.png" alt="SEG Solar" class="h-8 w-auto object-contain" />
             <span class="font-bold text-sm leading-tight text-gray-900 dark:text-white">IT Ticketing<br/>System</span>
           </div>
+          <!-- Mobile close -->
           <button @click="sidebarOpen = false"
             class="lg:hidden p-1.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
+          <!-- Desktop collapse toggle -->
+          <button @click="toggleCollapsed" :title="collapsed ? t('nav.expand') : t('nav.collapse')"
+            class="hidden lg:flex p-1.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition">
+            <svg class="w-5 h-5 transition-transform" :class="collapsed ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+            </svg>
+          </button>
         </div>
       </div>
 
       <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <router-link v-for="item in navItems" :key="item.name" :to="item.to"
+        <router-link v-for="item in navItems" :key="item.name" :to="item.to" :title="t(item.label)"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          :class="navLinkClass(item)">
-          <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain" :class="navImageClass(item)" />
-          <component v-else :is="item.icon" class="w-5 h-5" />
-          {{ t(item.label) }}
+          :class="[navLinkClass(item), collapsed ? 'lg:justify-center' : '']">
+          <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain flex-shrink-0" :class="navImageClass(item)" />
+          <component v-else :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+          <span :class="collapsed ? 'lg:hidden' : ''">{{ t(item.label) }}</span>
         </router-link>
 
-        <template v-if="auth.isItStaff">
-          <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-            {{ t('admin.users.title').split(' ')[0] }}
+        <template v-if="auth.isAdmin">
+          <div class="pt-3 pb-1 px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
+            :class="collapsed ? 'lg:hidden' : ''">
+            {{ t('nav.admin') }}
           </div>
-          <router-link v-for="item in adminItems" :key="item.name" :to="item.to"
+          <router-link v-for="item in adminItems" :key="item.name" :to="item.to" :title="t(item.label)"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            :class="navLinkClass(item)">
-            <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain" :class="navImageClass(item)" />
-            <component v-else :is="item.icon" class="w-5 h-5" />
-            {{ t(item.label) }}
+            :class="[navLinkClass(item), collapsed ? 'lg:justify-center' : '']">
+            <img v-if="item.iconImg" :src="item.iconImg" class="w-5 h-5 object-contain flex-shrink-0" :class="navImageClass(item)" />
+            <component v-else :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <span :class="collapsed ? 'lg:hidden' : ''">{{ t(item.label) }}</span>
           </router-link>
         </template>
       </nav>
 
       <!-- User section -->
       <div class="px-3 py-4 border-t border-gray-200 dark:border-gray-700">
-        <div class="flex items-center gap-3 px-3 mb-3">
-          <img v-if="auth.user?.avatar" :src="auth.user.avatar" class="w-8 h-8 rounded-full" />
+        <div class="flex items-center gap-3 px-3 mb-3" :class="collapsed ? 'lg:justify-center lg:px-0 lg:mb-2' : ''">
+          <img v-if="auth.user?.avatar" :src="auth.user.avatar" class="w-8 h-8 rounded-full flex-shrink-0" />
           <div v-else class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
             {{ auth.user?.name?.[0]?.toUpperCase() }}
           </div>
-          <div class="flex-1 min-w-0">
+          <div class="flex-1 min-w-0" :class="collapsed ? 'lg:hidden' : ''">
             <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ auth.user?.name }}</p>
             <p class="text-xs text-gray-500 dark:text-gray-400">{{ roleLabel }}</p>
           </div>
         </div>
-        <div class="flex items-center justify-between px-3">
+
+        <!-- Expanded controls (mobile always, desktop when not collapsed) -->
+        <div class="flex items-center justify-between px-3" :class="collapsed ? 'lg:hidden' : ''">
           <div class="flex items-center gap-3 text-xs">
             <ThemeToggle />
             <div class="flex gap-2">
@@ -73,11 +84,23 @@
           </div>
           <button @click="handleLogout" class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-xs">{{ t('nav.logout') }}</button>
         </div>
+
+        <!-- Collapsed controls (desktop icon-only) -->
+        <div class="hidden flex-col items-center gap-3" :class="collapsed ? 'lg:flex' : ''">
+          <ThemeToggle />
+          <button @click="handleLogout" :title="t('nav.logout')"
+            class="p-1.5 rounded text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </aside>
 
     <!-- Main content -->
-    <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
+    <div class="flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out"
+      :class="collapsed ? 'lg:ml-16' : 'lg:ml-64'">
 
       <!-- Top bar -->
       <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 h-16 flex items-center justify-between sticky top-0 z-10">
@@ -126,7 +149,14 @@ const auth = useAuthStore()
 const notifStore = useNotificationStore()
 
 const sidebarOpen = ref(false)
+// Desktop-only: collapse the sidebar to an icon rail. Persisted across reloads.
+const collapsed = ref(localStorage.getItem('sidebarCollapsed') === '1')
 const currentLocale = computed(() => locale.value)
+
+function toggleCollapsed() {
+  collapsed.value = !collapsed.value
+  localStorage.setItem('sidebarCollapsed', collapsed.value ? '1' : '0')
+}
 
 watch(() => route.name, () => {
   sidebarOpen.value = false

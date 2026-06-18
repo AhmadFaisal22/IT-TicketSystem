@@ -11,7 +11,9 @@ export default {
     sla: 'SLA 策略',
     approval: '审批级别',
     assetOptions: '资产选项',
-    logout: '退出登录'
+    logout: '退出登录',
+    collapse: '收起',
+    expand: '展开'
   },
   myTasks: {
     subtitle: '指派给你的工单',
