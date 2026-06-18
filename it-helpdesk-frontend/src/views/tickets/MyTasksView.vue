@@ -28,7 +28,7 @@
       </div>
 
       <!-- Board -->
-      <div v-else class="flex gap-4 overflow-x-auto pb-2">
+      <div v-else class="flex items-start gap-4 overflow-x-auto pb-2">
         <div v-for="col in columns" :key="col.key"
           class="flex-shrink-0 w-72 bg-gray-50 rounded-xl border border-gray-100">
           <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
