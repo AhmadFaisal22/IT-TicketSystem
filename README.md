@@ -112,12 +112,16 @@ php artisan tinker
 |---------|-------------|
 | **Email + OAuth Login** | Email/password login + Google Workspace & Microsoft 365 SSO |
 | **Forgot Password** | Email-based reset link flow (like Google's), token expires in 60 min |
+| **Self-Registration** | Email/password sign-up with email-verification code, scoped to a department |
 | **Bilingual** | EN / 中文 toggle per user, persisted to DB |
 | **Ticket Workflow** | Open → In Progress → Pending → Resolved → Closed |
 | **Approval Chain** | Department-level multi-step approval before ticket reaches IT |
 | **SLA Tracking** | Per-department & per-priority response/resolution deadlines |
 | **Department Chat** | Threaded comments with IT-internal notes (hidden from end users) |
 | **Notifications** | In-app bell + email on ticket events (create, assign, comment, approve/reject) |
+| **Inventory / Asset Management** | Track IT assets (tag, category, status, assignment, warranty, cost); CSV import/export; per-asset history + attachments |
+| **My Tasks Board** | Kanban of tickets assigned to you with drag-and-drop status changes (IT staff & admins) |
+| **Attachments** | Image / PDF uploads on tickets and assets (private disk, authorized download) |
 | **Dashboard** | Charts: trends, status distribution, priority, department, IT workload |
 | **RBAC** | Admin / IT Staff / End User roles |
 
@@ -143,11 +147,15 @@ IT-TicketSystem/
 │   ├── app/
 │   │   ├── Http/Controllers/Api/
 │   │   │   ├── AuthController.php          # Login, OAuth, logout, locale
+│   │   │   ├── RegisterController.php      # Self-registration + email verification
 │   │   │   ├── ForgotPasswordController.php # Forgot + reset password
 │   │   │   ├── TicketController.php        # Ticket CRUD + status/assign
 │   │   │   ├── TicketApprovalController.php # Approve / reject tickets
 │   │   │   ├── ApprovalLevelController.php  # Admin: manage approval chains
 │   │   │   ├── CommentController.php        # Ticket comments
+│   │   │   ├── AssetController.php          # Inventory CRUD + assign/status/import/export
+│   │   │   ├── AssetOptionController.php    # Asset categories & locations
+│   │   │   ├── AttachmentController.php     # Authorized attachment download
 │   │   │   ├── DashboardController.php      # KPI stats + charts
 │   │   │   ├── DepartmentController.php
 │   │   │   ├── NotificationController.php
@@ -156,13 +164,24 @@ IT-TicketSystem/
 │   │   ├── Models/
 │   │   │   ├── User.php
 │   │   │   ├── Ticket.php
-│   │   │   ├── ApprovalLevel.php
 │   │   │   ├── TicketApproval.php
+│   │   │   ├── TicketHistory.php
+│   │   │   ├── ApprovalLevel.php
 │   │   │   ├── Comment.php
+│   │   │   ├── Attachment.php           # Polymorphic (tickets + assets)
+│   │   │   ├── Asset.php
+│   │   │   ├── AssetCategory.php
+│   │   │   ├── AssetLocation.php
+│   │   │   ├── AssetHistory.php
 │   │   │   ├── Department.php
 │   │   │   └── SlaPolicy.php
 │   │   ├── Notifications/
 │   │   │   ├── ResetPasswordNotification.php
+│   │   │   ├── VerifyEmailNotification.php
+│   │   │   ├── TicketCreated.php
+│   │   │   ├── TicketAssigned.php
+│   │   │   ├── TicketStatusChanged.php
+│   │   │   ├── NewComment.php
 │   │   │   ├── TicketApprovalRequested.php
 │   │   │   ├── TicketApproved.php
 │   │   │   └── TicketRejected.php
@@ -178,7 +197,9 @@ IT-TicketSystem/
         ├── api/index.ts            # Axios + all API calls
         ├── stores/
         │   ├── auth.ts             # Pinia: current user + token
-        │   └── tickets.ts          # Pinia: tickets + types
+        │   ├── tickets.ts          # Pinia: tickets + types
+        │   ├── assets.ts           # Pinia: inventory
+        │   └── notifications.ts    # Pinia: notification bell
         ├── router/index.ts         # Routes + guards
         ├── locales/
         │   ├── en.ts               # English strings
@@ -186,18 +207,28 @@ IT-TicketSystem/
         └── views/
             ├── auth/
             │   ├── LoginView.vue
+            │   ├── RegisterView.vue        # Self-registration
+            │   ├── VerifyEmailView.vue     # Email verification code
+            │   ├── CallbackView.vue        # OAuth callback handler
             │   ├── ForgotPasswordView.vue  # Email form → "Check email" state
             │   └── ResetPasswordView.vue   # Token + new password form
             ├── tickets/
             │   ├── TicketsView.vue
+            │   ├── MyTasksView.vue         # Kanban of tickets assigned to me
             │   ├── CreateTicketView.vue
             │   ├── EditTicketView.vue
             │   └── TicketDetailView.vue    # Includes approval card
+            ├── assets/
+            │   ├── AssetsView.vue
+            │   ├── CreateAssetView.vue
+            │   ├── EditAssetView.vue
+            │   └── AssetDetailView.vue
             ├── admin/
             │   ├── UsersView.vue
             │   ├── DepartmentsView.vue
             │   ├── SlaView.vue
-            │   └── ApprovalLevelsView.vue  # JIRA-style approval chain builder
+            │   ├── ApprovalLevelsView.vue  # JIRA-style approval chain builder
+            │   └── AssetOptionsView.vue    # Asset categories & locations
             └── dashboard/
                 └── DashboardView.vue
 ```
@@ -249,10 +280,14 @@ IT-TicketSystem/
 │ department_id    │ FK → departments.id                           │
 │ created_by       │ FK → users.id                                 │
 │ assigned_to      │ FK → users.id nullable                        │
-│ response_due_at  │ timestamp nullable  (SLA deadline)            │
-│ resolution_due_at│ timestamp nullable  (SLA deadline)            │
+│ asset_id         │ FK → assets.id nullable                       │
+│ sla_response_due_at      │ timestamp nullable  (SLA deadline)     │
+│ sla_resolution_due_at    │ timestamp nullable  (SLA deadline)     │
+│ first_response_at│ timestamp nullable                            │
 │ resolved_at      │ timestamp nullable                            │
 │ closed_at        │ timestamp nullable                            │
+│ sla_response_breached    │ boolean default false                 │
+│ sla_resolution_breached  │ boolean default false                 │
 │ created_at       │ timestamp                                     │
 └──────────────────┴──────────────────────────────────────────────┘
 
@@ -316,6 +351,67 @@ IT-TicketSystem/
 │ priority         │ enum: low | medium | high | critical          │
 │ response_hours   │ integer                                       │
 │ resolution_hours │ integer                                       │
+└──────────────────┴──────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                          assets                                  │
+├──────────────────┬──────────────────────────────────────────────┤
+│ id               │ bigint PK                                     │
+│ asset_tag        │ varchar UNIQUE  (e.g. SEG-LT-0001)            │
+│ name             │ varchar nullable                              │
+│ category         │ varchar  (matches asset_categories.name)      │
+│ manufacturer     │ varchar nullable                              │
+│ model            │ varchar nullable                              │
+│ serial_number    │ varchar nullable UNIQUE                       │
+│ status           │ varchar  default 'in_stock'                   │
+│ assigned_to      │ FK → users.id nullable                        │
+│ holder_name      │ varchar nullable  (free-text holder)          │
+│ department_id    │ FK → departments.id nullable                  │
+│ location         │ varchar nullable                              │
+│ purchase_date    │ date nullable                                 │
+│ assign_date      │ date nullable                                 │
+│ purchase_cost    │ decimal(12,2) nullable                        │
+│ purchase_link    │ varchar nullable                              │
+│ warranty_expiry  │ date nullable                                 │
+│ notes            │ text nullable                                 │
+└──────────────────┴──────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│             asset_categories  /  asset_locations                 │
+├──────────────────┬──────────────────────────────────────────────┤
+│ id               │ bigint PK                                     │
+│ name             │ varchar UNIQUE  (English)                     │
+│ name_zh          │ varchar nullable  (Chinese)                   │
+└──────────────────┴──────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                      asset_histories                             │
+│                  (audit trail for assets)                        │
+├──────────────────┬──────────────────────────────────────────────┤
+│ id               │ bigint PK                                     │
+│ asset_id         │ FK → assets.id  (cascade on delete)           │
+│ user_id          │ FK → users.id                                 │
+│ action           │ varchar  (e.g. "assigned", "status_changed")  │
+│ field            │ varchar nullable                              │
+│ old_value        │ text nullable                                 │
+│ new_value        │ text nullable                                 │
+│ created_at       │ timestamp                                     │
+└──────────────────┴──────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                       attachments                                │
+│             (polymorphic: tickets OR assets)                     │
+├──────────────────┬──────────────────────────────────────────────┤
+│ id               │ bigint PK                                     │
+│ attachable_type  │ varchar  (App\Models\Ticket | Asset)          │
+│ attachable_id    │ bigint                                        │
+│ user_id          │ FK → users.id                                 │
+│ filename         │ varchar  (stored name)                        │
+│ original_name    │ varchar                                       │
+│ mime_type        │ varchar                                       │
+│ size             │ unsigned bigint  (bytes)                      │
+│ path             │ varchar  (path on private 'local' disk)       │
+│ created_at       │ timestamp                                     │
 └──────────────────┴──────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -441,6 +537,9 @@ All endpoints are prefixed with `/api`. Protected routes require `Authorization:
 ### Authentication
 
 ```
+POST /api/auth/register               Self-register → sends email verification code
+POST /api/auth/verify-email           Verify email with code
+GET  /api/auth/register/departments   Departments list for the sign-up form
 POST /api/auth/login                  Email + password login
 POST /api/auth/forgot-password        Send password reset link
 POST /api/auth/reset-password         Reset password with token
@@ -454,20 +553,24 @@ POST /api/auth/logout      [auth]     Invalidate token
 PATCH /api/auth/locale     [auth]     Update UI language (en/zh)
 ```
 
+> Bearer tokens (Laravel Sanctum) expire **3 days** after they are issued.
+
 ### Tickets
 
 ```
-GET  /api/tickets              [auth]  List tickets (paginated, filterable)
-POST /api/tickets              [auth]  Create ticket
-GET  /api/tickets/:id          [auth]  Detail + comments + history + approvals
-PATCH /api/tickets/:id/status  [auth]  Change status (IT staff)
-PATCH /api/tickets/:id/assign  [auth]  Assign to IT staff
-POST /api/tickets/:id/approve  [auth]  Approve current approval step
-POST /api/tickets/:id/reject   [auth]  Reject current approval step
+GET    /api/tickets            [auth]  List tickets (paginated, filterable)
+POST   /api/tickets            [auth]  Create ticket (multipart: supports attachments)
+GET    /api/tickets/:id        [auth]  Detail + comments + history + approvals + attachments
+PUT    /api/tickets/:id        [auth]  Update ticket (title/description/priority/category)
+DELETE /api/tickets/:id        [admin] Delete ticket
+PATCH  /api/tickets/:id/status [auth]  Change status (IT staff)
+PATCH  /api/tickets/:id/assign [auth]  Assign to IT staff
+POST   /api/tickets/:id/approve [auth] Approve current approval step
+POST   /api/tickets/:id/reject  [auth] Reject current approval step
 ```
 
 Query params for `GET /api/tickets`:
-- `status`, `priority`, `department_id`, `assigned_to`, `search`, `page`
+- `status`, `priority`, `department_id`, `assigned_to`, `search`, `sla_breached`, `page`, `per_page` (1–100, default 20)
 
 ### Comments
 
@@ -481,6 +584,8 @@ DELETE /api/tickets/:id/comments/:cid   [auth]  Delete comment
 
 ```
 GET  /api/users                    [admin]  List all users (paginated)
+GET  /api/users/it-staff           [auth]   IT-department members (ticket assignees)
+GET  /api/users/assignable         [it]     Search active users (asset assignment)
 POST /api/users                    [admin]  Create user
 PUT  /api/users/:id                [admin]  Update user
 DELETE /api/users/:id              [admin]  Delete user
@@ -502,6 +607,40 @@ POST   /api/approval-levels        [admin]  Create level
 PUT    /api/approval-levels/:id    [admin]  Update level
 DELETE /api/approval-levels/:id    [admin]  Delete level
 POST   /api/approval-levels/reorder [admin] Reorder levels
+```
+
+### Inventory (Assets)
+
+> Inventory endpoints require IT staff (admin included). Category/location **management** is admin-only.
+
+```
+GET    /api/assets                       [it]     List assets (paginated, filterable)
+GET    /api/assets/meta                  [it]     Filter metadata (categories, locations, counts)
+GET    /api/assets/export                [it]     Export assets to CSV
+POST   /api/assets/import                [it]     Import assets from CSV
+GET    /api/assets/:id                   [it]     Asset detail + history + attachments
+POST   /api/assets                       [it]     Create asset
+PUT    /api/assets/:id                   [it]     Update asset
+DELETE /api/assets/:id                   [it]     Delete asset
+PATCH  /api/assets/:id/assign            [it]     Assign / unassign to a user
+PATCH  /api/assets/:id/status            [it]     Change status
+POST   /api/assets/:id/attachments       [it]     Upload attachments
+DELETE /api/assets/:id/attachments/:aid  [it]     Delete an attachment
+
+GET    /api/asset-categories             [it]     List categories
+POST   /api/asset-categories             [admin]  Create category
+PUT    /api/asset-categories/:id         [admin]  Update category
+DELETE /api/asset-categories/:id         [admin]  Delete category
+GET    /api/asset-locations              [it]     List locations
+POST   /api/asset-locations              [admin]  Create location
+PUT    /api/asset-locations/:id          [admin]  Update location
+DELETE /api/asset-locations/:id          [admin]  Delete location
+```
+
+### Attachments
+
+```
+GET /api/attachments/:id/download   [auth]  Download (authorization mirrors the parent ticket/asset)
 ```
 
 ### Dashboard & Notifications
@@ -713,7 +852,10 @@ MAIL_MAILER=log   # Emails written to storage/logs/laravel.log
 | Manage departments | ❌ | ❌ | ✅ |
 | Manage SLA policies | ❌ | ❌ | ✅ |
 | Manage approval levels | ❌ | ❌ | ✅ |
-| View dashboard | ✅ | ✅ | ✅ |
+| View / manage inventory (assets) | ❌ | ✅ | ✅ |
+| Manage asset categories / locations | ❌ | ❌ | ✅ |
+| View "My Tasks" board | ❌ | ✅ | ✅ |
+| View dashboard | ❌ | ✅ | ✅ |
 
 ---
 
