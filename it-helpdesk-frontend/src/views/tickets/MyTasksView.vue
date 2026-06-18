@@ -35,10 +35,14 @@
             <span class="text-sm font-semibold text-gray-700">{{ t(col.labelKey) }}</span>
             <span class="text-xs text-gray-400">{{ col.tickets.length }}</span>
           </div>
-          <div class="p-2 space-y-2 min-h-[60px]">
+          <div class="p-2 space-y-2 min-h-[60px]"
+            @dragover.prevent @drop="onDrop(col.key)">
             <div v-for="ticket in col.tickets" :key="ticket.id"
+              draggable="true"
+              @dragstart="onDragStart(ticket)"
+              @dragend="draggingId = null"
               @click="router.push(`/tickets/${ticket.id}`)"
-              class="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-red-300 hover:shadow-sm transition">
+              :class="['bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-red-300 hover:shadow-sm transition', draggingId === ticket.id ? 'opacity-50' : '']">
               <div class="flex items-start justify-between gap-2 mb-1.5">
                 <span class="text-xs font-mono text-red-600">{{ ticket.ticket_number }}</span>
                 <div class="flex items-center gap-1">
@@ -79,6 +83,7 @@ const tickets = ref<Ticket[]>([])
 const loading = ref(false)
 const error = ref('')
 const showCompleted = ref(false)
+const draggingId = ref<number | null>(null)
 
 const statusOptions = ['open', 'in_progress', 'pending', 'resolved', 'closed'] as const
 
@@ -110,6 +115,18 @@ function priorityClass(p: string) {
 
 function onStatusSelect(ticket: Ticket, e: Event) {
   changeStatus(ticket, (e.target as HTMLSelectElement).value)
+}
+
+function onDragStart(ticket: Ticket) {
+  draggingId.value = ticket.id
+}
+
+function onDrop(columnKey: string) {
+  const ticket = tickets.value.find(tk => tk.id === draggingId.value)
+  draggingId.value = null
+  if (!ticket) return
+  // The Done column groups resolved+closed; a drop there resolves the ticket.
+  changeStatus(ticket, columnKey === 'done' ? 'resolved' : columnKey)
 }
 
 async function changeStatus(ticket: Ticket, newStatus: string) {
