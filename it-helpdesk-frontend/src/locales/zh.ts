@@ -2,6 +2,7 @@ export default {
   nav: {
     dashboard: '仪表盘',
     tickets: '工单列表',
+    myTasks: '我的任务',
     assets: '资产',
     newTicket: '新建工单',
     admin: '管理',
@@ -11,6 +12,12 @@ export default {
     approval: '审批级别',
     assetOptions: '资产选项',
     logout: '退出登录'
+  },
+  myTasks: {
+    subtitle: '指派给你的工单',
+    showCompleted: '显示已完成',
+    done: '已完成',
+    empty: '你当前没有被指派的工单。'
   },
   auth: {
     login: '登录',
