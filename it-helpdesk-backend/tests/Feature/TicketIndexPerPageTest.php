@@ -62,5 +62,17 @@ class TicketIndexPerPageTest extends TestCase
 
         $this->getJson('/api/tickets?per_page=0')->assertStatus(422);
         $this->getJson('/api/tickets?per_page=101')->assertStatus(422);
+        $this->getJson('/api/tickets?per_page=abc')->assertStatus(422);
+    }
+
+    public function test_accepts_upper_bound_per_page(): void
+    {
+        $staff = $this->seedTickets(25);
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/tickets?per_page=100')
+            ->assertOk()
+            ->assertJsonPath('per_page', 100)
+            ->assertJsonCount(25, 'data');
     }
 }

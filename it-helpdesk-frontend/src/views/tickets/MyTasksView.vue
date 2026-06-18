@@ -42,7 +42,7 @@
               @dragstart="onDragStart(ticket)"
               @dragend="draggingId = null"
               @click="router.push(`/tickets/${ticket.id}`)"
-              :class="['bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-red-300 hover:shadow-sm transition', draggingId === ticket.id ? 'opacity-50' : '']">
+              :class="['bg-white rounded-lg border border-gray-200 p-3 cursor-pointer select-none hover:border-red-300 hover:shadow-sm transition', draggingId === ticket.id ? 'opacity-50' : '']">
               <div class="flex items-start justify-between gap-2 mb-1.5">
                 <span class="text-xs font-mono text-red-600">{{ ticket.ticket_number }}</span>
                 <div class="flex items-center gap-1">
@@ -135,7 +135,8 @@ async function changeStatus(ticket: Ticket, newStatus: string) {
   ticket.status = newStatus as Ticket['status'] // optimistic
   error.value = ''
   try {
-    await ticketApi.updateStatus(ticket.id, newStatus)
+    const { data } = await ticketApi.updateStatus(ticket.id, newStatus)
+    Object.assign(ticket, data) // sync server-updated fields (resolved_at, sla, etc.)
   } catch (err: any) {
     ticket.status = old // revert
     error.value = err?.response?.data?.message || t('common.error')
