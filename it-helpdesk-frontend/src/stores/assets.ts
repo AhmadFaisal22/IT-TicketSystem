@@ -30,6 +30,7 @@ export interface AssetAttachment {
 
 export interface Asset {
   id: number
+  version: number
   asset_tag: string
   last_name: string | null
   first_name: string | null

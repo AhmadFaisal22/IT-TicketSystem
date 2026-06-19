@@ -264,6 +264,7 @@ export default {
     confirm: 'Confirm',
     loading: 'Loading...',
     error: 'An error occurred.',
+    conflict: 'This record was changed by someone else. Please reload and try again.',
     success: 'Saved successfully.',
     breached: 'SLA Breached',
     onTime: 'On Time',

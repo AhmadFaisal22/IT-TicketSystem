@@ -144,12 +144,50 @@ class AssetTest extends TestCase
         $asset = Asset::factory()->create(['name' => 'Old']);
 
         \App\Models\AssetLocation::create(['name' => 'HQ-3F']);
-        $this->putJson("/api/assets/{$asset->id}", ['name' => 'New', 'location' => 'HQ-3F'])
+        $this->putJson("/api/assets/{$asset->id}", ['name' => 'New', 'location' => 'HQ-3F', 'version' => 1])
             ->assertOk()->assertJsonPath('name', 'New');
         $this->assertDatabaseHas('assets', ['id' => $asset->id, 'name' => 'New', 'location' => 'HQ-3F']);
 
         // A location that is not in the admin-managed list is rejected.
-        $this->putJson("/api/assets/{$asset->id}", ['location' => 'Nowhere'])->assertStatus(422);
+        $this->putJson("/api/assets/{$asset->id}", ['location' => 'Nowhere', 'version' => 2])->assertStatus(422);
+    }
+
+    public function test_update_requires_a_version_field(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $asset = Asset::factory()->create(['name' => 'Old']);
+
+        $this->putJson("/api/assets/{$asset->id}", ['name' => 'New'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('version');
+    }
+
+    public function test_update_with_matching_version_succeeds_and_bumps_version(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $asset = Asset::factory()->create(['name' => 'Old']);
+
+        $this->putJson("/api/assets/{$asset->id}", ['name' => 'New', 'version' => 1])
+            ->assertOk()
+            ->assertJsonPath('name', 'New')
+            ->assertJsonPath('version', 2);
+
+        $this->assertDatabaseHas('assets', ['id' => $asset->id, 'name' => 'New', 'version' => 2]);
+    }
+
+    public function test_update_with_stale_version_is_rejected_with_409(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $asset = Asset::factory()->create(['name' => 'Old']);
+
+        // First writer holds version 1 and wins (1 -> 2).
+        $this->putJson("/api/assets/{$asset->id}", ['name' => 'First', 'version' => 1])->assertOk();
+
+        // Second writer still holds the stale version 1 -> conflict, no overwrite.
+        $this->putJson("/api/assets/{$asset->id}", ['name' => 'Second', 'version' => 1])
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('assets', ['id' => $asset->id, 'name' => 'First', 'version' => 2]);
     }
 
     public function test_only_admin_can_delete_an_asset(): void

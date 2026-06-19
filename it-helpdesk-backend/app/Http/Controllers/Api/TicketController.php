@@ -171,6 +171,7 @@ class TicketController extends Controller
         $this->authorize('update', $ticket);
 
         $data = $request->validate([
+            'version'     => 'required|integer',
             'title'       => 'sometimes|string|max:255',
             'description' => 'sometimes|string|max:10000',
             'priority'    => 'sometimes|in:low,medium,high,critical',
@@ -178,7 +179,10 @@ class TicketController extends Controller
             'subcategory' => 'nullable|string|max:100',
         ]);
 
-        $ticket->update($data);
+        $expectedVersion = $data['version'];
+        unset($data['version']);
+
+        $ticket->optimisticUpdate($data, $expectedVersion);
         return response()->json($ticket->load(['creator', 'assignee', 'department']));
     }
 

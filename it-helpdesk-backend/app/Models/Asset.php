@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasOptimisticLock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class Asset extends Model
 {
     use HasFactory;
+    use HasOptimisticLock;
 
     protected $fillable = [
         'asset_tag', 'last_name', 'first_name', 'name', 'category', 'manufacturer', 'model',
@@ -22,6 +24,7 @@ class Asset extends Model
     protected $casts = [
         'warranty_expiry' => 'date',
         'purchase_cost' => 'decimal:2',
+        'version' => 'integer',
     ];
 
     protected static function booted(): void

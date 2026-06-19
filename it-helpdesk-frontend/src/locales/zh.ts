@@ -266,6 +266,7 @@ export default {
     confirm: '确认',
     loading: '加载中...',
     error: '操作失败，请重试。',
+    conflict: '该记录已被他人修改，请刷新后重试。',
     success: '保存成功。',
     breached: 'SLA 已超时',
     onTime: '按时',

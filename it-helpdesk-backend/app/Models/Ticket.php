@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasOptimisticLock;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\TicketApproval;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Ticket extends Model
 {
+    use HasOptimisticLock;
+
     protected $fillable = [
         'ticket_number', 'title', 'description', 'status', 'priority',
         'category', 'subcategory', 'department_id', 'asset_id', 'created_by', 'assigned_to',
@@ -26,6 +29,7 @@ class Ticket extends Model
         'closed_at' => 'datetime',
         'sla_response_breached' => 'boolean',
         'sla_resolution_breached' => 'boolean',
+        'version' => 'integer',
     ];
 
     protected static function booted(): void

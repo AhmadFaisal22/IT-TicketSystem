@@ -160,6 +160,7 @@ class AssetController extends Controller
         $this->authorizeItStaff($request);
 
         $data = $request->validate([
+            'version'         => 'required|integer',
             'asset_tag'       => 'sometimes|string|max:255|unique:assets,asset_tag,' . $asset->id,
             'name'            => 'nullable|string|max:255',
             'last_name'       => 'nullable|string|max:255',
@@ -176,8 +177,11 @@ class AssetController extends Controller
             'notes'           => 'nullable|string|max:10000',
         ]);
 
-        DB::transaction(function () use ($asset, $data, $request) {
-            $asset->update($data);
+        $expectedVersion = $data['version'];
+        unset($data['version']);
+
+        DB::transaction(function () use ($asset, $data, $expectedVersion, $request) {
+            $asset->optimisticUpdate($data, $expectedVersion);
             $asset->logHistory($request->user()->id, 'updated');
         });
 

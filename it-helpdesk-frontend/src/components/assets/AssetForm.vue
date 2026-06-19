@@ -151,6 +151,8 @@ function payload() {
     purchase_link: form.purchase_link || null,
     warranty_expiry: form.warranty_expiry || null,
     notes: form.notes || null,
+    // Optimistic-lock guard; only sent when editing an existing asset.
+    version: props.asset?.version,
   }
 }
 
@@ -166,7 +168,9 @@ async function submit() {
       router.push(`/assets/${created.id}`)
     }
   } catch (e: any) {
-    error.value = e?.response?.data?.message || t('common.error')
+    error.value = e?.response?.status === 409
+      ? t('common.conflict')
+      : (e?.response?.data?.message || t('common.error'))
   } finally {
     saving.value = false
   }

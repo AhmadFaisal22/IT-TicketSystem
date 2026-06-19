@@ -75,6 +75,7 @@ const loadingTicket = ref(true)
 const loading = ref(false)
 const error = ref('')
 const ticketNumber = ref('')
+const version = ref(0)
 
 const form = reactive({
   title: '',
@@ -93,6 +94,7 @@ async function loadTicket() {
       return
     }
     ticketNumber.value = data.ticket_number
+    version.value = data.version
     form.title = data.title
     form.description = data.description
     form.priority = data.priority
@@ -110,6 +112,7 @@ async function submit() {
   error.value = ''
   try {
     await ticketApi.update(ticketId, {
+      version: version.value,
       title: form.title,
       description: form.description,
       priority: form.priority,
@@ -118,7 +121,9 @@ async function submit() {
     })
     router.push(`/tickets/${ticketId}`)
   } catch (e: any) {
-    error.value = e?.response?.data?.message || t('common.error')
+    error.value = e?.response?.status === 409
+      ? t('common.conflict')
+      : (e?.response?.data?.message || t('common.error'))
   } finally {
     loading.value = false
   }
