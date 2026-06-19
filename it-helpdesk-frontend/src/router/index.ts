@@ -160,4 +160,20 @@ router.beforeEach(async (to, _from, next) => {
   next()
 })
 
+// A lazy route component failed to load (stale chunk after redeploy, or a
+// blocked fetch e.g. untrusted TLS cert). Reload once to recover instead of
+// leaving the tab dead. The sessionStorage flag guards against a reload loop.
+router.onError((err) => {
+  const msg = (err as Error)?.message ?? ''
+  if (/dynamically imported module|Importing a module script failed/i.test(msg)) {
+    if (!sessionStorage.getItem('chunkReloaded')) {
+      sessionStorage.setItem('chunkReloaded', '1')
+      window.location.reload()
+    }
+  }
+})
+
+// Clear the reload guard after any successful navigation.
+router.afterEach(() => sessionStorage.removeItem('chunkReloaded'))
+
 export default router

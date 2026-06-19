@@ -23,6 +23,15 @@ const i18n = createI18n({
   messages: { en, zh }
 })
 
+// Recover from a failed module preload (stale chunk after redeploy, or a
+// blocked fetch e.g. untrusted TLS cert) by reloading the page once.
+window.addEventListener('vite:preloadError', () => {
+  if (!sessionStorage.getItem('chunkReloaded')) {
+    sessionStorage.setItem('chunkReloaded', '1')
+    window.location.reload()
+  }
+})
+
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
