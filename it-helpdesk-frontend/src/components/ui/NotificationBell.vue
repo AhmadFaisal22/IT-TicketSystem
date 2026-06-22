@@ -73,6 +73,7 @@ function getNotifMessage(n: AppNotification) {
   if (type === 'status_changed') return `Status: ${n.data.old_status} → ${n.data.new_status}`
   if (type === 'ticket_assigned') return `Assigned: ${n.data.title}`
   if (type === 'new_comment') return `New reply from ${n.data.comment_by}`
+  if (type === 'sla_breached') return `SLA breached (${n.data.breach_type}): ${n.data.title}`
   return n.data?.title || ''
 }
 

@@ -15,6 +15,7 @@ export interface AppNotification {
     old_status?: string
     new_status?: string
     comment_by?: string
+    breach_type?: string
   }
 }
 

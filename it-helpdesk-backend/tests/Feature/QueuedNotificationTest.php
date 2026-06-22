@@ -7,6 +7,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Notifications\NewComment;
 use App\Notifications\ResetPasswordNotification;
+use App\Notifications\SlaBreached;
 use App\Notifications\TicketApprovalRequested;
 use App\Notifications\TicketApproved;
 use App\Notifications\TicketAssigned;
@@ -28,6 +29,7 @@ class QueuedNotificationTest extends TestCase
         $classes = [
             NewComment::class,
             ResetPasswordNotification::class,
+            SlaBreached::class,
             TicketApprovalRequested::class,
             TicketApproved::class,
             TicketAssigned::class,
