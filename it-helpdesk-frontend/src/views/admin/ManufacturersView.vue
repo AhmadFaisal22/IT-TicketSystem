@@ -77,38 +77,38 @@
 
           <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="sm:col-span-2">
-              <label class="lbl">{{ t('admin.manufacturers.name') }} *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.name') }} *</label>
               <input v-model="form.name" class="fld" />
             </div>
             <div>
-              <label class="lbl">{{ t('admin.manufacturers.shortName') }}</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.shortName') }}</label>
               <input v-model="form.short_name" class="fld" />
             </div>
             <div>
-              <label class="lbl">{{ t('admin.manufacturers.contact') }}</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.contact') }}</label>
               <input v-model="form.contact" class="fld" />
             </div>
             <div>
-              <label class="lbl">{{ t('admin.manufacturers.supportPhone') }}</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.supportPhone') }}</label>
               <input v-model="form.support_phone" class="fld" />
             </div>
             <div>
-              <label class="lbl">{{ t('admin.manufacturers.supportEmail') }}</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.supportEmail') }}</label>
               <input v-model="form.support_email" type="email" class="fld" />
             </div>
             <div>
-              <label class="lbl">{{ t('admin.manufacturers.countryOfOrigin') }}</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.countryOfOrigin') }}</label>
               <input v-model="form.country_of_origin" class="fld" />
             </div>
             <div>
-              <label class="lbl">{{ t('admin.manufacturers.status') }}</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.status') }}</label>
               <select v-model="form.status" class="fld">
                 <option value="active">{{ t('admin.manufacturers.active') }}</option>
                 <option value="inactive">{{ t('admin.manufacturers.inactive') }}</option>
               </select>
             </div>
             <div class="sm:col-span-2">
-              <label class="lbl">{{ t('admin.manufacturers.notes') }}</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.manufacturers.notes') }}</label>
               <textarea v-model="form.notes" rows="3" class="fld"></textarea>
             </div>
             <p v-if="error" class="sm:col-span-2 text-sm text-red-600">{{ error }}</p>
@@ -198,6 +198,5 @@ onMounted(load)
 </script>
 
 <style scoped>
-.lbl { @apply block text-sm font-medium text-gray-700 mb-1; }
 .fld { @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none; }
 </style>
