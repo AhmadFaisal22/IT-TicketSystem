@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { assetCategoryApi, assetLocationApi } from '@/api'
 
@@ -152,5 +152,8 @@ async function deleteItem(item: Option) {
   await load()
 }
 
-onMounted(load)
+// The Categories and Locations routes share this component, so Vue Router reuses
+// the instance when switching between them. Watch `kind` (immediate covers the
+// initial mount) so the correct list reloads instead of showing stale data.
+watch(() => props.kind, load, { immediate: true })
 </script>
