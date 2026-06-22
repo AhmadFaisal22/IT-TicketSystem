@@ -15,27 +15,15 @@ use Illuminate\Http\Request;
  */
 class AssetOptionController extends Controller
 {
-    private function authorizeItStaff(Request $request): void
-    {
-        abort_unless($request->user()->isItStaff(), 403);
-    }
-
-    private function authorizeAdmin(Request $request): void
-    {
-        abort_unless($request->user()->isAdmin(), 403);
-    }
-
     // ── Categories ───────────────────────────────────────────────
 
     public function categories(Request $request): JsonResponse
     {
-        $this->authorizeItStaff($request);
         return response()->json(AssetCategory::orderBy('name')->get());
     }
 
     public function storeCategory(Request $request): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $data = $request->validate([
             'name' => 'required|string|max:100|unique:asset_categories,name',
             'name_zh' => 'nullable|string|max:100',
@@ -45,7 +33,6 @@ class AssetOptionController extends Controller
 
     public function updateCategory(Request $request, AssetCategory $assetCategory): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $data = $request->validate([
             'name' => 'sometimes|string|max:100|unique:asset_categories,name,' . $assetCategory->id,
             'name_zh' => 'nullable|string|max:100',
@@ -56,7 +43,6 @@ class AssetOptionController extends Controller
 
     public function destroyCategory(Request $request, AssetCategory $assetCategory): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $assetCategory->delete();
         return response()->json(null, 204);
     }
@@ -65,13 +51,11 @@ class AssetOptionController extends Controller
 
     public function locations(Request $request): JsonResponse
     {
-        $this->authorizeItStaff($request);
         return response()->json(AssetLocation::orderBy('name')->get());
     }
 
     public function storeLocation(Request $request): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $data = $request->validate([
             'name' => 'required|string|max:100|unique:asset_locations,name',
             'name_zh' => 'nullable|string|max:100',
@@ -81,7 +65,6 @@ class AssetOptionController extends Controller
 
     public function updateLocation(Request $request, AssetLocation $assetLocation): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $data = $request->validate([
             'name' => 'sometimes|string|max:100|unique:asset_locations,name,' . $assetLocation->id,
             'name_zh' => 'nullable|string|max:100',
@@ -92,7 +75,6 @@ class AssetOptionController extends Controller
 
     public function destroyLocation(Request $request, AssetLocation $assetLocation): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $assetLocation->delete();
         return response()->json(null, 204);
     }
@@ -101,13 +83,11 @@ class AssetOptionController extends Controller
 
     public function manufacturers(Request $request): JsonResponse
     {
-        $this->authorizeItStaff($request);
         return response()->json(Manufacturer::orderBy('name')->get());
     }
 
     public function storeManufacturer(Request $request): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $data = $this->validateManufacturer($request);
         $data['status'] ??= 'active';
         return response()->json(Manufacturer::create($data), 201);
@@ -115,7 +95,6 @@ class AssetOptionController extends Controller
 
     public function updateManufacturer(Request $request, Manufacturer $manufacturer): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $data = $this->validateManufacturer($request, $manufacturer->id);
         $manufacturer->update($data);
         return response()->json($manufacturer);
@@ -123,7 +102,6 @@ class AssetOptionController extends Controller
 
     public function destroyManufacturer(Request $request, Manufacturer $manufacturer): JsonResponse
     {
-        $this->authorizeAdmin($request);
         $manufacturer->delete();
         return response()->json(null, 204);
     }

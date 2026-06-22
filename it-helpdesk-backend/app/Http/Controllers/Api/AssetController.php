@@ -17,16 +17,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AssetController extends Controller
 {
-    /** Reject anyone who is not IT staff/admin. Called at the top of every action. */
-    private function authorizeItStaff(Request $request): void
-    {
-        abort_unless($request->user()->isItStaff(), 403);
-    }
-
     public function index(Request $request): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         $f = $request->validate([
             'status'        => 'nullable|' . AssetCategories::statusRule(),
             'category'      => 'nullable|' . AssetCategories::categoryRule(),
@@ -74,8 +66,6 @@ class AssetController extends Controller
 
     public function show(Request $request, Asset $asset): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         return response()->json(
             $asset->load(['assignee', 'department', 'histories.user', 'attachments', 'tickets'])
         );
@@ -83,8 +73,6 @@ class AssetController extends Controller
 
     public function meta(Request $request): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         $counts = Asset::selectRaw('status, count(*) as c')->groupBy('status')->pluck('c', 'status');
         $statusCounts = [];
         foreach (AssetCategories::STATUSES as $s) {
@@ -100,8 +88,6 @@ class AssetController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorizeItStaff($request);
-
         $query = Asset::query()->orderByDesc('created_at');
         if ($request->filled('status')) {
             $query->where('status', $request->string('status'));
@@ -115,7 +101,6 @@ class AssetController extends Controller
 
     public function import(Request $request): JsonResponse
     {
-        $this->authorizeItStaff($request);
         $request->validate(['file' => 'required|file|mimes:xlsx,xls,csv']);
 
         $import = new AssetsImport();
@@ -129,8 +114,6 @@ class AssetController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         $data = $request->validate([
             'asset_tag'       => 'required|string|max:255|unique:assets,asset_tag',
             'name'            => 'nullable|string|max:255',
@@ -162,8 +145,6 @@ class AssetController extends Controller
 
     public function update(Request $request, Asset $asset): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         $data = $request->validate([
             'version'         => 'required|integer',
             'asset_tag'       => 'sometimes|string|max:255|unique:assets,asset_tag,' . $asset->id,
@@ -193,17 +174,14 @@ class AssetController extends Controller
         return response()->json($asset->load(['assignee', 'department']));
     }
 
-    public function destroy(Request $request, Asset $asset): JsonResponse
+    public function destroy(Asset $asset): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
         $asset->delete();
         return response()->json(null, 204);
     }
 
     public function assign(Request $request, Asset $asset): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         $data = $request->validate([
             'assigned_to'   => 'nullable|exists:users,id',
             'department_id' => 'nullable|exists:departments,id',
@@ -247,8 +225,6 @@ class AssetController extends Controller
 
     public function storeAttachments(Request $request, Asset $asset): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         $request->validate([
             'attachments'   => 'required|array|max:5',
             'attachments.*' => 'file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240',
@@ -272,7 +248,6 @@ class AssetController extends Controller
 
     public function destroyAttachment(Request $request, Asset $asset, Attachment $attachment): JsonResponse
     {
-        $this->authorizeItStaff($request);
         abort_unless(
             $attachment->attachable_type === Asset::class && $attachment->attachable_id === $asset->id,
             404
@@ -288,8 +263,6 @@ class AssetController extends Controller
 
     public function updateStatus(Request $request, Asset $asset): JsonResponse
     {
-        $this->authorizeItStaff($request);
-
         $data = $request->validate(['status' => 'required|' . AssetCategories::statusRule()]);
         $old = $asset->status;
 

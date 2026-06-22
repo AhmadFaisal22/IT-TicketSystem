@@ -23,8 +23,6 @@ class ApprovalLevelController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $data = $request->validate([
             'name'          => 'required|string|max:100',
             'department_id' => 'required|exists:departments,id',
@@ -40,8 +38,6 @@ class ApprovalLevelController extends Controller
 
     public function update(Request $request, ApprovalLevel $approvalLevel): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $data = $request->validate([
             'name'        => 'sometimes|string|max:100',
             'level_order' => 'sometimes|integer|min:1|max:10',
@@ -56,7 +52,6 @@ class ApprovalLevelController extends Controller
 
     public function destroy(Request $request, ApprovalLevel $approvalLevel): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
         $approvalLevel->delete();
         return response()->json(null, 204);
     }
@@ -64,8 +59,6 @@ class ApprovalLevelController extends Controller
     // Reorder: accepts [{id, level_order}]
     public function reorder(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $items = $request->validate([
             'levels'              => 'required|array',
             'levels.*.id'         => 'required|exists:approval_levels,id',

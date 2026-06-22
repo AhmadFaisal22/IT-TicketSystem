@@ -16,8 +16,6 @@ class SlaController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isItStaff(), 403);
-
         $data = $request->validate([
             'department_id'    => 'nullable|exists:departments,id',
             'priority'         => 'required|in:low,medium,high,critical',
@@ -35,7 +33,6 @@ class SlaController extends Controller
 
     public function destroy(SlaPolicy $slaPolicy): JsonResponse
     {
-        abort_unless(request()->user()->isItStaff(), 403);
         $slaPolicy->delete();
         return response()->json(null, 204);
     }

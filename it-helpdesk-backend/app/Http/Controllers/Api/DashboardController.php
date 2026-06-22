@@ -14,8 +14,6 @@ class DashboardController extends Controller
 {
     public function stats(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isItStaff(), 403);
-
         $validated = $request->validate(['range' => 'sometimes|integer|min:1|max:365']);
         $range = $validated['range'] ?? 30;
         $from = now()->subDays($range);
@@ -88,8 +86,6 @@ class DashboardController extends Controller
 
     public function sla(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isItStaff(), 403);
-
         $validated = $request->validate(['range' => 'sometimes|integer|min:1|max:365']);
         $range = $validated['range'] ?? 30;
         $from = now()->subDays($range);

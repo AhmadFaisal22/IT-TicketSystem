@@ -13,8 +13,6 @@ class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $query = User::with('department')->orderBy('name');
 
         if ($request->filled('role')) {
@@ -54,8 +52,6 @@ class UserController extends Controller
     /** Search active users for asset assignment (IT staff only). */
     public function assignable(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isItStaff(), 403);
-
         $data = $request->validate([
             'search'      => 'nullable|string|max:100',
             'limit'       => 'nullable|integer|min:1|max:50',
@@ -96,8 +92,6 @@ class UserController extends Controller
 
     public function updateRole(Request $request, User $user): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $data = $request->validate(['role' => 'required|in:admin,it_staff,user']);
         $user->update($data);
         return response()->json($user);
@@ -105,8 +99,6 @@ class UserController extends Controller
 
     public function updateDepartment(Request $request, User $user): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $data = $request->validate(['department_id' => 'nullable|exists:departments,id']);
         $user->update($data);
         return response()->json($user->load('department'));
@@ -114,16 +106,12 @@ class UserController extends Controller
 
     public function toggleActive(Request $request, User $user): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $user->update(['active' => !$user->active]);
         return response()->json($user);
     }
 
     public function store(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $data = $request->validate([
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|unique:users,email',
@@ -147,8 +135,6 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
-
         $data = $request->validate([
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|unique:users,email,' . $user->id,
@@ -174,7 +160,6 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
         abort_if($user->id === $request->user()->id, 422, 'Cannot delete your own account.');
 
         $user->delete();

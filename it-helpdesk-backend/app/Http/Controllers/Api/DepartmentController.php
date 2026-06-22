@@ -16,8 +16,6 @@ class DepartmentController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isItStaff(), 403);
-
         $data = $request->validate([
             'name' => 'required|string|max:100|unique:departments',
             'name_zh' => 'required|string|max:100',
@@ -29,8 +27,6 @@ class DepartmentController extends Controller
 
     public function update(Request $request, Department $department): JsonResponse
     {
-        abort_unless($request->user()->isItStaff(), 403);
-
         $data = $request->validate([
             'name' => 'sometimes|string|max:100|unique:departments,name,' . $department->id,
             'name_zh' => 'sometimes|string|max:100',
@@ -44,7 +40,6 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department): JsonResponse
     {
-        abort_unless(request()->user()->isItStaff(), 403);
         $department->update(['active' => false]);
         return response()->json(null, 204);
     }
