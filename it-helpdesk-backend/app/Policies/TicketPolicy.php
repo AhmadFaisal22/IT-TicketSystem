@@ -7,11 +7,6 @@ use App\Models\User;
 
 class TicketPolicy
 {
-    public function viewDashboard(User $user): bool
-    {
-        return $user->isItStaff();
-    }
-
     public function view(User $user, Ticket $ticket): bool
     {
         if ($user->isItStaff()) return true;

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\TicketApproval;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
@@ -34,15 +35,22 @@ class Ticket extends Model
 
     protected static function booted(): void
     {
+        // A temporary unique value satisfies the NOT NULL + unique column at
+        // insert time; the real number is derived from the auto-increment id
+        // once it exists. Deriving from the id is concurrency-safe and never
+        // reuses a number after deletions (unlike the old max(id)+1 scheme).
         static::creating(function (Ticket $ticket) {
-            $ticket->ticket_number = static::generateNumber();
+            if (!$ticket->ticket_number) {
+                $ticket->ticket_number = 'TKT-tmp-' . Str::uuid();
+            }
         });
-    }
 
-    private static function generateNumber(): string
-    {
-        $last = static::max('id') ?? 0;
-        return 'TKT-' . str_pad($last + 1, 5, '0', STR_PAD_LEFT);
+        static::created(function (Ticket $ticket) {
+            if (str_starts_with((string) $ticket->ticket_number, 'TKT-tmp-')) {
+                $ticket->ticket_number = 'TKT-' . str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT);
+                $ticket->saveQuietly();
+            }
+        });
     }
 
     public function department(): BelongsTo
@@ -85,27 +93,10 @@ class Ticket extends Model
         return $this->hasMany(TicketApproval::class)->orderBy('level_order');
     }
 
-    public function needsApproval(): bool
-    {
-        return $this->status === 'pending_approval';
-    }
-
     public function setSlaDeadlines(): void
     {
         $policy = SlaPolicy::findForTicket($this->department_id, $this->priority);
         $this->sla_response_due_at = now()->addHours($policy->response_hours);
         $this->sla_resolution_due_at = now()->addHours($policy->resolution_hours);
-    }
-
-    public function isOverdueResponse(): bool
-    {
-        return $this->sla_response_due_at && !$this->first_response_at
-            && now()->isAfter($this->sla_response_due_at);
-    }
-
-    public function isOverdueResolution(): bool
-    {
-        return $this->sla_resolution_due_at && !in_array($this->status, ['resolved', 'closed'])
-            && now()->isAfter($this->sla_resolution_due_at);
     }
 }
