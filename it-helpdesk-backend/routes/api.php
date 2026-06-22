@@ -76,6 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('asset-locations', [AssetOptionController::class, 'storeLocation']);
     Route::put('asset-locations/{assetLocation}', [AssetOptionController::class, 'updateLocation']);
     Route::delete('asset-locations/{assetLocation}', [AssetOptionController::class, 'destroyLocation']);
+    Route::get('asset-manufacturers', [AssetOptionController::class, 'manufacturers']);
+    Route::post('asset-manufacturers', [AssetOptionController::class, 'storeManufacturer']);
+    Route::put('asset-manufacturers/{manufacturer}', [AssetOptionController::class, 'updateManufacturer']);
+    Route::delete('asset-manufacturers/{manufacturer}', [AssetOptionController::class, 'destroyManufacturer']);
 
     // Departments
     Route::apiResource('departments', DepartmentController::class);

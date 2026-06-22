@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AssetCategory;
 use App\Models\AssetLocation;
+use App\Models\Manufacturer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -94,5 +95,53 @@ class AssetOptionController extends Controller
         $this->authorizeAdmin($request);
         $assetLocation->delete();
         return response()->json(null, 204);
+    }
+
+    // ── Manufacturers ────────────────────────────────────────────
+
+    public function manufacturers(Request $request): JsonResponse
+    {
+        $this->authorizeItStaff($request);
+        return response()->json(Manufacturer::orderBy('name')->get());
+    }
+
+    public function storeManufacturer(Request $request): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+        $data = $this->validateManufacturer($request);
+        $data['status'] ??= 'active';
+        return response()->json(Manufacturer::create($data), 201);
+    }
+
+    public function updateManufacturer(Request $request, Manufacturer $manufacturer): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+        $data = $this->validateManufacturer($request, $manufacturer->id);
+        $manufacturer->update($data);
+        return response()->json($manufacturer);
+    }
+
+    public function destroyManufacturer(Request $request, Manufacturer $manufacturer): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+        $manufacturer->delete();
+        return response()->json(null, 204);
+    }
+
+    /** @return array<string,mixed> */
+    private function validateManufacturer(Request $request, ?int $ignoreId = null): array
+    {
+        $nameRule = 'string|max:255|unique:manufacturers,name' . ($ignoreId ? ",{$ignoreId}" : '');
+
+        return $request->validate([
+            'name'              => ($ignoreId ? 'sometimes|' : 'required|') . $nameRule,
+            'short_name'        => 'nullable|string|max:255',
+            'contact'           => 'nullable|string|max:255',
+            'support_phone'     => 'nullable|string|max:255',
+            'support_email'     => 'nullable|email|max:255',
+            'country_of_origin' => 'nullable|string|max:255',
+            'notes'             => 'nullable|string|max:10000',
+            'status'            => 'nullable|in:active,inactive',
+        ]);
     }
 }

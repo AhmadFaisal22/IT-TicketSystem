@@ -32,7 +32,10 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.manufacturer') }}</label>
-        <input v-model="form.manufacturer" class="input" />
+        <select v-model="form.manufacturer" class="input">
+          <option value="">—</option>
+          <option v-for="m in manufacturerOptions" :key="m" :value="m">{{ m }}</option>
+        </select>
       </div>
 
       <div>
@@ -101,11 +104,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAssetStore, type Asset } from '@/stores/assets'
-import { departmentApi, assetCategoryApi, assetLocationApi } from '@/api'
+import { departmentApi, assetCategoryApi, assetLocationApi, assetManufacturerApi } from '@/api'
 
 const props = defineProps<{ asset?: Asset | null }>()
 const { t, locale } = useI18n()
@@ -115,8 +118,17 @@ const store = useAssetStore()
 const categories = ref<any[]>([])
 const locations = ref<any[]>([])
 const departments = ref<any[]>([])
+const manufacturers = ref<any[]>([])
 const saving = ref(false)
 const error = ref('')
+
+// Active manufacturers for the dropdown; keep the asset's current value selectable
+// even if it's inactive or a legacy free-text value not in the managed list.
+const manufacturerOptions = computed(() => {
+  const names = manufacturers.value.filter(m => m.status === 'active').map(m => m.name)
+  if (form.manufacturer && !names.includes(form.manufacturer)) names.unshift(form.manufacturer)
+  return names
+})
 
 const form = reactive({
   asset_tag: props.asset?.asset_tag ?? '',
@@ -177,12 +189,13 @@ async function submit() {
 }
 
 onMounted(async () => {
-  const [deptRes, catRes, locRes] = await Promise.all([
-    departmentApi.list(), assetCategoryApi.list(), assetLocationApi.list(),
+  const [deptRes, catRes, locRes, mfrRes] = await Promise.all([
+    departmentApi.list(), assetCategoryApi.list(), assetLocationApi.list(), assetManufacturerApi.list(),
   ])
   departments.value = deptRes.data
   categories.value = catRes.data
   locations.value = locRes.data
+  manufacturers.value = mfrRes.data
   if (!form.category && categories.value.length) {
     form.category = categories.value[0].name
   }

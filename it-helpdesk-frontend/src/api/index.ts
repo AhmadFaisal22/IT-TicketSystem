@@ -131,6 +131,13 @@ export const assetLocationApi = {
   delete: (id: number) => api.delete(`/asset-locations/${id}`),
 }
 
+export const assetManufacturerApi = {
+  list: () => api.get('/asset-manufacturers'),
+  create: (data: object) => api.post('/asset-manufacturers', data),
+  update: (id: number, data: object) => api.put(`/asset-manufacturers/${id}`, data),
+  delete: (id: number) => api.delete(`/asset-manufacturers/${id}`),
+}
+
 export const assetApi = {
   list: (params?: object) => api.get('/assets', { params }),
   meta: () => api.get('/assets/meta'),

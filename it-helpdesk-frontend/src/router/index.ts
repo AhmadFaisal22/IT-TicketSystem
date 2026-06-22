@@ -125,9 +125,26 @@ const router = createRouter({
               component: () => import('@/views/admin/ApprovalLevelsView.vue')
             },
             {
+              path: 'inventory/categories',
+              name: 'admin-inventory-categories',
+              component: () => import('@/views/admin/OptionCrudView.vue'),
+              props: { kind: 'categories' }
+            },
+            {
+              path: 'inventory/locations',
+              name: 'admin-inventory-locations',
+              component: () => import('@/views/admin/OptionCrudView.vue'),
+              props: { kind: 'locations' }
+            },
+            {
+              path: 'inventory/manufacturers',
+              name: 'admin-inventory-manufacturers',
+              component: () => import('@/views/admin/ManufacturersView.vue')
+            },
+            {
+              // Old single-page route → first sub-page
               path: 'asset-options',
-              name: 'admin-asset-options',
-              component: () => import('@/views/admin/AssetOptionsView.vue')
+              redirect: { name: 'admin-inventory-categories' }
             }
           ]
         }

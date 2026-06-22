@@ -56,6 +56,32 @@
             <component v-else :is="item.icon" class="w-5 h-5 flex-shrink-0" />
             <span :class="[sidebarLabelBase, sidebarLabelClass]">{{ t(item.label) }}</span>
           </router-link>
+
+          <!-- Inventory Options: expandable group with three sub-pages -->
+          <button @click="inventoryOpen = !inventoryOpen" :title="t('nav.assetOptions')"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-[background-color,color] duration-200"
+            :class="[inventoryActive ? 'bg-red-600 text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white', collapsed ? 'lg:hidden' : '']">
+            <AdjustmentsHorizontalIcon class="w-5 h-5 flex-shrink-0" />
+            <span class="flex-1 text-left" :class="[sidebarLabelBase, sidebarLabelClass]">{{ t('nav.assetOptions') }}</span>
+            <svg class="w-4 h-4 flex-shrink-0 transition-transform" :class="inventoryOpen ? 'rotate-180' : ''"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <!-- Collapsed icon rail: link straight to the first sub-page -->
+          <router-link :to="inventoryChildren[0].to" :title="t('nav.assetOptions')"
+            class="hidden items-center justify-center px-3 py-2.5 rounded-lg transition-[background-color,color] duration-200"
+            :class="[collapsed ? 'lg:flex' : '', inventoryActive ? 'bg-red-600 text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white']">
+            <AdjustmentsHorizontalIcon class="w-5 h-5 flex-shrink-0" />
+          </router-link>
+          <!-- Sub-pages -->
+          <div v-if="inventoryOpen" class="mt-1 space-y-1" :class="collapsed ? 'lg:hidden' : ''">
+            <router-link v-for="child in inventoryChildren" :key="child.name" :to="child.to"
+              class="flex items-center pl-11 pr-3 py-2 rounded-lg text-sm transition-[background-color,color] duration-200"
+              :class="navLinkClass(child)">
+              {{ t(child.label) }}
+            </router-link>
+          </div>
         </template>
       </nav>
 
@@ -168,6 +194,7 @@ function toggleCollapsed() {
 
 watch(() => route.name, () => {
   sidebarOpen.value = false
+  if (inventoryActive.value) inventoryOpen.value = true
 })
 
 type NavItem = { name: string; to: string; label: string; icon?: any; iconImg?: string; prefix?: string }
@@ -212,10 +239,18 @@ const adminItems = computed((): NavItem[] => {
   if (auth.isAdmin) {
     items.unshift({ name: 'admin-users', to: '/admin/users', label: 'nav.users', iconImg: '/Users.png' })
     items.push({ name: 'admin-approval', to: '/admin/approval-levels', label: 'nav.approval', iconImg: '/Approved.png' })
-    items.push({ name: 'admin-asset-options', to: '/admin/asset-options', label: 'nav.assetOptions', icon: AdjustmentsHorizontalIcon })
   }
   return items
 })
+
+// "Inventory Options" is an expandable group (admin only) with three sub-pages.
+const inventoryChildren: NavItem[] = [
+  { name: 'admin-inventory-categories', to: '/admin/inventory/categories', label: 'admin.assetOptions.categories' },
+  { name: 'admin-inventory-locations', to: '/admin/inventory/locations', label: 'admin.assetOptions.locations' },
+  { name: 'admin-inventory-manufacturers', to: '/admin/inventory/manufacturers', label: 'admin.manufacturers.title' },
+]
+const inventoryActive = computed(() => inventoryChildren.some(c => c.name === route.name))
+const inventoryOpen = ref(inventoryActive.value)
 
 const roleLabel = computed(() => {
   const map: Record<string, string> = { admin: 'Administrator', it_staff: 'IT Staff', user: 'User' }
@@ -238,7 +273,9 @@ const pageTitle = computed(() => {
     'admin-departments': t('admin.departments.title'),
     'admin-sla': t('admin.sla.title'),
     'admin-approval': t('admin.approval.title'),
-    'admin-asset-options': t('admin.assetOptions.title'),
+    'admin-inventory-categories': t('admin.assetOptions.categories'),
+    'admin-inventory-locations': t('admin.assetOptions.locations'),
+    'admin-inventory-manufacturers': t('admin.manufacturers.title'),
   }
   return map[String(route.name)] || ''
 })
