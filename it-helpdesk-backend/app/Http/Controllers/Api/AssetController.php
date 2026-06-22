@@ -55,12 +55,17 @@ class AssetController extends Controller
         }
         if (!empty($f['search'])) {
             $search = $f['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('asset_tag', 'like', "%{$search}%")
-                  ->orWhere('serial_number', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%");
+            $like = "%{$search}%";
+            $query->where(function ($q) use ($search, $like) {
+                $q->where('name', 'like', $like)
+                  ->orWhere('asset_tag', 'like', $like)
+                  ->orWhere('serial_number', 'like', $like)
+                  ->orWhere('last_name', 'like', $like)
+                  ->orWhere('first_name', 'like', $like)
+                  // Also match a full name typed as one term, in either order.
+                  // `||` + COALESCE works on both PostgreSQL and SQLite.
+                  ->orWhereRaw("COALESCE(first_name, '') || ' ' || COALESCE(last_name, '') like ?", [$like])
+                  ->orWhereRaw("COALESCE(last_name, '') || ' ' || COALESCE(first_name, '') like ?", [$like]);
             });
         }
 

@@ -98,6 +98,27 @@ class AssetTest extends TestCase
         $this->getJson('/api/assets?status=assigned')->assertOk()->assertJsonPath('total', 1);
     }
 
+    public function test_search_matches_owner_full_name_in_either_order(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        Asset::factory()->create(['first_name' => 'Kai', 'last_name' => 'Zhuang']);
+        Asset::factory()->create(['first_name' => 'Tiger', 'last_name' => 'Wang']);
+
+        // "first last" as a single query matches across the two name columns.
+        $this->getJson('/api/assets?search=' . urlencode('Kai Zhuang'))
+            ->assertOk()->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.last_name', 'Zhuang');
+
+        // "last first" order matches too.
+        $this->getJson('/api/assets?search=' . urlencode('Zhuang Kai'))
+            ->assertOk()->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.first_name', 'Kai');
+
+        // A single name term still matches.
+        $this->getJson('/api/assets?search=Tiger')
+            ->assertOk()->assertJsonPath('total', 1);
+    }
+
     public function test_it_staff_can_view_an_asset(): void
     {
         Sanctum::actingAs($this->itStaff());
