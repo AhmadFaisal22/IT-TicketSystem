@@ -9,6 +9,7 @@ use App\Models\Asset;
 use App\Models\Attachment;
 use App\Models\User;
 use App\Support\AssetCategories;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,20 +20,33 @@ class AssetController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $f = $request->validate([
-            'status'        => 'nullable|' . AssetCategories::statusRule(),
-            'category'      => 'nullable|' . AssetCategories::categoryRule(),
-            'department_id' => 'nullable|integer|exists:departments,id',
-            'assigned_to'   => 'nullable|integer|exists:users,id',
-            'search'        => 'nullable|string|max:255',
-        ]);
+        $f = $request->validate($this->filterRules());
 
         $sortable = ['asset_tag', 'last_name', 'first_name', 'category', 'status', 'created_at'];
         $sort = in_array($request->query('sort'), $sortable, true) ? $request->query('sort') : 'created_at';
         $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
 
         $query = Asset::with(['assignee', 'department'])->orderBy($sort, $dir);
+        $this->applyFilters($query, $f);
 
+        return response()->json($query->paginate(15));
+    }
+
+    /** Validation rules for the asset list/export filters (shared by index + export). */
+    private function filterRules(): array
+    {
+        return [
+            'status'        => 'nullable|' . AssetCategories::statusRule(),
+            'category'      => 'nullable|' . AssetCategories::categoryRule(),
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'assigned_to'   => 'nullable|integer|exists:users,id',
+            'search'        => 'nullable|string|max:255',
+        ];
+    }
+
+    /** Apply the shared list/export filters to an asset query. */
+    private function applyFilters(Builder $query, array $f): void
+    {
         if (!empty($f['status'])) {
             $query->where('status', $f['status']);
         }
@@ -60,8 +74,6 @@ class AssetController extends Controller
                   ->orWhereRaw("COALESCE(last_name, '') || ' ' || COALESCE(first_name, '') like ?", [$like]);
             });
         }
-
-        return response()->json($query->paginate(15));
     }
 
     public function show(Request $request, Asset $asset): JsonResponse
@@ -88,13 +100,10 @@ class AssetController extends Controller
 
     public function export(Request $request)
     {
+        $f = $request->validate($this->filterRules());
+
         $query = Asset::query()->orderByDesc('created_at');
-        if ($request->filled('status')) {
-            $query->where('status', $request->string('status'));
-        }
-        if ($request->filled('category')) {
-            $query->where('category', $request->string('category'));
-        }
+        $this->applyFilters($query, $f);
 
         return Excel::download(new AssetsExport($query), 'assets.xlsx');
     }

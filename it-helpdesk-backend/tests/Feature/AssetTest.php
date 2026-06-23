@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Exports\AssetsExport;
 use App\Models\Asset;
+use App\Models\Department;
 use App\Models\User;
 use App\Support\AssetCategories;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,6 +98,21 @@ class AssetTest extends TestCase
         $this->getJson('/api/assets')->assertOk()->assertJsonPath('total', 2);
         $this->getJson('/api/assets?category=Laptop')->assertOk()->assertJsonPath('total', 1);
         $this->getJson('/api/assets?status=assigned')->assertOk()->assertJsonPath('total', 1);
+    }
+
+    public function test_it_staff_can_filter_assets_by_department(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $finance = Department::create(['name' => 'Finance', 'name_zh' => 'FN']);
+        $sales = Department::create(['name' => 'Sales', 'name_zh' => 'SL']);
+        Asset::factory()->count(2)->create(['department_id' => $finance->id]);
+        Asset::factory()->create(['department_id' => $sales->id]);
+
+        $this->getJson("/api/assets?department_id={$finance->id}")
+            ->assertOk()->assertJsonPath('total', 2);
+
+        // An unknown department id is rejected by validation.
+        $this->getJson('/api/assets?department_id=999999')->assertStatus(422);
     }
 
     public function test_search_matches_owner_full_name_in_either_order(): void
@@ -324,6 +341,20 @@ class AssetTest extends TestCase
 
         $this->get('/api/assets/export')->assertOk();
         Excel::assertDownloaded('assets.xlsx');
+    }
+
+    public function test_export_respects_department_filter(): void
+    {
+        Excel::fake();
+        Sanctum::actingAs($this->itStaff());
+        $finance = Department::create(['name' => 'Finance', 'name_zh' => 'FN']);
+        $sales = Department::create(['name' => 'Sales', 'name_zh' => 'SL']);
+        Asset::factory()->count(2)->create(['department_id' => $finance->id]);
+        Asset::factory()->create(['department_id' => $sales->id]);
+
+        $this->get("/api/assets/export?department_id={$finance->id}")->assertOk();
+
+        Excel::assertDownloaded('assets.xlsx', fn (AssetsExport $export) => $export->query()->count() === 2);
     }
 
     public function test_import_creates_assets_from_rows(): void

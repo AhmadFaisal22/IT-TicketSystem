@@ -20,6 +20,14 @@
           </option>
         </select>
 
+        <select v-model="filters.department_id" @change="fetchData"
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+          <option value="">{{ t('common.all') }} {{ t('asset.department') }}</option>
+          <option v-for="d in departments" :key="d.id" :value="d.id">
+            {{ locale === 'zh' && d.name_zh ? d.name_zh : d.name }}
+          </option>
+        </select>
+
         <button @click="triggerImport"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
           {{ t('asset.importBtn') }}
@@ -168,13 +176,14 @@ import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { useAssetStore, ASSET_STATUSES, type Asset } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
-import { assetApi, assetCategoryApi } from '@/api'
+import { assetApi, assetCategoryApi, departmentApi } from '@/api'
 
 const { t, locale } = useI18n()
 const store = useAssetStore()
 const auth = useAuthStore()
 
 const categories = ref<any[]>([])
+const departments = ref<any[]>([])
 const statuses = ASSET_STATUSES
 
 function categoryLabel(name: string) {
@@ -187,7 +196,7 @@ function categoryLabel(name: string) {
 const currentPage = ref(1)
 const importInput = ref<HTMLInputElement | null>(null)
 
-const filters = reactive({ search: '', status: '', category: '' })
+const filters = reactive({ search: '', status: '', category: '', department_id: '' as string | number })
 const sortBy = ref('asset_tag')
 const sortDir = ref<'asc' | 'desc'>('asc')
 
@@ -264,7 +273,8 @@ function statusClass(s: string) {
 
 onMounted(async () => {
   fetchData()
-  const { data } = await assetCategoryApi.list()
-  categories.value = data
+  const [cats, depts] = await Promise.all([assetCategoryApi.list(), departmentApi.list()])
+  categories.value = cats.data
+  departments.value = depts.data
 })
 </script>
