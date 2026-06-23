@@ -258,7 +258,11 @@ async function reload() {
   assignTo.value = a.assigned_to
   assigneeSearch.value = a.assignee?.name ?? ''
   newStatus.value = a.status
-  qrDataUrl.value = await QRCode.toDataURL(`${window.location.origin}/assets/${a.id}`)
+  // Use the configured public URL so a printed label scans on phones — the
+  // current origin is often localhost (dev) or an internal host unreachable
+  // from a phone. Falls back to the current origin when unset.
+  const base = import.meta.env.VITE_PUBLIC_URL || window.location.origin
+  qrDataUrl.value = await QRCode.toDataURL(`${base}/assets/${a.id}`)
   await loadAssignableUsers(assigneeSearch.value, a.assigned_to)
 }
 

@@ -214,6 +214,7 @@ import { ref, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { authApi } from '@/api'
+import { consumeRedirect } from '@/utils/postLoginRedirect'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import AnimatedMapPanel from '@/components/ui/AnimatedMapPanel.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -274,7 +275,8 @@ async function loginWithPassword() {
     auth.user = data.user
     failedAttempts.value = 0
     error.value = ''
-    router.push({ name: 'dashboard' })
+    const redirect = consumeRedirect()
+    router.push(redirect ? { path: redirect } : { name: 'dashboard' })
   } catch (e: any) {
     const status = e.response?.status
     if (status === 429) {

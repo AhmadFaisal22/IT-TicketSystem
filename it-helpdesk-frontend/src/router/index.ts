@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { saveRedirect } from '@/utils/postLoginRedirect'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -162,6 +163,9 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    // Remember where they were headed so login can return them there
+    // (e.g. an asset QR code scanned on a fresh device).
+    saveRedirect(to.fullPath)
     return next({ name: 'login' })
   }
   if (to.meta.guest && auth.isAuthenticated) {

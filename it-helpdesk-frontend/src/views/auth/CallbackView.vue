@@ -11,6 +11,7 @@
 import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { consumeRedirect } from '@/utils/postLoginRedirect'
 import api from '@/api'
 
 const router = useRouter()
@@ -26,7 +27,8 @@ onMounted(async () => {
     const { data } = await api.get(`/auth/callback/${provider}?code=${code}&state=${route.query.state || ''}`)
     auth.setToken(data.token)
     auth.user = data.user
-    router.push({ name: 'dashboard' })
+    const redirect = consumeRedirect()
+    router.push(redirect ? { path: redirect } : { name: 'dashboard' })
   } catch {
     router.push({ name: 'login' })
   }
