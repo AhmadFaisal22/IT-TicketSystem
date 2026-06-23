@@ -48,10 +48,14 @@
           <input ref="fileInput" type="file" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" class="hidden" @change="onUpload" />
         </div>
         <ul class="space-y-2">
-          <li v-for="att in asset.attachments" :key="att.id" class="flex items-center justify-between text-sm">
-            <button type="button" @click="downloadAttachment(att)"
+          <li v-for="att in asset.attachments" :key="att.id" class="flex items-center justify-between gap-2 text-sm">
+            <button type="button" @click="openPreview(att)" :title="t('asset.actions.preview')"
               class="text-blue-600 hover:underline truncate text-left cursor-pointer">{{ att.original_name }}</button>
-            <button @click="removeAttachment(att.id)" class="text-gray-400 hover:text-red-600">✕</button>
+            <div class="flex shrink-0 items-center gap-2">
+              <button type="button" @click="downloadAttachment(att)" :aria-label="t('asset.actions.download')"
+                class="text-gray-400 hover:text-red-600"><ArrowDownTrayIcon class="h-4 w-4" /></button>
+              <button @click="removeAttachment(att.id)" class="text-gray-400 hover:text-red-600">✕</button>
+            </div>
           </li>
           <li v-if="!asset.attachments?.length" class="text-sm text-gray-400">—</li>
         </ul>
@@ -184,6 +188,8 @@
     </div>
   </div>
   <div v-else class="p-8 text-center text-gray-400">{{ t('common.loading') }}</div>
+
+  <ImageLightbox v-if="lightbox" :src="lightbox.url" :name="lightbox.name" @close="closeLightbox" />
 </template>
 
 <script setup lang="ts">
@@ -191,11 +197,12 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
-import { CheckIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
-import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
+import { CheckIcon, MagnifyingGlassIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
+import { useAssetStore, ASSET_STATUSES, type AssetAttachment } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi, assetCategoryApi } from '@/api'
-import { downloadAttachment } from '@/utils/attachments'
+import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
+import ImageLightbox from '@/components/ui/ImageLightbox.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -377,6 +384,45 @@ async function onUpload(e: Event) {
 async function removeAttachment(id: number) {
   await assetApi.deleteAttachment(asset.value!.id, id)
   await reload()
+}
+
+const lightbox = ref<{ url: string; name: string } | null>(null)
+
+async function openPreview(att: AssetAttachment) {
+  if (att.mime_type.startsWith('image/')) {
+    try {
+      const url = await attachmentPreviewUrl(att.id)
+      lightbox.value = { url, name: att.original_name }
+    } catch {
+      downloadAttachment(att)
+    }
+    return
+  }
+  if (att.mime_type === 'application/pdf') {
+    // Open the tab synchronously (before await) so the browser keeps the
+    // user-gesture context and does not block it as a popup.
+    const w = window.open('', '_blank')
+    try {
+      const url = await attachmentPreviewUrl(att.id)
+      if (w) {
+        w.location.href = url
+        // Give the new tab time to load the blob before reclaiming it.
+        setTimeout(() => URL.revokeObjectURL(url), 60_000)
+      } else {
+        downloadAttachment(att)
+      }
+    } catch {
+      w?.close()
+      downloadAttachment(att)
+    }
+    return
+  }
+  downloadAttachment(att)
+}
+
+function closeLightbox() {
+  if (lightbox.value) URL.revokeObjectURL(lightbox.value.url)
+  lightbox.value = null
 }
 
 function printLabel() {
