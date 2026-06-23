@@ -270,6 +270,7 @@ export default {
     actions: {
       create: 'Add Asset', edit: 'Edit Asset', assign: 'Assign',
       returnToStock: 'Return to Stock', changeStatus: 'Change Status', uploadFile: 'Upload File',
+      download: 'Download', preview: 'Preview', closePreview: 'Close',
     },
   },
   common: {
