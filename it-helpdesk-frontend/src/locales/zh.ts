@@ -272,6 +272,7 @@ export default {
     actions: {
       create: '添加资产', edit: '编辑资产', assign: '分配',
       returnToStock: '回收入库', changeStatus: '改状态', uploadFile: '上传文件',
+      download: '下载', preview: '预览', closePreview: '关闭',
     },
   },
   common: {
