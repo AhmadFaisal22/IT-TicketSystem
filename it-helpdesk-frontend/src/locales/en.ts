@@ -35,6 +35,8 @@ export default {
     passwordPlaceholder: '············',
     forgotPassword: 'Forgot Password?',
     rememberMe: 'Remember Me',
+    noAccount: 'No account yet?',
+    register: 'Register',
     signingIn: 'Signing in…',
     loginFailed: 'Login failed. Please check your credentials.',
     invalidCredentials: 'Incorrect email or password.',
