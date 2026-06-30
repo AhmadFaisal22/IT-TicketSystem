@@ -19,7 +19,7 @@ return [
     // Email domains allowed to self-register (comma-separated, no leading @).
     'registration_domains' => array_values(array_filter(array_map(
         'trim',
-        explode(',', (string) env('REGISTRATION_DOMAINS', 'segsolar.com,helpdesk.local'))
+        explode(',', (string) env('REGISTRATION_DOMAINS', 'segsolar.com'))
     ))),
 
     /*

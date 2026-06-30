@@ -179,10 +179,9 @@
         </form>
 
         <!-- Register link -->
-        <div class="mt-6 text-center">
-          <router-link to="/register" class="text-sm text-gray-500 hover:text-gray-700">
-            {{ t('auth.noAccount') }} <span class="text-red-600 font-medium">{{ t('auth.register') }}</span>
-          </router-link>
+        <div class="mt-6 text-center text-sm text-gray-500">
+          {{ t('auth.noAccount') }}
+          <router-link to="/register" class="text-red-600 font-medium hover:text-red-700 transition">{{ t('auth.register') }}</router-link>
         </div>
 
         <!-- Locale + theme toggle -->

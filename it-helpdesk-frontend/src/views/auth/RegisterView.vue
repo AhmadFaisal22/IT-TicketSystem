@@ -103,10 +103,9 @@
             </button>
           </form>
 
-          <div class="mt-6 text-center">
-            <router-link to="/login" class="text-sm text-gray-500 hover:text-gray-700">
-              Already have an account? <span class="text-red-600 font-medium">Sign in</span>
-            </router-link>
+          <div class="mt-6 text-center text-sm text-gray-500">
+            Already have an account?
+            <router-link to="/login" class="text-red-600 font-medium hover:text-red-700 transition">Sign in</router-link>
           </div>
         </div>
       </div>
