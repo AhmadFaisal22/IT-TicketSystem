@@ -20,6 +20,7 @@
     "vue-tsc": "^2.2.10"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
     "@heroicons/vue": "^2.2.0",
     "@vueuse/core": "^11.3.0",
     "apexcharts": "^5.13.0",
