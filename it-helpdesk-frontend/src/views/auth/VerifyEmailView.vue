@@ -9,11 +9,11 @@
       </div>
 
       <!-- Card -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-8 text-center">
 
         <!-- Verifying -->
         <div v-if="state === 'verifying'">
-          <div class="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div class="w-12 h-12 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto mb-4"></div>
           <h2 class="text-xl font-semibold text-gray-800 mb-2">Verifying your email…</h2>
           <p class="text-sm text-gray-500">This will only take a moment.</p>
         </div>
@@ -28,7 +28,7 @@
           <h2 class="text-xl font-semibold text-gray-800 mb-2">Email verified!</h2>
           <p class="text-sm text-gray-500 mb-6">{{ message }}</p>
           <router-link to="/login"
-            class="block w-full text-center py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-sm font-semibold text-white transition">
+            class="block w-full text-center py-2.5 rounded-btn bg-brand-600 hover:bg-brand-700 text-sm font-semibold text-white transition">
             Sign in
           </router-link>
         </div>
@@ -43,7 +43,7 @@
           <h2 class="text-xl font-semibold text-gray-800 mb-2">Verification failed</h2>
           <p class="text-sm text-gray-500 mb-6">{{ message }}</p>
           <router-link to="/register"
-            class="block w-full text-center py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-sm font-semibold text-white transition">
+            class="block w-full text-center py-2.5 rounded-btn bg-brand-600 hover:bg-brand-700 text-sm font-semibold text-white transition">
             Register again
           </router-link>
         </div>
