@@ -95,7 +95,8 @@ export const notificationApi = {
   list: () => api.get('/notifications'),
   unreadCount: () => api.get('/notifications/unread-count'),
   markRead: (id: string) => api.patch(`/notifications/${id}/read`),
-  markAllRead: () => api.patch('/notifications/mark-all-read')
+  markAllRead: () => api.patch('/notifications/mark-all-read'),
+  clearRead: () => api.delete('/notifications/read')
 }
 
 export const slaApi = {

@@ -15,8 +15,12 @@
       class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
       <div class="flex items-center justify-between px-4 py-3 border-b">
         <span class="font-semibold text-gray-800">Notifications</span>
-        <button v-if="notifStore.unreadCount > 0" @click="notifStore.markAllRead()"
-          class="text-xs text-red-600 hover:text-red-800">Mark all read</button>
+        <div class="flex items-center gap-3">
+          <button v-if="notifStore.unreadCount > 0" @click="notifStore.markAllRead()"
+            class="text-xs text-red-600 hover:text-red-800">Mark all read</button>
+          <button v-if="hasRead" @click="notifStore.clearRead()"
+            class="text-xs text-gray-500 hover:text-gray-700">Clear read</button>
+        </div>
       </div>
 
       <div class="max-h-96 overflow-y-auto">
@@ -42,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationStore, type AppNotification } from '@/stores/notifications'
 import { onClickOutside } from '@vueuse/core'
@@ -51,6 +55,8 @@ const notifStore = useNotificationStore()
 const router = useRouter()
 const open = ref(false)
 const dropdownRef = ref()
+
+const hasRead = computed(() => notifStore.notifications.some(n => n.read_at))
 
 onClickOutside(dropdownRef, () => { open.value = false })
 

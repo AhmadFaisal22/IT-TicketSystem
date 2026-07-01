@@ -119,6 +119,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::patch('notifications/{id}/read', [NotificationController::class, 'markRead']);
     Route::patch('notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+    Route::delete('notifications/read', [NotificationController::class, 'clearRead']);
 
     // SLA Policies — list open to all; manage: IT staff.
     Route::get('sla-policies', [SlaController::class, 'index']);
