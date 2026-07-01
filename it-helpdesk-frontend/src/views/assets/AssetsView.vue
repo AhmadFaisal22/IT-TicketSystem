@@ -262,11 +262,11 @@ async function handleDelete(a: Asset) {
 
 function statusClass(s: string) {
   const map: Record<string, string> = {
-    in_stock: 'bg-sky-100 text-sky-700',
-    assigned: 'bg-green-100 text-green-700',
-    in_repair: 'bg-yellow-100 text-yellow-700',
+    in_stock: 'bg-blue-50 text-blue-700',
+    assigned: 'bg-green-50 text-green-700',
+    in_repair: 'bg-yellow-50 text-yellow-700',
     retired: 'bg-gray-100 text-gray-600',
-    lost: 'bg-red-100 text-red-700',
+    lost: 'bg-red-50 text-red-700',
   }
   return map[s] || 'bg-gray-100 text-gray-600'
 }

@@ -29,9 +29,7 @@
                 {{ policy.department ? (locale === 'zh' ? policy.department.name_zh : policy.department.name) : t('admin.sla.default') }}
               </td>
               <td class="px-4 py-3">
-                <span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="priorityClass(policy.priority)">
-                  {{ t(`ticket.${policy.priority}`) }}
-                </span>
+                <StatusBadge kind="priority" :value="policy.priority" />
               </td>
               <td class="px-4 py-3 text-sm text-gray-700">{{ policy.response_hours }}h</td>
               <td class="px-4 py-3 text-sm text-gray-700">{{ policy.resolution_hours }}h</td>
@@ -89,9 +87,7 @@
               </p>
               <p class="text-sm text-gray-500 flex items-center gap-2">
                 {{ t('admin.sla.priority') }}:
-                <span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="priorityClass(editing.priority)">
-                  {{ t(`ticket.${editing.priority}`) }}
-                </span>
+                <StatusBadge kind="priority" :value="editing.priority" />
               </p>
             </div>
 
@@ -153,6 +149,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { slaApi, departmentApi } from '@/api'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 const { t, locale } = useI18n()
 const policies = ref<any[]>([])
@@ -200,14 +197,6 @@ async function deletePolicy(policy: any) {
     await slaApi.delete(policy.id)
     await load()
   }
-}
-
-function priorityClass(p: string) {
-  const map: Record<string, string> = {
-    critical: 'bg-red-100 text-red-700', high: 'bg-orange-100 text-orange-700',
-    medium: 'bg-yellow-100 text-yellow-700', low: 'bg-gray-100 text-gray-600'
-  }
-  return map[p] || 'bg-gray-100'
 }
 
 onMounted(load)
