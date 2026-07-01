@@ -31,7 +31,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
       <BaseCard>
         <h3 class="font-semibold text-gray-700 mb-4">{{ t('dashboard.trend') }}</h3>
-        <apexchart v-if="trendSeries.length" type="line" height="220"
+        <apexchart v-if="trendSeries.length" type="area" height="220"
           :options="trendOptions" :series="trendSeries" />
       </BaseCard>
       <BaseCard>
@@ -117,6 +117,14 @@ const baseChart = computed(() => ({
 }))
 const baseTooltip = computed(() => ({ theme: theme.isDark ? 'dark' : 'light' }))
 
+// Soft, dashed gridlines + no chart border for a cleaner, modern look.
+const gridStyle = computed(() => ({
+  borderColor: theme.isDark ? '#334155' : '#eef2f7',
+  strokeDashArray: 4,
+  xaxis: { lines: { show: false } },
+  padding: { left: 8, right: 8 },
+}))
+
 const trendSeries = computed(() => {
   if (!stats.value?.trends?.length) return []
   return [
@@ -126,12 +134,19 @@ const trendSeries = computed(() => {
 })
 
 const trendOptions = computed(() => ({
-  chart: baseChart.value,
+  chart: { ...baseChart.value, dropShadow: { enabled: true, top: 4, left: 0, blur: 4, opacity: 0.12 } },
   tooltip: baseTooltip.value,
-  xaxis: { categories: stats.value?.trends?.map((t: any) => t.date) || [] },
+  xaxis: { categories: stats.value?.trends?.map((t: any) => t.date) || [], axisBorder: { show: false }, axisTicks: { show: false } },
   colors: ['#dc2626', '#16a34a'],
   stroke: { curve: 'smooth', width: 3 },
-  legend: { position: 'top' }
+  fill: {
+    type: 'gradient',
+    gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.02, stops: [0, 95] },
+  },
+  grid: gridStyle.value,
+  markers: { size: 0, hover: { size: 5 } },
+  dataLabels: { enabled: false },
+  legend: { position: 'top', markers: { radius: 12 } },
 }))
 
 const statusLabels = ['open', 'in_progress', 'pending', 'resolved', 'closed']
@@ -145,9 +160,33 @@ const statusSeries = computed(() =>
 const statusOptions = computed(() => ({
   labels: statusLabels.map(s => t(`ticket.${s}`)),
   colors: statusColors,
-  legend: { position: 'bottom' },
+  legend: { position: 'bottom', markers: { radius: 12 } },
   tooltip: baseTooltip.value,
-  chart: baseChart.value
+  chart: baseChart.value,
+  stroke: { width: 0 },
+  dataLabels: { enabled: false },
+  fill: {
+    type: 'gradient',
+    gradient: { shade: theme.isDark ? 'dark' : 'light', shadeIntensity: 0.35, opacityFrom: 1, opacityTo: 0.9 },
+  },
+  plotOptions: {
+    pie: {
+      donut: {
+        size: '72%',
+        labels: {
+          show: true,
+          value: { fontSize: '22px', fontWeight: 800, color: theme.isDark ? '#f1f5f9' : '#111827' },
+          total: {
+            show: true,
+            label: t('ticket.status'),
+            fontSize: '12px',
+            color: theme.isDark ? '#94a3b8' : '#6b7280',
+            formatter: (w: any) => w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0),
+          },
+        },
+      },
+    },
+  },
 }))
 
 const priorityLabels = ['critical', 'high', 'medium', 'low']
@@ -157,10 +196,16 @@ const prioritySeries = computed(() =>
 const priorityOptions = computed(() => ({
   chart: baseChart.value,
   tooltip: baseTooltip.value,
-  xaxis: { categories: priorityLabels.map(p => t(`ticket.${p}`)) },
+  xaxis: { categories: priorityLabels.map(p => t(`ticket.${p}`)), axisBorder: { show: false }, axisTicks: { show: false } },
   colors: ['#dc2626', '#f97316', '#2563eb', '#64748b'],
-  plotOptions: { bar: { distributed: true, borderRadius: 6 } },
-  legend: { show: false }
+  plotOptions: { bar: { distributed: true, borderRadius: 8, borderRadiusApplication: 'end', columnWidth: '55%' } },
+  fill: {
+    type: 'gradient',
+    gradient: { shade: 'dark', type: 'vertical', shadeIntensity: 0.2, opacityFrom: 1, opacityTo: 0.85, stops: [0, 100] },
+  },
+  grid: gridStyle.value,
+  dataLabels: { enabled: true, style: { fontWeight: 700, colors: ['#fff'] } },
+  legend: { show: false },
 }))
 
 const deptSeries = computed(() =>
@@ -173,10 +218,18 @@ const deptOptions = computed(() => ({
   tooltip: baseTooltip.value,
   xaxis: {
     categories: stats.value?.department_counts?.map((d: any) =>
-      locale.value === 'zh' ? d.department?.name_zh : d.department?.name) || []
+      locale.value === 'zh' ? d.department?.name_zh : d.department?.name) || [],
+    axisBorder: { show: false },
+    axisTicks: { show: false },
   },
   colors: ['#dc2626'],
-  plotOptions: { bar: { borderRadius: 6 } }
+  fill: {
+    type: 'gradient',
+    gradient: { type: 'vertical', gradientToColors: ['#f97316'], shadeIntensity: 1, opacityFrom: 1, opacityTo: 1, stops: [0, 100] },
+  },
+  grid: gridStyle.value,
+  dataLabels: { enabled: true, style: { fontWeight: 700, colors: ['#fff'] } },
+  plotOptions: { bar: { borderRadius: 8, borderRadiusApplication: 'end', columnWidth: '45%' } },
 }))
 
 onMounted(loadData)
