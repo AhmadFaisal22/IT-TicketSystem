@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-card shadow-soft border border-gray-100 overflow-hidden">
       <div class="px-6 py-4 border-b flex items-center justify-between">
         <h2 class="font-semibold text-gray-800">{{ t('admin.sla.title') }}</h2>
         <button @click="openModal()"
@@ -100,7 +100,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.sla.department') }}</label>
                 <select v-model="form.department_id"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                   <option value="">{{ t('admin.sla.default') }}</option>
                   <option v-for="d in departments" :key="d.id" :value="d.id">
                     {{ locale === 'zh' ? d.name_zh : d.name }}
@@ -110,7 +110,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.sla.priority') }}</label>
                 <select v-model="form.priority"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                   <option value="critical">{{ t('ticket.critical') }}</option>
                   <option value="high">{{ t('ticket.high') }}</option>
                   <option value="medium">{{ t('ticket.medium') }}</option>
@@ -123,12 +123,12 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.sla.responseHours') }}</label>
                 <input v-model.number="form.response_hours" type="number" min="1"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none" />
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.sla.resolutionHours') }}</label>
                 <input v-model.number="form.resolution_hours" type="number" min="1"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none" />
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" />
               </div>
             </div>
           </div>

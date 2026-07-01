@@ -6,7 +6,7 @@
       {{ t('common.loading') }}
     </div>
 
-    <div v-else class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+    <div v-else class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-6">
       <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ t('ticket.actions.edit') }}</h2>
       <p class="text-sm text-gray-400 font-mono mb-6">{{ ticketNumber }}</p>
 
@@ -15,19 +15,19 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.title') }} *</label>
           <input v-model="form.title" required :placeholder="t('ticket.title')"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" />
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.description') }} *</label>
           <textarea v-model="form.description" required rows="5" :placeholder="t('ticket.description')"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none" />
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.priority') }} *</label>
           <select v-model="form.priority" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
             <option value="low">{{ t('ticket.low') }}</option>
             <option value="medium">{{ t('ticket.medium') }}</option>
             <option value="high">{{ t('ticket.high') }}</option>

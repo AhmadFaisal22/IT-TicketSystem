@@ -100,7 +100,7 @@
               autocomplete="email"
               :placeholder="t('auth.emailPlaceholder')"
               @input="clearError"
-              class="w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+              class="w-full px-4 py-2.5 border rounded-input text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
               :class="error && !isLocked ? 'border-red-400 bg-red-50' : 'border-gray-300'"
             />
           </div>
@@ -121,7 +121,7 @@
                 autocomplete="current-password"
                 :placeholder="t('auth.passwordPlaceholder')"
                 @input="clearError"
-                class="w-full px-4 py-2.5 pr-12 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                class="w-full px-4 py-2.5 pr-12 border rounded-input text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                 :class="error && !isLocked ? 'border-red-400 bg-red-50' : 'border-gray-300'"
               />
               <button
@@ -146,7 +146,7 @@
               id="remember"
               v-model="remember"
               type="checkbox"
-              class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+              class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-brand-500"
             />
             <label for="remember" class="ml-2 text-sm text-gray-600">{{ t('auth.rememberMe') }}</label>
           </div>
@@ -155,10 +155,10 @@
           <button
             type="submit"
             :disabled="loading || isLocked"
-            class="w-full py-3 text-white font-semibold rounded-lg transition disabled:cursor-not-allowed text-sm tracking-wide"
+            class="w-full py-3 text-white font-semibold rounded-btn transition disabled:cursor-not-allowed text-sm tracking-wide"
             :class="isLocked
               ? 'bg-gray-400 hover:bg-gray-400 opacity-80'
-              : 'bg-red-600 hover:bg-red-700 disabled:opacity-50'"
+              : 'bg-grad-brand hover:opacity-95 shadow-glow disabled:opacity-50'"
           >
             <span v-if="isLocked" class="flex items-center justify-center gap-2">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

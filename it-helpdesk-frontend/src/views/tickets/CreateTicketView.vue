@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+    <div class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-6">
       <h2 class="text-lg font-semibold text-gray-800 mb-6">{{ t('ticket.actions.create') }}</h2>
 
       <form @submit.prevent="submit" class="space-y-5">
@@ -8,20 +8,20 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.title') }} *</label>
           <input v-model="form.title" required :placeholder="t('ticket.title')"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" />
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.description') }} *</label>
           <textarea v-model="form.description" required rows="5" :placeholder="t('ticket.description')"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none" />
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none" />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.priority') }} *</label>
             <select v-model="form.priority" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
               <option value="low">{{ t('ticket.low') }}</option>
               <option value="medium" selected>{{ t('ticket.medium') }}</option>
               <option value="high">{{ t('ticket.high') }}</option>
@@ -32,7 +32,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.department') }} *</label>
             <select v-model="form.department_id" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
               <option value="" disabled>Select department...</option>
               <option v-for="d in departments" :key="d.id" :value="d.id">
                 {{ locale === 'zh' ? d.name_zh : d.name }}
@@ -44,7 +44,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.assignTo') }} *</label>
           <select v-model="form.assigned_to" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
             <option value="" disabled>{{ t('ticket.selectAssignee') }}</option>
             <option v-for="u in itStaff" :key="u.id" :value="u.id">{{ u.name }}</option>
           </select>
@@ -55,7 +55,7 @@
         <div v-if="auth.isItStaff">
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.title') }}</label>
           <select v-model="selectedAssetId"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
             <option :value="null">—</option>
             <option v-for="a in assets" :key="a.id" :value="a.id">{{ a.asset_tag }}{{ a.name ? ` — ${a.name}` : '' }}</option>
           </select>

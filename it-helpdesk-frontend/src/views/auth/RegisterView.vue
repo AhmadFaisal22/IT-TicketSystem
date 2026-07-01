@@ -43,7 +43,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Name <span class="text-red-500">*</span></label>
               <input v-model.trim="form.name" type="text" required autofocus placeholder="Name"
-                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                 :class="fieldError('name') ? 'border-red-400 bg-red-50' : ''" />
               <p v-if="fieldError('name')" class="text-xs text-red-600 mt-1.5">{{ fieldError('name') }}</p>
             </div>
@@ -52,7 +52,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Email <span class="text-red-500">*</span></label>
               <input v-model.trim="form.email" type="email" required :placeholder="`user@${domains[0] ?? 'company.com'}`"
-                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                 :class="fieldError('email') ? 'border-red-400 bg-red-50' : ''" />
               <p v-if="fieldError('email')" class="text-xs text-red-600 mt-1.5">{{ fieldError('email') }}</p>
             </div>
@@ -63,7 +63,7 @@
               <div class="relative">
                 <input v-model="form.password" :type="showPassword ? 'text' : 'password'" required minlength="8"
                   placeholder="At least 8 characters"
-                  class="w-full px-4 py-2.5 pr-12 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                  class="w-full px-4 py-2.5 pr-12 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                   :class="fieldError('password') ? 'border-red-400 bg-red-50' : ''" />
                 <button type="button" @click="showPassword = !showPassword"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -83,7 +83,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Department <span class="text-red-500">*</span></label>
               <select v-model="form.department_id" required
-                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                 :class="fieldError('department_id') ? 'border-red-400 bg-red-50' : ''">
                 <option :value="null" disabled>—</option>
                 <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>

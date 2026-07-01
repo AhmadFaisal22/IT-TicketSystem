@@ -2,7 +2,7 @@
   <div class="space-y-6">
 
     <!-- Page header -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-4 flex items-center justify-between">
+    <div class="bg-white rounded-card shadow-soft border border-gray-100 px-6 py-4 flex items-center justify-between">
       <div>
         <h2 class="font-semibold text-gray-800 text-base">{{ t('admin.approval.title') }}</h2>
         <p class="text-xs text-gray-400 mt-0.5">{{ t('admin.approval.subtitle') }}</p>
@@ -17,7 +17,7 @@
     <!-- Department cards — always show all departments -->
     <div v-else class="space-y-4">
       <div v-for="dept in allDepartments" :key="dept.id"
-        class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        class="bg-white rounded-card shadow-soft border border-gray-100 overflow-hidden">
 
         <!-- Department header -->
         <div class="px-6 py-3 bg-gray-50 border-b flex items-center justify-between">
@@ -263,7 +263,7 @@
               </label>
               <input v-model="form.name"
                 placeholder="e.g. Department Head Approval"
-                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 @keydown.enter="save" />
             </div>
 
@@ -273,7 +273,7 @@
                 Department <span class="text-red-500">*</span>
               </label>
               <select v-model="form.department_id"
-                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 <option value="">Select department…</option>
                 <option v-for="d in allDepartments" :key="d.id" :value="d.id">
                   {{ locale === 'zh' ? d.name_zh : d.name }}
@@ -287,7 +287,7 @@
                 Approver <span class="text-red-500">*</span>
               </label>
               <select v-model="form.approver_id"
-                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 <option value="">Select approver…</option>
                 <option v-for="u in allUsers" :key="u.id" :value="u.id">
                   {{ u.name }}

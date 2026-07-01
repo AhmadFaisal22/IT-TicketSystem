@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="bg-white rounded-card shadow-soft border border-gray-100 overflow-hidden">
     <div class="px-6 py-4 border-b flex items-center justify-between">
       <h2 class="font-semibold text-gray-800">{{ t(`admin.assetOptions.${kind}`) }}</h2>
       <button @click="openModal()"
@@ -68,12 +68,12 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.assetOptions.name') }} *</label>
               <input v-model="form.name"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none" />
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.assetOptions.nameChinese') }}</label>
               <input v-model="form.name_zh"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none" />
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" />
             </div>
             <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
           </div>

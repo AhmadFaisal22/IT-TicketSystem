@@ -57,7 +57,7 @@
               <div class="relative">
                 <input v-model="password" :type="showPassword ? 'text' : 'password'" required minlength="8"
                   placeholder="At least 8 characters"
-                  class="w-full px-4 py-2.5 pr-12 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                  class="w-full px-4 py-2.5 pr-12 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                   :class="fieldError('password') ? 'border-red-400 bg-red-50' : ''" />
                 <button type="button" @click="showPassword = !showPassword"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -78,7 +78,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm new password</label>
               <input v-model="passwordConfirmation" :type="showPassword ? 'text' : 'password'" required
                 placeholder="Repeat your password"
-                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                 :class="fieldError('password_confirmation') ? 'border-red-400 bg-red-50' : ''" />
               <p v-if="fieldError('password_confirmation')" class="text-xs text-red-600 mt-1.5">{{ fieldError('password_confirmation') }}</p>
             </div>

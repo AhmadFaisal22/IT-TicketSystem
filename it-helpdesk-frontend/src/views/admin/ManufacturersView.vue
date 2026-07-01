@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="bg-white rounded-card shadow-soft border border-gray-100 overflow-hidden">
     <div class="px-6 py-4 border-b flex items-center justify-between">
       <h2 class="font-semibold text-gray-800">{{ t('admin.manufacturers.title') }}</h2>
       <button @click="openModal()"
@@ -198,5 +198,5 @@ onMounted(load)
 </script>
 
 <style scoped>
-.fld { @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none; }
+.fld { @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none; }
 </style>
