@@ -14,6 +14,12 @@ import App from './App.vue'
 import router from './router'
 import en from './locales/en'
 import zh from './locales/zh'
+// Self-hosted Inter (UI font) — weights used across the redesign.
+import '@fontsource/inter/400.css'
+import '@fontsource/inter/500.css'
+import '@fontsource/inter/600.css'
+import '@fontsource/inter/700.css'
+import '@fontsource/inter/800.css'
 import './assets/main.css'
 
 const i18n = createI18n({

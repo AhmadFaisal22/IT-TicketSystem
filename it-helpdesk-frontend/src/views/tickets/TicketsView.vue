@@ -1,39 +1,36 @@
 <template>
   <div>
     <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+    <BaseCard class="mb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-3">
         <input v-model="filters.search" @input="debouncedFetch" :placeholder="t('ticket.search')"
-          class="col-span-1 sm:col-span-2 lg:flex-1 lg:min-w-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          class="pw-input col-span-1 sm:col-span-2 lg:flex-1 lg:min-w-48" />
 
-        <select v-model="filters.status" @change="fetchData"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+        <select v-model="filters.status" @change="fetchData" class="pw-input lg:w-auto">
           <option value="">{{ t('common.all') }} {{ t('ticket.status') }}</option>
           <option v-for="s in statuses" :key="s" :value="s">{{ t(`ticket.${s}`) }}</option>
         </select>
 
-        <select v-model="filters.priority" @change="fetchData"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+        <select v-model="filters.priority" @change="fetchData" class="pw-input lg:w-auto">
           <option value="">{{ t('common.all') }} {{ t('ticket.priority') }}</option>
           <option v-for="p in priorities" :key="p" :value="p">{{ t(`ticket.${p}`) }}</option>
         </select>
 
-        <select v-if="auth.isItStaff" v-model="filters.department_id" @change="fetchData"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+        <select v-if="auth.isItStaff" v-model="filters.department_id" @change="fetchData" class="pw-input lg:w-auto">
           <option value="">{{ t('common.all') }} {{ t('ticket.department') }}</option>
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ locale === 'zh' ? d.name_zh : d.name }}
           </option>
         </select>
       </div>
-    </div>
+    </BaseCard>
 
     <!-- Tickets list -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <BaseCard :padded="false" class="overflow-hidden">
 
       <!-- Loading -->
       <div v-if="ticketStore.loading" class="p-8 text-center text-gray-400">
-        <div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+        <div class="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
         {{ t('common.loading') }}
       </div>
 
@@ -45,7 +42,7 @@
         </svg>
         <p class="text-gray-400 mb-3">{{ t('ticket.noTickets') }}</p>
         <router-link to="/tickets/create"
-          class="text-red-600 hover:text-red-800 text-sm font-medium">{{ t('ticket.createFirst') }}</router-link>
+          class="text-brand-600 hover:text-brand-700 text-sm font-medium">{{ t('ticket.createFirst') }}</router-link>
       </div>
 
       <template v-else>
@@ -55,20 +52,16 @@
             @click="$router.push(`/tickets/${ticket.id}`)"
             class="p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition">
             <div class="flex items-start justify-between gap-2 mb-1.5">
-              <span class="text-xs font-mono text-red-600 shrink-0">{{ ticket.ticket_number }}</span>
+              <span class="text-xs font-mono text-brand-600 shrink-0">{{ ticket.ticket_number }}</span>
               <div class="flex items-center gap-1 shrink-0">
                 <span v-if="ticket.sla_resolution_breached"
-                  class="px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded font-medium">SLA</span>
-                <span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="priorityClass(ticket.priority)">
-                  {{ t(`ticket.${ticket.priority}`) }}
-                </span>
+                  class="px-1.5 py-0.5 text-xs bg-red-50 text-red-700 rounded font-medium">SLA</span>
+                <StatusBadge kind="priority" :value="ticket.priority" />
               </div>
             </div>
             <p class="text-sm font-medium text-gray-800 mb-2 leading-snug">{{ ticket.title }}</p>
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs mb-2">
-              <span class="px-2 py-0.5 rounded-full font-medium" :class="statusClass(ticket.status)">
-                {{ t(`ticket.${ticket.status}`) }}
-              </span>
+              <StatusBadge kind="status" :value="ticket.status" />
               <span class="text-gray-300">•</span>
               <span class="text-gray-500">{{ locale === 'zh' ? ticket.department?.name_zh : ticket.department?.name }}</span>
               <span class="text-gray-300">•</span>
@@ -98,7 +91,7 @@
 
         <!-- Desktop table -->
         <table class="w-full hidden md:table">
-          <thead class="bg-gray-50 border-b">
+          <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.ticketNumber') }}</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.title') }}</th>
@@ -114,22 +107,18 @@
             <tr v-for="ticket in ticketStore.tickets" :key="ticket.id"
               @click="$router.push(`/tickets/${ticket.id}`)"
               class="hover:bg-gray-50 cursor-pointer transition">
-              <td class="px-4 py-3 text-sm font-mono text-red-600">{{ ticket.ticket_number }}</td>
+              <td class="px-4 py-3 text-sm font-mono text-brand-600">{{ ticket.ticket_number }}</td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2">
                   <span class="text-sm font-medium text-gray-800">{{ ticket.title }}</span>
-                  <span v-if="ticket.sla_resolution_breached" class="px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded">SLA</span>
+                  <span v-if="ticket.sla_resolution_breached" class="px-1.5 py-0.5 text-xs bg-red-50 text-red-700 rounded">SLA</span>
                 </div>
               </td>
               <td class="px-4 py-3">
-                <span class="px-2 py-1 rounded-full text-xs font-medium" :class="statusClass(ticket.status)">
-                  {{ t(`ticket.${ticket.status}`) }}
-                </span>
+                <StatusBadge kind="status" :value="ticket.status" />
               </td>
               <td class="px-4 py-3">
-                <span class="px-2 py-1 rounded-full text-xs font-medium" :class="priorityClass(ticket.priority)">
-                  {{ t(`ticket.${ticket.priority}`) }}
-                </span>
+                <StatusBadge kind="priority" :value="ticket.priority" />
               </td>
               <td class="px-4 py-3 text-sm text-gray-600">
                 {{ locale === 'zh' ? ticket.department?.name_zh : ticket.department?.name }}
@@ -167,18 +156,18 @@
 
       <!-- Pagination -->
       <div v-if="ticketStore.pagination.last_page > 1"
-        class="px-4 py-3 border-t flex items-center justify-between text-sm text-gray-600">
+        class="px-4 py-3 border-t border-gray-200 flex items-center justify-between text-sm text-gray-600">
         <span>{{ ticketStore.pagination.total }} total</span>
         <div class="flex gap-1 sm:gap-2 flex-wrap">
           <button v-for="page in ticketStore.pagination.last_page" :key="page"
             @click="goToPage(page)"
-            class="w-8 h-8 rounded-lg text-sm transition"
-            :class="page === ticketStore.pagination.current_page ? 'bg-red-600 text-white' : 'hover:bg-gray-100'">
+            class="w-8 h-8 rounded-btn text-sm font-medium transition"
+            :class="page === ticketStore.pagination.current_page ? 'bg-brand-600 text-white shadow-soft' : 'hover:bg-gray-100 dark:hover:bg-slate-700'">
             {{ page }}
           </button>
         </div>
       </div>
-    </div>
+    </BaseCard>
   </div>
 </template>
 
@@ -190,6 +179,8 @@ import { useAuthStore } from '@/stores/auth'
 import { departmentApi, ticketApi } from '@/api'
 import { useDebounceFn } from '@vueuse/core'
 import type { Ticket } from '@/stores/tickets'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 const { t, locale } = useI18n()
 const ticketStore = useTicketStore()
@@ -232,29 +223,6 @@ async function handleDelete(ticket: Ticket) {
   } catch (e: any) {
     alert(e?.response?.data?.message || 'Failed to delete ticket.')
   }
-}
-
-function statusClass(s: string) {
-  const map: Record<string, string> = {
-    open: 'bg-sky-100 text-sky-700',
-    in_progress: 'bg-yellow-100 text-yellow-700',
-    pending: 'bg-purple-100 text-purple-700',
-    resolved: 'bg-green-100 text-green-700',
-    closed: 'bg-gray-100 text-gray-600',
-    pending_approval: 'bg-amber-100 text-amber-700',
-    rejected: 'bg-red-100 text-red-700'
-  }
-  return map[s] || 'bg-gray-100 text-gray-600'
-}
-
-function priorityClass(p: string) {
-  const map: Record<string, string> = {
-    critical: 'bg-red-100 text-red-700',
-    high: 'bg-orange-100 text-orange-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    low: 'bg-gray-100 text-gray-600'
-  }
-  return map[p] || 'bg-gray-100 text-gray-600'
 }
 
 function formatDate(dt: string) {

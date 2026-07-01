@@ -1,19 +1,19 @@
 <template>
   <div>
     <!-- Toolbar -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+    <div class="bg-white rounded-card shadow-soft border border-gray-100 p-4 mb-4">
       <div class="grid grid-cols-2 lg:flex lg:flex-wrap gap-3 lg:items-center">
         <input v-model="filters.search" @input="debouncedFetch" :placeholder="t('asset.search')"
-          class="col-span-2 lg:flex-1 lg:min-w-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          class="col-span-2 lg:flex-1 lg:min-w-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
 
         <select v-model="filters.status" @change="fetchData"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">{{ t('common.all') }} {{ t('asset.status') }}</option>
           <option v-for="s in statuses" :key="s" :value="s">{{ t(`asset.status_labels.${s}`) }}</option>
         </select>
 
         <select v-model="filters.category" @change="fetchData"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">{{ t('common.all') }} {{ t('asset.category') }}</option>
           <option v-for="c in categories" :key="c.id" :value="c.name">
             {{ locale === 'zh' && c.name_zh ? c.name_zh : c.name }}
@@ -21,7 +21,7 @@
         </select>
 
         <select v-model="filters.department_id" @change="fetchData"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">{{ t('common.all') }} {{ t('asset.department') }}</option>
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ locale === 'zh' && d.name_zh ? d.name_zh : d.name }}
@@ -47,7 +47,7 @@
     </div>
 
     <!-- List -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-card shadow-soft border border-gray-100 overflow-hidden">
       <div v-if="store.loading" class="p-8 text-center text-gray-400">
         <div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
         {{ t('common.loading') }}

@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Crisper Inter rendering */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── Reusable component classes (design system) ─────────────────────────── */
+@layer components {
+  /* Pillowy white panel */
+  .pw-card {
+    @apply bg-white rounded-card shadow-soft border border-gray-100;
+  }
+  /* Form controls */
+  .pw-input {
+    @apply w-full rounded-input border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900
+           transition focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none;
+  }
+  /* Small pill (status/priority/filters) */
+  .pw-chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .pw-section-title {
+    @apply text-xs font-semibold text-gray-500 uppercase tracking-wider;
+  }
+}
+
 /* ─── Dark mode global cascade ───────────────────────────────────────────────
    These two-class selectors (.dark .class) beat Tailwind's single-class
    utilities, so they cascade down to all views without touching every file.
@@ -46,6 +73,14 @@
 .dark .shadow-sm {
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
 }
+.dark .shadow-soft {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.45);
+}
+.dark .shadow-soft-lg {
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
+}
+/* Pillowy card border reads better as a hairline on dark surfaces */
+.dark .pw-card { border-color: #334155; }
 
 /* Status / priority light-tint badges */
 .dark .bg-blue-50    { background-color: rgba(59,  130, 246, 0.15); }

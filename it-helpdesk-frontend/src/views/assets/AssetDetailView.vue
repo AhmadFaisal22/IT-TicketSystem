@@ -2,7 +2,7 @@
   <div v-if="asset" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Main -->
     <div class="lg:col-span-2 space-y-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6">
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm font-mono text-red-600">{{ asset.asset_tag }}</p>
@@ -41,7 +41,7 @@
       </div>
 
       <!-- Attachments -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-semibold text-gray-800">{{ t('asset.attachments') }}</h2>
           <button @click="fileInput?.click()" class="text-sm text-red-600 hover:text-red-800">+ {{ t('asset.actions.uploadFile') }}</button>
@@ -62,7 +62,7 @@
       </div>
 
       <!-- History -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6">
         <h2 class="font-semibold text-gray-800 mb-3">{{ t('asset.history') }}</h2>
         <ul class="space-y-3">
           <li v-for="h in asset.histories" :key="h.id" class="text-sm flex gap-3">
@@ -80,7 +80,7 @@
     <!-- Sidebar -->
     <div class="space-y-6">
       <!-- Actions -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6 space-y-4">
         <div ref="assignPicker" class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.actions.assign') }}</label>
           <div class="flex flex-col sm:flex-row gap-2">
@@ -165,7 +165,7 @@
       </div>
 
       <!-- QR label -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6 text-center">
         <h2 class="font-semibold text-gray-800 mb-3">{{ t('asset.qrLabel') }}</h2>
         <img v-if="qrDataUrl" :src="qrDataUrl" class="mx-auto w-40 h-40" />
         <button @click="printLabel" class="mt-3 px-3 py-1.5 text-sm border rounded-lg text-gray-700 hover:bg-gray-50">
@@ -174,7 +174,7 @@
       </div>
 
       <!-- Related tickets -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6">
         <h2 class="font-semibold text-gray-800 mb-3">{{ t('asset.relatedTickets') }}</h2>
         <ul class="space-y-2">
           <li v-for="tk in asset.tickets" :key="tk.id">
@@ -483,10 +483,10 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none;
 }
 
 .assignee-search-input {
-  @apply w-full py-2 pl-9 pr-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none;
+  @apply w-full py-2 pl-9 pr-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none;
 }
 </style>

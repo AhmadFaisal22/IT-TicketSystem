@@ -7,7 +7,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="p-8 text-center text-gray-400">
-      <div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+      <div class="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
       {{ t('common.loading') }}
     </div>
 
@@ -18,14 +18,14 @@
       </div>
 
       <!-- Empty -->
-      <div v-if="!tickets.length" class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+      <div v-if="!tickets.length" class="bg-white rounded-card shadow-soft border border-gray-100 p-12 text-center">
         <p class="text-gray-400">{{ t('myTasks.empty') }}</p>
       </div>
 
       <!-- Board -->
       <div v-else class="flex items-start gap-4 overflow-x-auto pb-2">
         <div v-for="col in columns" :key="col.key"
-          class="flex-shrink-0 w-72 bg-gray-50 rounded-xl border border-gray-100">
+          class="flex-shrink-0 w-72 bg-gray-50 rounded-card border border-gray-100">
           <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <span class="text-sm font-semibold text-gray-700">{{ t(col.labelKey) }}</span>
             <span class="text-xs text-gray-400">{{ col.tickets.length }}</span>
@@ -37,20 +37,18 @@
               @dragstart="onDragStart(ticket)"
               @dragend="draggingId = null"
               @click="router.push(`/tickets/${ticket.id}`)"
-              :class="['bg-white rounded-lg border border-gray-200 p-3 cursor-pointer select-none hover:border-red-300 hover:shadow-sm transition', draggingId === ticket.id ? 'opacity-50' : '']">
+              :class="['bg-white rounded-input border border-gray-200 p-3 cursor-pointer select-none hover:border-brand-300 hover:shadow-soft transition', draggingId === ticket.id ? 'opacity-50' : '']">
               <div class="flex items-start justify-between gap-2 mb-1.5">
-                <span class="text-xs font-mono text-red-600">{{ ticket.ticket_number }}</span>
+                <span class="text-xs font-mono text-brand-600">{{ ticket.ticket_number }}</span>
                 <div class="flex items-center gap-1">
                   <span v-if="ticket.sla_resolution_breached"
-                    class="px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded font-medium">SLA</span>
-                  <span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="priorityClass(ticket.priority)">
-                    {{ t(`ticket.${ticket.priority}`) }}
-                  </span>
+                    class="px-1.5 py-0.5 text-xs bg-red-50 text-red-700 rounded font-medium">SLA</span>
+                  <StatusBadge kind="priority" :value="ticket.priority" />
                 </div>
               </div>
               <p class="text-sm font-medium text-gray-800 mb-2 leading-snug">{{ ticket.title }}</p>
               <select :value="ticket.status" @click.stop @change="onStatusSelect(ticket, $event)"
-                class="w-full px-2 py-1 border border-gray-200 rounded text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                class="w-full px-2 py-1 border border-gray-200 rounded text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
                 <option v-for="s in statusOptions" :key="s" :value="s">{{ t(`ticket.${s}`) }}</option>
               </select>
             </div>
@@ -69,6 +67,7 @@ import { useRouter } from 'vue-router'
 import { ticketApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import type { Ticket } from '@/stores/tickets'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -91,16 +90,6 @@ const columns = computed(() => [
     tickets: tickets.value.filter(tk => tk.status === 'resolved' || tk.status === 'closed'),
   },
 ])
-
-function priorityClass(p: string) {
-  const map: Record<string, string> = {
-    critical: 'bg-red-100 text-red-700',
-    high: 'bg-orange-100 text-orange-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    low: 'bg-gray-100 text-gray-600',
-  }
-  return map[p] || 'bg-gray-100 text-gray-600'
-}
 
 function onStatusSelect(ticket: Ticket, e: Event) {
   changeStatus(ticket, (e.target as HTMLSelectElement).value)

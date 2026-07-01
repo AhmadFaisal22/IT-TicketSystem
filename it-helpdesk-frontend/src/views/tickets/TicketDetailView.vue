@@ -1,6 +1,6 @@
 <template>
   <div v-if="!ticket && loading" class="flex items-center justify-center py-20 text-gray-400">
-    <div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+    <div class="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin mr-3"></div>
     {{ t('common.loading') }}
   </div>
 
@@ -22,17 +22,15 @@
     <div class="lg:col-span-2 space-y-4">
 
       <!-- Ticket info -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-6">
         <div class="flex items-start justify-between mb-4 gap-3">
           <div class="min-w-0">
             <p class="text-sm text-gray-400 font-mono mb-1">{{ ticket.ticket_number }}</p>
             <h2 class="text-lg sm:text-xl font-semibold text-gray-900">{{ ticket.title }}</h2>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-            <span class="px-2 py-1 rounded-full text-xs font-medium" :class="statusClass(ticket.status)">
-              {{ t(`ticket.${ticket.status}`) }}
-            </span>
-            <span v-if="ticket.sla_resolution_breached" class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+            <StatusBadge kind="status" :value="ticket.status" />
+            <span v-if="ticket.sla_resolution_breached" class="px-2 py-1 text-xs bg-red-50 text-red-700 rounded-full">
               {{ t('common.breached') }}
             </span>
           </div>
@@ -42,7 +40,7 @@
 
       <!-- Attachments -->
       <div v-if="ticket.attachments && ticket.attachments.length"
-        class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+        class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-6">
         <h3 class="font-semibold text-gray-700 mb-4">{{ t('ticket.attachments') }}</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <button v-for="att in ticket.attachments" :key="att.id" type="button"
@@ -65,7 +63,7 @@
       </div>
 
       <!-- Comments -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-6">
         <h3 class="font-semibold text-gray-700 mb-4">{{ t('comment.title') }}</h3>
 
         <div v-if="!comments.length" class="text-sm text-gray-400 text-center py-6">
@@ -95,7 +93,7 @@
         <!-- Comment form -->
         <div class="border-t pt-4">
           <textarea v-model="newComment" :placeholder="t('comment.placeholder')" rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 resize-none mb-2" />
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none mb-2" />
           <div class="flex items-center justify-between gap-2">
             <label v-if="auth.isItStaff" class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
               <input v-model="isInternal" type="checkbox" class="rounded" />
@@ -111,7 +109,7 @@
       </div>
 
       <!-- History -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-6">
         <h3 class="font-semibold text-gray-700 mb-4">History</h3>
         <div class="space-y-2">
           <div v-for="h in ticket.histories" :key="h.id"
@@ -130,15 +128,13 @@
     <div class="space-y-4">
 
       <!-- Details -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
+      <div class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-5">
         <h3 class="font-semibold text-gray-700 mb-4">Details</h3>
         <dl class="space-y-3 text-sm">
           <div>
             <dt class="text-gray-500">{{ t('ticket.priority') }}</dt>
             <dd class="mt-0.5">
-              <span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="priorityClass(ticket.priority)">
-                {{ t(`ticket.${ticket.priority}`) }}
-              </span>
+              <StatusBadge kind="priority" :value="ticket.priority" />
             </dd>
           </div>
           <div v-if="ticket.category">
@@ -183,7 +179,7 @@
 
       <!-- Approval card (shown when ticket is pending_approval or has approvals) -->
       <div v-if="ticket.approvals && ticket.approvals.length"
-        class="bg-white rounded-xl shadow-sm border border-amber-200 p-4 sm:p-5">
+        class="bg-white rounded-card shadow-soft border border-amber-200 p-4 sm:p-5">
         <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
           <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -279,7 +275,7 @@
           <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
             <h3 class="font-semibold text-gray-800">{{ t('admin.approval.rejectBtn') }} {{ ticket.ticket_number }}</h3>
             <textarea v-model="rejectNotes" rows="3" :placeholder="t('admin.approval.rejectNotesPlaceholder')"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none resize-none" />
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none resize-none" />
             <div class="flex gap-3">
               <button @click="showRejectModal = false"
                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
@@ -295,13 +291,13 @@
       </Teleport>
 
       <!-- IT Actions (staff only) -->
-      <div v-if="auth.isItStaff" class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
+      <div v-if="auth.isItStaff" class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-5">
         <h3 class="font-semibold text-gray-700 mb-4">Actions</h3>
 
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('ticket.assignee') }}</label>
           <select v-model="assignedTo" @change="handleAssign"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
             <option :value="null">{{ t('ticket.unassigned') }}</option>
             <option v-for="staff in itStaff" :key="staff.id" :value="staff.id">{{ staff.name }}</option>
           </select>
@@ -335,6 +331,7 @@ import { userApi, commentApi, approvalApi } from '@/api'
 import type { Ticket, Comment, TicketApproval } from '@/stores/tickets'
 import { CATEGORIES, getCategoryLabel, getSubCategoryLabel } from '@/constants/categories'
 import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -448,24 +445,6 @@ async function handleReject() {
   } finally {
     approvalLoading.value = false
   }
-}
-
-function statusClass(s: string) {
-  const map: Record<string, string> = {
-    open: 'bg-sky-100 text-sky-700', in_progress: 'bg-yellow-100 text-yellow-700',
-    pending: 'bg-purple-100 text-purple-700', resolved: 'bg-green-100 text-green-700',
-    closed: 'bg-gray-100 text-gray-600', pending_approval: 'bg-amber-100 text-amber-700',
-    rejected: 'bg-red-100 text-red-700'
-  }
-  return map[s] || 'bg-gray-100'
-}
-
-function priorityClass(p: string) {
-  const map: Record<string, string> = {
-    critical: 'bg-red-100 text-red-700', high: 'bg-orange-100 text-orange-700',
-    medium: 'bg-yellow-100 text-yellow-700', low: 'bg-gray-100 text-gray-600'
-  }
-  return map[p] || 'bg-gray-100'
 }
 
 function formatDateTime(dt: string) {

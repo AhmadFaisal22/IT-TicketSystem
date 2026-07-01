@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl">
+  <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6 max-w-2xl">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="sm:col-span-2">
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.assetTag') }} *</label>
@@ -204,6 +204,6 @@ onMounted(async () => {
 
 <style scoped>
 .input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-input text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none;
 }
 </style>

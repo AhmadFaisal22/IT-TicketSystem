@@ -13,6 +13,9 @@ desktop.ini
 page_source.html
 *.tmp
 
+# Superpowers brainstorming visual companion (local mockups)
+.superpowers/
+
 # Editor
 .vscode/
 .idea/

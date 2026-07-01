@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-card shadow-soft border border-gray-100 overflow-hidden">
       <div class="px-6 py-4 border-b flex flex-wrap items-center gap-3 justify-between">
         <h2 class="font-semibold text-gray-800">{{ t('admin.users.title') }}</h2>
         <div class="flex flex-wrap gap-3">
@@ -11,10 +11,10 @@
             </svg>
             <input v-model="filters.search" @input="onSearchInput" type="text"
               :placeholder="t('admin.users.searchPlaceholder')"
-              class="w-full sm:w-56 pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+              class="w-full sm:w-56 pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
           </div>
           <select v-model="filters.role" @change="loadUsers"
-            class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+            class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
             <option value="">{{ t('common.all') }}</option>
             <option value="admin">{{ t('admin.users.admin') }}</option>
             <option value="it_staff">{{ t('admin.users.it_staff') }}</option>
@@ -134,7 +134,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.users.name') }} *</label>
               <input v-model="form.name" type="text" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 :placeholder="t('admin.users.name')" />
             </div>
 
@@ -142,7 +142,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.users.email') }} *</label>
               <input v-model="form.email" type="email" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="user@company.com" />
             </div>
 
@@ -153,7 +153,7 @@
               </label>
               <input v-model="form.password" type="password"
                 :required="!modal.editing"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 :placeholder="modal.editing ? t('admin.users.passwordHint') : '••••••••'" />
               <p v-if="modal.editing" class="text-xs text-gray-400 mt-1">{{ t('admin.users.passwordHint') }}</p>
             </div>
@@ -162,7 +162,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.users.role') }} *</label>
               <select v-model="form.role" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                 <option value="user">{{ t('admin.users.user') }}</option>
                 <option value="it_staff">{{ t('admin.users.it_staff') }}</option>
                 <option value="admin">{{ t('admin.users.admin') }}</option>
@@ -173,7 +173,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.users.department') }}</label>
               <select v-model="form.department_id"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                 <option :value="null">—</option>
                 <option v-for="d in departments" :key="d.id" :value="d.id">
                   {{ locale === 'zh' ? d.name_zh : d.name }}
