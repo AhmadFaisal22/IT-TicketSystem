@@ -40,6 +40,7 @@ class AssetController extends Controller
             'status'        => 'nullable|' . AssetCategories::statusRule(),
             'category'      => 'nullable|' . AssetCategories::categoryRule(),
             'department_id' => 'nullable|integer|exists:departments,id',
+            'location'      => 'nullable|exists:asset_locations,name',
             'assigned_to'   => 'nullable|integer|exists:users,id',
             'search'        => 'nullable|string|max:255',
         ];
@@ -56,6 +57,9 @@ class AssetController extends Controller
         }
         if (!empty($f['department_id'])) {
             $query->where('department_id', $f['department_id']);
+        }
+        if (!empty($f['location'])) {
+            $query->where('location', $f['location']);
         }
         if (!empty($f['assigned_to'])) {
             $query->where('assigned_to', $f['assigned_to']);

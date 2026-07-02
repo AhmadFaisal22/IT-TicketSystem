@@ -28,6 +28,14 @@
           </option>
         </select>
 
+        <select v-model="filters.location" @change="onFilterChange"
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <option value="">{{ t('common.all') }} {{ t('asset.location') }}</option>
+          <option v-for="l in locations" :key="l.id" :value="l.name">
+            {{ locale === 'zh' && l.name_zh ? l.name_zh : l.name }}
+          </option>
+        </select>
+
         <button v-if="hasActiveFilters" @click="resetFilters"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700">
           ✕ {{ t('common.resetFilters') }}
@@ -182,7 +190,7 @@ import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { useAssetStore, ASSET_STATUSES, type Asset } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
-import { assetApi, assetCategoryApi, departmentApi } from '@/api'
+import { assetApi, assetCategoryApi, assetLocationApi, departmentApi } from '@/api'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -192,6 +200,7 @@ const auth = useAuthStore()
 
 const categories = ref<any[]>([])
 const departments = ref<any[]>([])
+const locations = ref<any[]>([])
 const statuses = ASSET_STATUSES
 
 function categoryLabel(name: string) {
@@ -212,12 +221,13 @@ const filters = reactive({
   status: (q.status as string) || '',
   category: (q.category as string) || '',
   department_id: ((q.department_id as string) || '') as string | number,
+  location: (q.location as string) || '',
 })
 const sortBy = ref((q.sort as string) || 'asset_tag')
 const sortDir = ref<'asc' | 'desc'>(q.dir === 'desc' ? 'desc' : 'asc')
 
 const hasActiveFilters = computed(() =>
-  Boolean(filters.search || filters.status || filters.category || filters.department_id)
+  Boolean(filters.search || filters.status || filters.category || filters.department_id || filters.location)
 )
 
 function syncQuery() {
@@ -226,6 +236,7 @@ function syncQuery() {
   if (filters.status) query.status = filters.status
   if (filters.category) query.category = filters.category
   if (filters.department_id) query.department_id = String(filters.department_id)
+  if (filters.location) query.location = filters.location
   if (sortBy.value !== 'asset_tag' || sortDir.value !== 'asc') {
     query.sort = sortBy.value
     query.dir = sortDir.value
@@ -251,6 +262,7 @@ function resetFilters() {
   filters.status = ''
   filters.category = ''
   filters.department_id = ''
+  filters.location = ''
   onFilterChange()
 }
 
@@ -322,8 +334,11 @@ function statusClass(s: string) {
 
 onMounted(async () => {
   fetchData()
-  const [cats, depts] = await Promise.all([assetCategoryApi.list(), departmentApi.list()])
+  const [cats, depts, locs] = await Promise.all([
+    assetCategoryApi.list(), departmentApi.list(), assetLocationApi.list(),
+  ])
   categories.value = cats.data
   departments.value = depts.data
+  locations.value = locs.data
 })
 </script>

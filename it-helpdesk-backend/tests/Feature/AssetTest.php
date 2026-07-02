@@ -115,6 +115,23 @@ class AssetTest extends TestCase
         $this->getJson('/api/assets?department_id=999999')->assertStatus(422);
     }
 
+    public function test_it_staff_can_filter_assets_by_location(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        \App\Models\AssetLocation::create(['name' => 'HQ-3F']);
+        \App\Models\AssetLocation::create(['name' => 'SEG NW99']);
+        Asset::factory()->count(2)->create(['location' => 'HQ-3F']);
+        Asset::factory()->create(['location' => 'SEG NW99']);
+
+        $this->getJson('/api/assets?location=' . urlencode('HQ-3F'))
+            ->assertOk()->assertJsonPath('total', 2);
+        $this->getJson('/api/assets?location=' . urlencode('SEG NW99'))
+            ->assertOk()->assertJsonPath('total', 1);
+
+        // A location not in the admin-managed list is rejected by validation.
+        $this->getJson('/api/assets?location=Nowhere')->assertStatus(422);
+    }
+
     public function test_search_matches_owner_full_name_in_either_order(): void
     {
         Sanctum::actingAs($this->itStaff());
