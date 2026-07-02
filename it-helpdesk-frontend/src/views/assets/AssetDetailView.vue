@@ -1,5 +1,12 @@
 <template>
   <div v-if="asset" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Back -->
+    <div class="lg:col-span-3 -mb-2">
+      <button @click="goBack" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+        ← {{ t('common.backToAssets') }}
+      </button>
+    </div>
+
     <!-- Main -->
     <div class="lg:col-span-2 space-y-6">
       <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6">
@@ -202,6 +209,7 @@ import { useAssetStore, ASSET_STATUSES, type AssetAttachment } from '@/stores/as
 import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi, assetCategoryApi } from '@/api'
 import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
+import { backToList } from '@/utils/backToList'
 import ImageLightbox from '@/components/ui/ImageLightbox.vue'
 
 const { t, locale } = useI18n()
@@ -266,11 +274,15 @@ async function reload() {
   await loadAssignableUsers(assigneeSearch.value, a.assigned_to)
 }
 
+function goBack() {
+  backToList(router, '/assets')
+}
+
 async function handleDelete() {
   if (!confirm(t('asset.deleteConfirm', { tag: asset.value!.asset_tag }))) return
   try {
     await assetApi.remove(asset.value!.id)
-    router.replace('/assets')
+    goBack()
   } catch (e: any) {
     alert(e?.response?.data?.message || t('common.error'))
   }

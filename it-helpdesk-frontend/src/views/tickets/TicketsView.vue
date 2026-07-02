@@ -3,25 +3,30 @@
     <!-- Filters -->
     <BaseCard class="mb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-3">
-        <input v-model="filters.search" @input="debouncedFetch" :placeholder="t('ticket.search')"
+        <input v-model="filters.search" @input="debouncedFilter" :placeholder="t('ticket.search')"
           class="pw-input col-span-1 sm:col-span-2 lg:flex-1 lg:min-w-48" />
 
-        <select v-model="filters.status" @change="fetchData" class="pw-input lg:w-auto">
+        <select v-model="filters.status" @change="onFilterChange" class="pw-input lg:w-auto">
           <option value="">{{ t('common.all') }} {{ t('ticket.status') }}</option>
           <option v-for="s in statuses" :key="s" :value="s">{{ t(`ticket.${s}`) }}</option>
         </select>
 
-        <select v-model="filters.priority" @change="fetchData" class="pw-input lg:w-auto">
+        <select v-model="filters.priority" @change="onFilterChange" class="pw-input lg:w-auto">
           <option value="">{{ t('common.all') }} {{ t('ticket.priority') }}</option>
           <option v-for="p in priorities" :key="p" :value="p">{{ t(`ticket.${p}`) }}</option>
         </select>
 
-        <select v-if="auth.isItStaff" v-model="filters.department_id" @change="fetchData" class="pw-input lg:w-auto">
+        <select v-if="auth.isItStaff" v-model="filters.department_id" @change="onFilterChange" class="pw-input lg:w-auto">
           <option value="">{{ t('common.all') }} {{ t('ticket.department') }}</option>
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ locale === 'zh' ? d.name_zh : d.name }}
           </option>
         </select>
+
+        <button v-if="hasActiveFilters" @click="resetFilters"
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700 lg:w-auto">
+          ✕ {{ t('common.resetFilters') }}
+        </button>
       </div>
     </BaseCard>
 
@@ -172,7 +177,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTicketStore } from '@/stores/tickets'
 import { useAuthStore } from '@/stores/auth'
@@ -183,27 +189,60 @@ import BaseCard from '@/components/ui/BaseCard.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 const { t, locale } = useI18n()
+const route = useRoute()
+const router = useRouter()
 const ticketStore = useTicketStore()
 const auth = useAuthStore()
 
 const departments = ref<any[]>([])
-const currentPage = ref(1)
 
 const statuses = ['open', 'in_progress', 'pending', 'pending_approval', 'resolved', 'closed', 'rejected']
 const priorities = ['critical', 'high', 'medium', 'low']
 
+// Filters and page live in the URL query so they survive back-navigation,
+// refresh, and link sharing.
+const q = route.query
+const currentPage = ref(Number(q.page) || 1)
 const filters = reactive({
-  search: '',
-  status: '',
-  priority: '',
-  department_id: ''
+  search: (q.search as string) || '',
+  status: (q.status as string) || '',
+  priority: (q.priority as string) || '',
+  department_id: (q.department_id as string) || ''
 })
 
+const hasActiveFilters = computed(() =>
+  Boolean(filters.search || filters.status || filters.priority || filters.department_id)
+)
+
+function syncQuery() {
+  const query: Record<string, string> = {}
+  if (filters.search) query.search = filters.search
+  if (filters.status) query.status = filters.status
+  if (filters.priority) query.priority = filters.priority
+  if (filters.department_id) query.department_id = filters.department_id
+  if (currentPage.value > 1) query.page = String(currentPage.value)
+  router.replace({ query })
+}
+
 function fetchData() {
+  syncQuery()
   ticketStore.fetchTickets({ ...filters, page: currentPage.value })
 }
 
-const debouncedFetch = useDebounceFn(fetchData, 350)
+function onFilterChange() {
+  currentPage.value = 1
+  fetchData()
+}
+
+const debouncedFilter = useDebounceFn(onFilterChange, 350)
+
+function resetFilters() {
+  filters.search = ''
+  filters.status = ''
+  filters.priority = ''
+  filters.department_id = ''
+  onFilterChange()
+}
 
 function goToPage(page: number) {
   currentPage.value = page

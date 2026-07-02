@@ -3,16 +3,16 @@
     <!-- Toolbar -->
     <div class="bg-white rounded-card shadow-soft border border-gray-100 p-4 mb-4">
       <div class="grid grid-cols-2 lg:flex lg:flex-wrap gap-3 lg:items-center">
-        <input v-model="filters.search" @input="debouncedFetch" :placeholder="t('asset.search')"
+        <input v-model="filters.search" @input="debouncedFilter" :placeholder="t('asset.search')"
           class="col-span-2 lg:flex-1 lg:min-w-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
 
-        <select v-model="filters.status" @change="fetchData"
+        <select v-model="filters.status" @change="onFilterChange"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">{{ t('common.all') }} {{ t('asset.status') }}</option>
           <option v-for="s in statuses" :key="s" :value="s">{{ t(`asset.status_labels.${s}`) }}</option>
         </select>
 
-        <select v-model="filters.category" @change="fetchData"
+        <select v-model="filters.category" @change="onFilterChange"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">{{ t('common.all') }} {{ t('asset.category') }}</option>
           <option v-for="c in categories" :key="c.id" :value="c.name">
@@ -20,13 +20,18 @@
           </option>
         </select>
 
-        <select v-model="filters.department_id" @change="fetchData"
+        <select v-model="filters.department_id" @change="onFilterChange"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">{{ t('common.all') }} {{ t('asset.department') }}</option>
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ locale === 'zh' && d.name_zh ? d.name_zh : d.name }}
           </option>
         </select>
+
+        <button v-if="hasActiveFilters" @click="resetFilters"
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700">
+          ✕ {{ t('common.resetFilters') }}
+        </button>
 
         <button @click="triggerImport"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
@@ -171,7 +176,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { useAssetStore, ASSET_STATUSES, type Asset } from '@/stores/assets'
@@ -179,6 +185,8 @@ import { useAuthStore } from '@/stores/auth'
 import { assetApi, assetCategoryApi, departmentApi } from '@/api'
 
 const { t, locale } = useI18n()
+const route = useRoute()
+const router = useRouter()
 const store = useAssetStore()
 const auth = useAuthStore()
 
@@ -193,15 +201,57 @@ function categoryLabel(name: string) {
   }
   return name
 }
-const currentPage = ref(1)
 const importInput = ref<HTMLInputElement | null>(null)
 
-const filters = reactive({ search: '', status: '', category: '', department_id: '' as string | number })
-const sortBy = ref('asset_tag')
-const sortDir = ref<'asc' | 'desc'>('asc')
+// Filters, sort, and page live in the URL query so they survive
+// back-navigation, refresh, and link sharing.
+const q = route.query
+const currentPage = ref(Number(q.page) || 1)
+const filters = reactive({
+  search: (q.search as string) || '',
+  status: (q.status as string) || '',
+  category: (q.category as string) || '',
+  department_id: ((q.department_id as string) || '') as string | number,
+})
+const sortBy = ref((q.sort as string) || 'asset_tag')
+const sortDir = ref<'asc' | 'desc'>(q.dir === 'desc' ? 'desc' : 'asc')
+
+const hasActiveFilters = computed(() =>
+  Boolean(filters.search || filters.status || filters.category || filters.department_id)
+)
+
+function syncQuery() {
+  const query: Record<string, string> = {}
+  if (filters.search) query.search = filters.search
+  if (filters.status) query.status = filters.status
+  if (filters.category) query.category = filters.category
+  if (filters.department_id) query.department_id = String(filters.department_id)
+  if (sortBy.value !== 'asset_tag' || sortDir.value !== 'asc') {
+    query.sort = sortBy.value
+    query.dir = sortDir.value
+  }
+  if (currentPage.value > 1) query.page = String(currentPage.value)
+  router.replace({ query })
+}
 
 function fetchData() {
+  syncQuery()
   store.fetchAssets({ ...filters, page: currentPage.value, sort: sortBy.value, dir: sortDir.value })
+}
+
+function onFilterChange() {
+  currentPage.value = 1
+  fetchData()
+}
+
+const debouncedFilter = useDebounceFn(onFilterChange, 350)
+
+function resetFilters() {
+  filters.search = ''
+  filters.status = ''
+  filters.category = ''
+  filters.department_id = ''
+  onFilterChange()
 }
 
 function toggleSort(column: string) {
@@ -213,7 +263,6 @@ function toggleSort(column: string) {
   }
   fetchData()
 }
-const debouncedFetch = useDebounceFn(fetchData, 350)
 
 function goToPage(page: number) {
   currentPage.value = page

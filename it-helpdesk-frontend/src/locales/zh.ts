@@ -289,6 +289,8 @@ export default {
     onTime: '按时',
     all: '全部',
     ticketNotFound: '该工单不存在，可能已被删除。',
-    backToTickets: '返回工单列表'
+    backToTickets: '返回工单列表',
+    backToAssets: '返回资产列表',
+    resetFilters: '重置筛选'
   }
 }

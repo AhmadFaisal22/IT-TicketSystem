@@ -17,6 +17,12 @@
   </div>
 
   <div v-else-if="ticket" class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Back -->
+    <div class="lg:col-span-3 -mb-1">
+      <button @click="goBack" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+        ← {{ t('common.backToTickets') }}
+      </button>
+    </div>
 
     <!-- Main content (left 2/3) -->
     <div class="lg:col-span-2 space-y-4">
@@ -324,19 +330,25 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useTicketStore } from '@/stores/tickets'
 import { useAuthStore } from '@/stores/auth'
 import { userApi, commentApi, approvalApi } from '@/api'
 import type { Ticket, Comment, TicketApproval } from '@/stores/tickets'
 import { CATEGORIES, getCategoryLabel, getSubCategoryLabel } from '@/constants/categories'
 import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
+import { backToList } from '@/utils/backToList'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const ticketStore = useTicketStore()
 const auth = useAuthStore()
+
+function goBack() {
+  backToList(router, '/tickets')
+}
 
 const loading = ref(true)
 const notFound = ref(false)

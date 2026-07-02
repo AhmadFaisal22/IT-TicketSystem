@@ -289,6 +289,8 @@ export default {
     onTime: 'On Time',
     all: 'All',
     ticketNotFound: 'This ticket no longer exists. It may have been deleted.',
-    backToTickets: 'Back to Tickets'
+    backToTickets: 'Back to Tickets',
+    backToAssets: 'Back to Assets',
+    resetFilters: 'Reset Filters'
   }
 }
