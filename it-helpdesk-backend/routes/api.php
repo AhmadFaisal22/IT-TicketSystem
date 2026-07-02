@@ -57,8 +57,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:it_staff')->group(function () {
         Route::get('assets', [AssetController::class, 'index']);
         Route::get('assets/meta', [AssetController::class, 'meta']);
+        Route::get('assets/next-tag', [AssetController::class, 'nextTag']);
         Route::get('assets/export', [AssetController::class, 'export']);
         Route::post('assets/import', [AssetController::class, 'import']);
+        Route::post('assets/bulk', [AssetController::class, 'bulkStore']);
         Route::get('assets/{asset}', [AssetController::class, 'show']);
         Route::post('assets', [AssetController::class, 'store']);
         Route::put('assets/{asset}', [AssetController::class, 'update']);

@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AssetController extends Controller
@@ -119,6 +120,97 @@ class AssetController extends Controller
             'created'  => $import->created,
             'rejected' => $import->rejected,
         ]);
+    }
+
+    /**
+     * Suggest the next asset tag: take the most recent tag ending in a number,
+     * then increment the highest numeric suffix among tags sharing its prefix.
+     * Padding keeps the width of the current highest suffix (US02-...-038 -> 039)
+     * and grows naturally past it (999 -> 1000).
+     */
+    public function nextTag(): JsonResponse
+    {
+        $latest = Asset::orderByDesc('id')
+            ->pluck('asset_tag')
+            ->first(fn ($tag) => preg_match('/\d+$/', (string) $tag));
+
+        if (!$latest) {
+            return response()->json(['suggested' => null]);
+        }
+
+        preg_match('/^(.*?)(\d+)$/', $latest, $m);
+        $prefix = $m[1];
+
+        $max = 0;
+        $width = strlen($m[2]);
+        foreach (Asset::where('asset_tag', 'like', $prefix . '%')->pluck('asset_tag') as $tag) {
+            if (preg_match('/^' . preg_quote($prefix, '/') . '(\d+)$/', $tag, $mm) && (int) $mm[1] > $max) {
+                $max = (int) $mm[1];
+                $width = strlen($mm[1]);
+            }
+        }
+
+        return response()->json([
+            'suggested' => $prefix . str_pad($max + 1, $width, '0', STR_PAD_LEFT),
+        ]);
+    }
+
+    /**
+     * Create N assets sharing common fields, with tags counted up consecutively
+     * from the starting tag. All-or-nothing: any tag collision rejects the batch.
+     * Per-unit fields (serial number, assignee) are intentionally not accepted —
+     * they are filled in per asset afterwards.
+     */
+    public function bulkStore(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'asset_tag'       => ['required', 'string', 'max:255', 'regex:/\d+$/'],
+            'quantity'        => 'required|integer|min:1|max:50',
+            'name'            => 'nullable|string|max:255',
+            'category'        => 'required|' . AssetCategories::categoryRule(),
+            'manufacturer'    => 'nullable|exists:manufacturers,name',
+            'model'           => 'nullable|string|max:255',
+            'department_id'   => 'nullable|exists:departments,id',
+            'location'        => 'nullable|exists:asset_locations,name',
+            'purchase_cost'   => 'nullable|numeric|min:0',
+            'purchase_link'   => 'nullable|string|max:2048',
+            'warranty_expiry' => 'nullable|date',
+            'notes'           => 'nullable|string|max:10000',
+        ]);
+
+        preg_match('/^(.*?)(\d+)$/', $data['asset_tag'], $m);
+        $prefix = $m[1];
+        $start = (int) $m[2];
+        $width = strlen($m[2]);
+
+        $tags = [];
+        for ($i = 0; $i < $data['quantity']; $i++) {
+            $tags[] = $prefix . str_pad($start + $i, $width, '0', STR_PAD_LEFT);
+        }
+
+        $taken = Asset::whereIn('asset_tag', $tags)->pluck('asset_tag');
+        if ($taken->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'asset_tag' => ['Asset tags already in use: ' . $taken->implode(', ')],
+            ]);
+        }
+
+        $common = collect($data)->except(['asset_tag', 'quantity'])->all();
+
+        $assets = DB::transaction(function () use ($tags, $common, $request) {
+            return collect($tags)->map(function ($tag) use ($common, $request) {
+                $asset = Asset::create($common + ['asset_tag' => $tag]);
+                $asset->logHistory($request->user()->id, 'created');
+                return $asset;
+            });
+        });
+
+        return response()->json([
+            'created'   => $assets->count(),
+            'first_tag' => $tags[0],
+            'last_tag'  => end($tags),
+            'ids'       => $assets->pluck('id'),
+        ], 201);
     }
 
     public function store(Request $request): JsonResponse

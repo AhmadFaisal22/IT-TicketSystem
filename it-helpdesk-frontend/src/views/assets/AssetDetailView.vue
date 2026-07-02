@@ -16,6 +16,10 @@
             <h1 class="text-xl font-semibold text-gray-800">{{ asset.name || categoryLabel(asset.category) }}</h1>
           </div>
           <div class="flex gap-2">
+            <router-link :to="`/assets/create?from=${asset.id}`"
+              class="px-3 py-1.5 text-sm border rounded-lg text-gray-700 hover:bg-gray-50">
+              {{ t('asset.actions.duplicate') }}
+            </router-link>
             <router-link :to="`/assets/${asset.id}/edit`"
               class="px-3 py-1.5 text-sm border rounded-lg text-gray-700 hover:bg-gray-50">
               {{ t('asset.actions.edit') }}

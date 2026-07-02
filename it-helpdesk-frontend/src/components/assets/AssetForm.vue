@@ -1,19 +1,28 @@
 <template>
   <div class="bg-white rounded-card shadow-soft border border-gray-100 p-6 max-w-2xl">
+    <p v-if="successMsg" class="mb-4 px-3 py-2 rounded-lg bg-green-50 text-green-700 text-sm">{{ successMsg }}</p>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="sm:col-span-2">
+      <div :class="isEdit ? 'sm:col-span-2' : ''">
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.assetTag') }} *</label>
         <input v-model="form.asset_tag" placeholder="US02-ADOM001-011" class="input" />
+        <p v-if="tagNeedsNumber" class="text-xs text-amber-600 mt-1">{{ t('asset.tagNoNumberHint') }}</p>
+      </div>
+
+      <div v-if="!isEdit">
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.quantity') }}</label>
+        <input v-model.number="quantity" type="number" min="1" max="50" class="input" />
+        <p v-if="bulkPreview" class="text-xs text-gray-500 mt-1">{{ bulkPreview }}</p>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.lastName') }}</label>
-        <input v-model="form.last_name" class="input" />
+        <input v-model="form.last_name" :disabled="isBulk" class="input disabled:opacity-50 disabled:cursor-not-allowed" />
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.firstName') }}</label>
-        <input v-model="form.first_name" class="input" />
+        <input v-model="form.first_name" :disabled="isBulk" class="input disabled:opacity-50 disabled:cursor-not-allowed" />
       </div>
 
       <div>
@@ -27,7 +36,8 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.serialNumber') }}</label>
-        <input v-model="form.serial_number" class="input" />
+        <input v-model="form.serial_number" :disabled="isBulk" class="input disabled:opacity-50 disabled:cursor-not-allowed" />
+        <p v-if="isBulk" class="text-xs text-gray-500 mt-1">{{ t('asset.bulkSerialHint') }}</p>
       </div>
 
       <div>
@@ -65,7 +75,7 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('asset.assignDate') }}</label>
-        <input v-model="form.assign_date" type="date" class="input" />
+        <input v-model="form.assign_date" type="date" :disabled="isBulk" class="input disabled:opacity-50 disabled:cursor-not-allowed" />
       </div>
 
       <div>
@@ -91,11 +101,15 @@
 
     <p v-if="error" class="text-sm text-red-600 mt-3">{{ error }}</p>
 
-    <div class="flex gap-3 mt-6">
+    <div class="flex flex-wrap gap-3 mt-6">
       <button @click="$router.back()" class="px-4 py-2 border rounded-lg text-sm text-gray-700 hover:bg-gray-50">
         {{ t('common.cancel') }}
       </button>
-      <button @click="submit" :disabled="saving"
+      <button v-if="!isEdit" @click="submit(true)" :disabled="saving || submitBlocked"
+        class="px-4 py-2 border border-red-300 text-red-600 rounded-lg text-sm hover:bg-red-50 disabled:opacity-50">
+        {{ t('asset.actions.saveAndAdd') }}
+      </button>
+      <button @click="submit(false)" :disabled="saving || submitBlocked"
         class="px-5 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50">
         {{ saving ? t('common.loading') : t('common.save') }}
       </button>
@@ -108,9 +122,11 @@ import { reactive, ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAssetStore, type Asset } from '@/stores/assets'
-import { departmentApi, assetCategoryApi, assetLocationApi, assetManufacturerApi } from '@/api'
+import { departmentApi, assetCategoryApi, assetLocationApi, assetManufacturerApi, assetApi } from '@/api'
 
-const props = defineProps<{ asset?: Asset | null }>()
+// `asset` = edit mode; `prefill` = duplicate source for a new asset (common
+// fields copied, tag/serial left for the new unit).
+const props = defineProps<{ asset?: Asset | null; prefill?: Asset | null }>()
 const { t, locale } = useI18n()
 const router = useRouter()
 const store = useAssetStore()
@@ -121,6 +137,32 @@ const departments = ref<any[]>([])
 const manufacturers = ref<any[]>([])
 const saving = ref(false)
 const error = ref('')
+const successMsg = ref('')
+
+const isEdit = computed(() => !!props.asset)
+const quantity = ref(1)
+const isBulk = computed(() => !isEdit.value && quantity.value > 1)
+
+const tagParts = computed(() => {
+  const m = form.asset_tag.match(/^(.*?)(\d+)$/)
+  return m ? { prefix: m[1], start: parseInt(m[2], 10), width: m[2].length } : null
+})
+const tagNeedsNumber = computed(() => isBulk.value && form.asset_tag !== '' && !tagParts.value)
+const submitBlocked = computed(() => tagNeedsNumber.value)
+
+const bulkPreview = computed(() => {
+  if (!isBulk.value || !tagParts.value) return ''
+  const { prefix, start, width } = tagParts.value
+  const last = prefix + String(start + quantity.value - 1).padStart(width, '0')
+  return t('asset.bulkPreview', { count: quantity.value, first: form.asset_tag, last })
+})
+
+async function suggestNextTag() {
+  try {
+    const { data } = await assetApi.nextTag()
+    if (data.suggested) form.asset_tag = data.suggested
+  } catch { /* suggestion is best-effort; the field stays manual */ }
+}
 
 // Active manufacturers for the dropdown; keep the asset's current value selectable
 // even if it's inactive or a legacy free-text value not in the managed list.
@@ -130,21 +172,24 @@ const manufacturerOptions = computed(() => {
   return names
 })
 
+// Common fields come from the edited asset or the duplicate source;
+// per-unit identity (tag, serial, owner) is never copied from a duplicate.
+const src = props.asset ?? props.prefill ?? null
 const form = reactive({
   asset_tag: props.asset?.asset_tag ?? '',
   last_name: props.asset?.last_name ?? '',
   first_name: props.asset?.first_name ?? '',
-  category: props.asset?.category ?? '',
+  category: src?.category ?? '',
   serial_number: props.asset?.serial_number ?? '',
-  manufacturer: props.asset?.manufacturer ?? '',
-  model: props.asset?.model ?? '',
-  location: props.asset?.location ?? '',
-  department_id: props.asset?.department_id ?? null,
+  manufacturer: src?.manufacturer ?? '',
+  model: src?.model ?? '',
+  location: src?.location ?? '',
+  department_id: src?.department_id ?? null,
   assign_date: props.asset?.assign_date?.slice(0, 10) ?? '',
-  purchase_cost: props.asset?.purchase_cost ?? '',
-  purchase_link: props.asset?.purchase_link ?? '',
-  warranty_expiry: props.asset?.warranty_expiry?.slice(0, 10) ?? '',
-  notes: props.asset?.notes ?? '',
+  purchase_cost: src?.purchase_cost ?? '',
+  purchase_link: src?.purchase_link ?? '',
+  warranty_expiry: src?.warranty_expiry?.slice(0, 10) ?? '',
+  notes: src?.notes ?? '',
 })
 
 function payload() {
@@ -168,16 +213,56 @@ function payload() {
   }
 }
 
-async function submit() {
+function bulkPayload() {
+  return {
+    asset_tag: form.asset_tag,
+    quantity: quantity.value,
+    category: form.category,
+    manufacturer: form.manufacturer || null,
+    model: form.model || null,
+    location: form.location || null,
+    department_id: form.department_id,
+    purchase_cost: form.purchase_cost === '' ? null : form.purchase_cost,
+    purchase_link: form.purchase_link || null,
+    warranty_expiry: form.warranty_expiry || null,
+    notes: form.notes || null,
+  }
+}
+
+// After a "save & add another", keep common fields and prepare the next unit.
+async function prepareNextEntry() {
+  form.serial_number = ''
+  form.last_name = ''
+  form.first_name = ''
+  form.assign_date = ''
+  form.asset_tag = ''
+  await suggestNextTag()
+}
+
+async function submit(stay = false) {
   error.value = ''
+  successMsg.value = ''
   saving.value = true
   try {
     if (props.asset) {
       await store.updateAsset(props.asset.id, payload())
       router.push(`/assets/${props.asset.id}`)
+    } else if (isBulk.value) {
+      const { data } = await assetApi.bulkCreate(bulkPayload())
+      if (stay) {
+        successMsg.value = t('asset.createdMany', { count: data.created, first: data.first_tag, last: data.last_tag })
+        await prepareNextEntry()
+      } else {
+        router.push('/assets')
+      }
     } else {
       const created = await store.createAsset(payload())
-      router.push(`/assets/${created.id}`)
+      if (stay) {
+        successMsg.value = t('asset.createdOne', { tag: created.asset_tag })
+        await prepareNextEntry()
+      } else {
+        router.push(`/assets/${created.id}`)
+      }
     }
   } catch (e: any) {
     error.value = e?.response?.status === 409
@@ -189,6 +274,7 @@ async function submit() {
 }
 
 onMounted(async () => {
+  if (!isEdit.value && !form.asset_tag) suggestNextTag()
   const [deptRes, catRes, locRes, mfrRes] = await Promise.all([
     departmentApi.list(), assetCategoryApi.list(), assetLocationApi.list(), assetManufacturerApi.list(),
   ])
