@@ -190,6 +190,27 @@ class AssetTest extends TestCase
         $this->putJson("/api/assets/{$asset->id}", ['location' => 'Nowhere', 'version' => 2])->assertStatus(422);
     }
 
+    public function test_update_can_change_department(): void
+    {
+        Sanctum::actingAs($this->itStaff());
+        $finance = Department::create(['name' => 'Finance', 'name_zh' => 'FN']);
+        $asset = Asset::factory()->create();
+
+        $this->putJson("/api/assets/{$asset->id}", ['department_id' => $finance->id, 'version' => 1])
+            ->assertOk()
+            ->assertJsonPath('department_id', $finance->id);
+        $this->assertDatabaseHas('assets', ['id' => $asset->id, 'department_id' => $finance->id]);
+
+        // Clearing the department works too.
+        $this->putJson("/api/assets/{$asset->id}", ['department_id' => null, 'version' => 2])
+            ->assertOk()
+            ->assertJsonPath('department_id', null);
+
+        // An unknown department id is rejected.
+        $this->putJson("/api/assets/{$asset->id}", ['department_id' => 999999, 'version' => 3])
+            ->assertStatus(422);
+    }
+
     public function test_update_requires_a_version_field(): void
     {
         Sanctum::actingAs($this->itStaff());

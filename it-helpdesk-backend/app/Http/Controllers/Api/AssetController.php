@@ -256,6 +256,7 @@ class AssetController extends Controller
             'manufacturer'    => 'nullable|exists:manufacturers,name',
             'model'           => 'nullable|string|max:255',
             'serial_number'   => 'nullable|string|max:255|unique:assets,serial_number,' . $asset->id,
+            'department_id'   => 'nullable|exists:departments,id',
             'location'        => 'nullable|exists:asset_locations,name',
             'assign_date'     => 'nullable|date',
             'purchase_cost'   => 'nullable|numeric|min:0',
