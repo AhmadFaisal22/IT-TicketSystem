@@ -92,10 +92,18 @@ return [
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
-            'prefix' => '',
+            'prefix'         => '',
             'prefix_indexes' => true,
-            'search_path' => 'public',
-            'sslmode' => 'prefer',
+            'search_path'    => 'public',
+            // 'require' enforces SSL. Switch to 'verify-full' + DB_SSLROOTCERT
+            // when you have the CA cert (Supabase: Settings → Database → SSL cert).
+            'sslmode'        => env('DB_SSLMODE', 'require'),
+            'options'        => array_filter([
+                PDO::PGSQL_ATTR_SSL_CA => env('DB_SSLROOTCERT'),   // CA cert path on server
+                PDO::ATTR_PERSISTENT   => false,                    // no persistent connections (PgBouncer handles pooling)
+                PDO::ATTR_TIMEOUT      => 10,                       // connection timeout seconds
+                PDO::ATTR_ERRMODE      => PDO::ERRMODE_EXCEPTION,
+            ]),
         ],
 
         'sqlsrv' => [
