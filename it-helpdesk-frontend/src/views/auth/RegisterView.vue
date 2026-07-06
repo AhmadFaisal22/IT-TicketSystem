@@ -165,6 +165,10 @@ async function submit() {
     errors.value = { department_id: ['Please select a department.'] }
     return
   }
+  if (/\s/.test(form.password)) {
+    errors.value = { password: ['Password must not contain spaces.'] }
+    return
+  }
 
   loading.value = true
   try {

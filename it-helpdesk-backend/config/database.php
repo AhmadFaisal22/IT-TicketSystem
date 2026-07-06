@@ -98,12 +98,15 @@ return [
             // 'require' enforces SSL. Switch to 'verify-full' + DB_SSLROOTCERT
             // when you have the CA cert (Supabase: Settings → Database → SSL cert).
             'sslmode'        => env('DB_SSLMODE', 'require'),
-            'options'        => array_filter([
-                PDO::PGSQL_ATTR_SSL_CA => env('DB_SSLROOTCERT'),   // CA cert path on server
+            'options'        => [
                 PDO::ATTR_PERSISTENT   => false,                    // no persistent connections (PgBouncer handles pooling)
                 PDO::ATTR_TIMEOUT      => 10,                       // connection timeout seconds
                 PDO::ATTR_ERRMODE      => PDO::ERRMODE_EXCEPTION,
-            ]),
+            ] + (defined('PDO::PGSQL_ATTR_SSL_CA') && env('DB_SSLROOTCERT')
+                // PDO::PGSQL_ATTR_SSL_CA is not a stock PHP constant; only add
+                // the CA cert option on builds that actually define it.
+                ? [constant('PDO::PGSQL_ATTR_SSL_CA') => env('DB_SSLROOTCERT')]
+                : []),
         ],
 
         'sqlsrv' => [

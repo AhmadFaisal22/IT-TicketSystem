@@ -76,6 +76,7 @@ async function handleClick(n: AppNotification) {
 function getNotifMessage(n: AppNotification) {
   const type = n.data?.type
   if (type === 'ticket_created') return `New ticket: ${n.data.title}`
+  if (type === 'ticket_received') return `Ticket received: ${n.data.ticket_number}`
   if (type === 'status_changed') return `Status: ${n.data.old_status} → ${n.data.new_status}`
   if (type === 'ticket_assigned') return `Assigned: ${n.data.title}`
   if (type === 'new_comment') return `New reply from ${n.data.comment_by}`

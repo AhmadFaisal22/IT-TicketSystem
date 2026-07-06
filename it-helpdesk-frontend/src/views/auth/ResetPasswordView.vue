@@ -143,6 +143,10 @@ function fieldError(field: string): string {
 async function submit() {
   errors.value      = {}
   genericError.value = ''
+  if (/\s/.test(password.value)) {
+    errors.value = { password: ['Password must not contain spaces.'] }
+    return
+  }
   loading.value     = true
   try {
     await authApi.resetPassword(token.value, emailFromQuery.value, password.value, passwordConfirmation.value)

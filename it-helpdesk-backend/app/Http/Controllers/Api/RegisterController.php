@@ -51,8 +51,10 @@ class RegisterController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:100',
             'email'         => ['required', 'email', $endsWith, 'unique:users,email'],
-            'password'      => 'required|string|min:8',
+            'password'      => ['required', 'string', 'min:8', 'regex:/^\S+$/'],
             'department_id' => 'required|integer|exists:departments,id',
+        ], [
+            'password.regex' => 'Password must not contain spaces.',
         ]);
 
         $user = User::create([

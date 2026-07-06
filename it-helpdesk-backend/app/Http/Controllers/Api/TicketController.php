@@ -13,6 +13,7 @@ use App\Models\TicketHistory;
 use App\Models\User;
 use App\Notifications\TicketApprovalRequested;
 use App\Notifications\TicketCreated;
+use App\Notifications\TicketReceived;
 use App\Notifications\TicketStatusChanged;
 use App\Notifications\TicketAssigned;
 use Illuminate\Http\JsonResponse;
@@ -154,6 +155,9 @@ class TicketController extends Controller
             // No approvals needed — notify only the assigned IT staff member
             $ticket->assignee?->notify(new TicketCreated($ticket));
         }
+
+        // Confirmation to the requester with their ticket number
+        $request->user()->notify(new TicketReceived($ticket));
 
         return response()->json($ticket->load(['creator', 'department', 'attachments']), 201);
     }

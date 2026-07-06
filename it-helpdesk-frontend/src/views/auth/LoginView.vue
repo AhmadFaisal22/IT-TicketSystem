@@ -94,7 +94,7 @@
             <input
               id="email"
               name="email"
-              v-model="email"
+              v-model.trim="email"
               type="email"
               required
               autocomplete="email"
