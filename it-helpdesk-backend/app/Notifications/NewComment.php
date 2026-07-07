@@ -24,6 +24,7 @@ class NewComment extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("New Reply on {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("{$this->comment->user->name} replied on your ticket.")
             ->line("**{$this->ticket->title}**")
             ->action('View Ticket', config('app.frontend_url') . "/tickets/{$this->ticket->id}");

@@ -26,6 +26,7 @@ class TicketRejected extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("Ticket Rejected: {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Your ticket has been rejected.")
             ->line("**{$this->ticket->title}**")
             ->line("Reason: {$this->reason}")

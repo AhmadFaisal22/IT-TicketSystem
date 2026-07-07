@@ -23,6 +23,7 @@ class TicketCreated extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("New Ticket: {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("A new ticket has been submitted.")
             ->line("**{$this->ticket->title}**")
             ->line("Priority: {$this->ticket->priority} | Department: {$this->ticket->department->name}")

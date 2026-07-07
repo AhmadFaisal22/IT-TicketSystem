@@ -23,6 +23,7 @@ class TicketAssigned extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("Ticket Assigned: {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("A ticket has been assigned to you.")
             ->line("**{$this->ticket->title}**")
             ->line("Priority: {$this->ticket->priority}")

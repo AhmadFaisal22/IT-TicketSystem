@@ -28,6 +28,7 @@ class SlaBreached extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject("SLA Breach: {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("The {$this->type} SLA for a ticket has been breached.")
             ->line("**{$this->ticket->title}**")
             ->line("Priority: {$this->ticket->priority} | Department: {$this->ticket->department->name}")

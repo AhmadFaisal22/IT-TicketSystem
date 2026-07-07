@@ -23,6 +23,7 @@ class TicketReceived extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("Ticket Received: {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("We have received your ticket. Our IT team will get back to you soon.")
             ->line("**{$this->ticket->title}**")
             ->line("Ticket Number: {$this->ticket->ticket_number}")

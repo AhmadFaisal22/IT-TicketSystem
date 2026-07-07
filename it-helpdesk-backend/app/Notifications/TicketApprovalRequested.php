@@ -27,6 +27,7 @@ class TicketApprovalRequested extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("Approval Required: {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("A ticket requires your approval.")
             ->line("**{$this->ticket->title}**")
             ->line("Priority: {$this->ticket->priority} | Department: {$this->ticket->department->name}")

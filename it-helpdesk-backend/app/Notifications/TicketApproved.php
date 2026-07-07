@@ -23,6 +23,7 @@ class TicketApproved extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("Ticket Approved: {$this->ticket->ticket_number}")
+            ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Your ticket has been fully approved and is now open for IT to process.")
             ->line("**{$this->ticket->title}**")
             ->action('View Ticket', config('app.frontend_url') . "/tickets/{$this->ticket->id}");

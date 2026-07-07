@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Department;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,15 +33,9 @@ class UserController extends Controller
 
     public function itStaff(): JsonResponse
     {
-        // Tickets are assigned to anyone in the IT department, regardless of role.
-        $itDeptId = Department::where('name', 'IT')->value('id');
-
-        if (!$itDeptId) {
-            return response()->json([]);
-        }
-
+        // Tickets are assigned by role (it_staff/admin), whatever department they sit in.
         return response()->json(
-            User::where('department_id', $itDeptId)
+            User::whereIn('role', ['it_staff', 'admin'])
                 ->where('active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'avatar'])
