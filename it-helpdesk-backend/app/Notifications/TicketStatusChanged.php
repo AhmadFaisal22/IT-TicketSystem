@@ -25,7 +25,10 @@ class TicketStatusChanged extends Notification implements ShouldQueue
             ->subject("Ticket {$this->ticket->ticket_number} Updated")
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Your ticket status has changed.")
-            ->line("**{$this->oldStatus}** → **{$this->ticket->status}**")
+            ->line("**{$this->ticket->title}**")
+            ->line("Ticket Number: {$this->ticket->ticket_number}")
+            ->line("Priority: {$this->ticket->priority} | Department: {$this->ticket->department->name}")
+            ->line("Status: **{$this->oldStatus}** → **{$this->ticket->status}**")
             ->action('View Ticket', config('app.frontend_url') . "/tickets/{$this->ticket->id}");
     }
 
