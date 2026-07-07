@@ -95,9 +95,10 @@ return [
             'prefix'         => '',
             'prefix_indexes' => true,
             'search_path'    => 'public',
-            // 'require' enforces SSL. Switch to 'verify-full' + DB_SSLROOTCERT
-            // when you have the CA cert (Supabase: Settings → Database → SSL cert).
-            'sslmode'        => env('DB_SSLMODE', 'require'),
+            // 'prefer' uses SSL when the server offers it (Supabase) and falls
+            // back to plain TCP for local containers without SSL. Set
+            // DB_SSLMODE=verify-full + DB_SSLROOTCERT to pin a CA cert.
+            'sslmode'        => env('DB_SSLMODE', 'prefer'),
             'options'        => [
                 PDO::ATTR_PERSISTENT   => false,                    // no persistent connections (PgBouncer handles pooling)
                 PDO::ATTR_TIMEOUT      => 10,                       // connection timeout seconds
