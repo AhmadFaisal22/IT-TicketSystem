@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\TicketsExport;
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalLevel;
 use App\Models\Attachment;
@@ -23,25 +24,51 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TicketController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $f = $request->validate([
+        $f = $request->validate(array_merge($this->filterRules(), [
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]));
+
+        $query = Ticket::with(['creator', 'assignee', 'department'])
+            ->orderByDesc('created_at');
+        $this->applyFilters($query, $f, $request->user());
+
+        return response()->json($query->paginate((int) ($f['per_page'] ?? 20)));
+    }
+
+    public function export(Request $request)
+    {
+        $f = $request->validate($this->filterRules());
+
+        $query = Ticket::query()->orderByDesc('created_at');
+        $this->applyFilters($query, $f, $request->user());
+
+        return Excel::download(new TicketsExport($query), 'tickets.xlsx');
+    }
+
+    /** Validation rules for the ticket list/export filters (shared by index + export). */
+    private function filterRules(): array
+    {
+        return [
             'status'        => 'nullable|in:open,in_progress,pending,pending_approval,resolved,closed,rejected',
             'priority'      => 'nullable|in:low,medium,high,critical',
             'department_id' => 'nullable|integer|exists:departments,id',
             'assigned_to'   => 'nullable|integer|exists:users,id',
             'search'        => 'nullable|string|max:255',
             'sla_breached'  => 'nullable|boolean',
-            'per_page'      => 'nullable|integer|min:1|max:100',
-        ]);
+            'date_from'     => 'nullable|date',
+            'date_to'       => 'nullable|date|after_or_equal:date_from',
+        ];
+    }
 
-        $user = $request->user();
-        $query = Ticket::with(['creator', 'assignee', 'department'])
-            ->orderByDesc('created_at');
-
+    /** Apply the shared list/export filters (and role-based visibility) to a ticket query. */
+    private function applyFilters($query, array $f, User $user): void
+    {
         if (!$user->isItStaff()) {
             // Regular users see their own tickets OR tickets they are an approver for
             $query->where(function ($q) use ($user) {
@@ -75,8 +102,12 @@ class TicketController extends Controller
                   ->orWhere('sla_resolution_breached', true);
             });
         }
-
-        return response()->json($query->paginate((int) ($f['per_page'] ?? 20)));
+        if (!empty($f['date_from'])) {
+            $query->whereDate('created_at', '>=', $f['date_from']);
+        }
+        if (!empty($f['date_to'])) {
+            $query->whereDate('created_at', '<=', $f['date_to']);
+        }
     }
 
     public function store(Request $request): JsonResponse

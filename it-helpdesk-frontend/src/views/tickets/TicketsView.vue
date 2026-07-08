@@ -23,9 +23,22 @@
           </option>
         </select>
 
+        <div class="flex items-center gap-2 lg:w-auto">
+          <input v-model="filters.date_from" @change="onFilterChange" type="date"
+            :max="filters.date_to || undefined" :title="t('ticket.dateFrom')" class="pw-input flex-1 lg:w-auto" />
+          <span class="text-gray-400 text-sm shrink-0">–</span>
+          <input v-model="filters.date_to" @change="onFilterChange" type="date"
+            :min="filters.date_from || undefined" :title="t('ticket.dateTo')" class="pw-input flex-1 lg:w-auto" />
+        </div>
+
         <button v-if="hasActiveFilters" @click="resetFilters"
           class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700 lg:w-auto">
           ✕ {{ t('common.resetFilters') }}
+        </button>
+
+        <button @click="onExport" :disabled="exporting"
+          class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 lg:w-auto disabled:opacity-50">
+          {{ exporting ? t('common.loading') : t('ticket.exportBtn') }}
         </button>
       </div>
     </BaseCard>
@@ -207,11 +220,14 @@ const filters = reactive({
   search: (q.search as string) || '',
   status: (q.status as string) || '',
   priority: (q.priority as string) || '',
-  department_id: (q.department_id as string) || ''
+  department_id: (q.department_id as string) || '',
+  date_from: (q.date_from as string) || '',
+  date_to: (q.date_to as string) || ''
 })
 
 const hasActiveFilters = computed(() =>
-  Boolean(filters.search || filters.status || filters.priority || filters.department_id)
+  Boolean(filters.search || filters.status || filters.priority || filters.department_id
+    || filters.date_from || filters.date_to)
 )
 
 function syncQuery() {
@@ -220,6 +236,8 @@ function syncQuery() {
   if (filters.status) query.status = filters.status
   if (filters.priority) query.priority = filters.priority
   if (filters.department_id) query.department_id = filters.department_id
+  if (filters.date_from) query.date_from = filters.date_from
+  if (filters.date_to) query.date_to = filters.date_to
   if (currentPage.value > 1) query.page = String(currentPage.value)
   router.replace({ query })
 }
@@ -241,7 +259,30 @@ function resetFilters() {
   filters.status = ''
   filters.priority = ''
   filters.department_id = ''
+  filters.date_from = ''
+  filters.date_to = ''
   onFilterChange()
+}
+
+const exporting = ref(false)
+
+async function onExport() {
+  exporting.value = true
+  try {
+    const params: Record<string, string> = {}
+    Object.entries(filters).forEach(([k, v]) => { if (v) params[k] = v })
+    const { data } = await ticketApi.export(params)
+    const url = URL.createObjectURL(data)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'tickets.xlsx'
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (e: any) {
+    alert(e?.response?.data?.message || 'Export failed.')
+  } finally {
+    exporting.value = false
+  }
 }
 
 function goToPage(page: number) {

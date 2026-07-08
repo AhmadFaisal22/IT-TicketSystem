@@ -53,7 +53,8 @@ export const ticketApi = {
   update: (id: number, data: object) => api.put(`/tickets/${id}`, data),
   updateStatus: (id: number, status: string) => api.patch(`/tickets/${id}/status`, { status }),
   assign: (id: number, assigned_to: number | null) => api.patch(`/tickets/${id}/assign`, { assigned_to }),
-  delete: (id: number) => api.delete(`/tickets/${id}`)
+  delete: (id: number) => api.delete(`/tickets/${id}`),
+  export: (params?: object) => api.get('/tickets/export', { params, responseType: 'blob' })
 }
 
 export const attachmentApi = {

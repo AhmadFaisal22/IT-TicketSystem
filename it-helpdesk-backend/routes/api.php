@@ -40,6 +40,8 @@ Route::prefix('auth')->group(function () {
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Tickets
+    // Static path MUST precede tickets/{ticket} so it is not captured as a wildcard.
+    Route::get('tickets/export', [TicketController::class, 'export']);
     Route::apiResource('tickets', TicketController::class);
     Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
     Route::patch('tickets/{ticket}/assign', [TicketController::class, 'assign']);
