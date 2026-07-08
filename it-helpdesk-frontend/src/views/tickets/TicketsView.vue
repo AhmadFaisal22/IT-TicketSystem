@@ -16,6 +16,13 @@
           <option v-for="p in priorities" :key="p" :value="p">{{ t(`ticket.${p}`) }}</option>
         </select>
 
+        <select v-model="filters.category" @change="onFilterChange" class="pw-input lg:w-auto">
+          <option value="">{{ t('common.all') }} {{ t('ticket.category') }}</option>
+          <option v-for="c in CATEGORIES" :key="c.id" :value="c.id">
+            {{ c.emoji }} {{ locale === 'zh' ? c.short_zh : c.short_en }}
+          </option>
+        </select>
+
         <select v-if="auth.isItStaff" v-model="filters.department_id" @change="onFilterChange" class="pw-input lg:w-auto">
           <option value="">{{ t('common.all') }} {{ t('ticket.department') }}</option>
           <option v-for="d in departments" :key="d.id" :value="d.id">
@@ -80,6 +87,10 @@
             <p class="text-sm font-medium text-gray-800 mb-2 leading-snug">{{ ticket.title }}</p>
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs mb-2">
               <StatusBadge kind="status" :value="ticket.status" />
+              <template v-if="ticket.category">
+                <span class="text-gray-300">•</span>
+                <span class="text-gray-500">{{ categoryLabel(ticket.category) }}</span>
+              </template>
               <span class="text-gray-300">•</span>
               <span class="text-gray-500">{{ locale === 'zh' ? ticket.department?.name_zh : ticket.department?.name }}</span>
               <span class="text-gray-300">•</span>
@@ -115,6 +126,7 @@
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.title') }}</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.status') }}</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.priority') }}</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.category') }}</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.department') }}</th>
               <th v-if="auth.isItStaff" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.assignee') }}</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ t('ticket.createdAt') }}</th>
@@ -138,6 +150,7 @@
               <td class="px-4 py-3">
                 <StatusBadge kind="priority" :value="ticket.priority" />
               </td>
+              <td class="px-4 py-3 text-sm text-gray-600">{{ categoryLabel(ticket.category) }}</td>
               <td class="px-4 py-3 text-sm text-gray-600">
                 {{ locale === 'zh' ? ticket.department?.name_zh : ticket.department?.name }}
               </td>
@@ -198,6 +211,7 @@ import { useAuthStore } from '@/stores/auth'
 import { departmentApi, ticketApi } from '@/api'
 import { useDebounceFn } from '@vueuse/core'
 import type { Ticket } from '@/stores/tickets'
+import { CATEGORIES } from '@/constants/categories'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 
@@ -220,14 +234,15 @@ const filters = reactive({
   search: (q.search as string) || '',
   status: (q.status as string) || '',
   priority: (q.priority as string) || '',
+  category: (q.category as string) || '',
   department_id: (q.department_id as string) || '',
   date_from: (q.date_from as string) || '',
   date_to: (q.date_to as string) || ''
 })
 
 const hasActiveFilters = computed(() =>
-  Boolean(filters.search || filters.status || filters.priority || filters.department_id
-    || filters.date_from || filters.date_to)
+  Boolean(filters.search || filters.status || filters.priority || filters.category
+    || filters.department_id || filters.date_from || filters.date_to)
 )
 
 function syncQuery() {
@@ -235,6 +250,7 @@ function syncQuery() {
   if (filters.search) query.search = filters.search
   if (filters.status) query.status = filters.status
   if (filters.priority) query.priority = filters.priority
+  if (filters.category) query.category = filters.category
   if (filters.department_id) query.department_id = filters.department_id
   if (filters.date_from) query.date_from = filters.date_from
   if (filters.date_to) query.date_to = filters.date_to
@@ -258,6 +274,7 @@ function resetFilters() {
   filters.search = ''
   filters.status = ''
   filters.priority = ''
+  filters.category = ''
   filters.department_id = ''
   filters.date_from = ''
   filters.date_to = ''
@@ -307,6 +324,13 @@ async function handleDelete(ticket: Ticket) {
 
 function formatDate(dt: string) {
   return new Date(dt).toLocaleDateString()
+}
+
+function categoryLabel(id: string | null): string {
+  if (!id) return '—'
+  const cat = CATEGORIES.find(c => c.id === id)
+  if (!cat) return id
+  return locale.value === 'zh' ? cat.short_zh : cat.short_en
 }
 
 onMounted(async () => {

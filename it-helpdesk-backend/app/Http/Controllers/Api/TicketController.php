@@ -57,6 +57,7 @@ class TicketController extends Controller
         return [
             'status'        => 'nullable|in:open,in_progress,pending,pending_approval,resolved,closed,rejected',
             'priority'      => 'nullable|in:low,medium,high,critical',
+            'category'      => 'nullable|string|max:100',
             'department_id' => 'nullable|integer|exists:departments,id',
             'assigned_to'   => 'nullable|integer|exists:users,id',
             'search'        => 'nullable|string|max:255',
@@ -82,6 +83,9 @@ class TicketController extends Controller
         }
         if (!empty($f['priority'])) {
             $query->where('priority', $f['priority']);
+        }
+        if (!empty($f['category'])) {
+            $query->where('category', $f['category']);
         }
         if (!empty($f['department_id'])) {
             $query->where('department_id', $f['department_id']);
