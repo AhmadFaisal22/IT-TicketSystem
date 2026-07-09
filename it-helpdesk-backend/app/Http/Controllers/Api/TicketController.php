@@ -197,12 +197,28 @@ class TicketController extends Controller
         return response()->json($ticket->load(['creator', 'department', 'attachments']), 201);
     }
 
-    public function show(Ticket $ticket): JsonResponse
+    public function show(Request $request, Ticket $ticket): JsonResponse
     {
         $this->authorize('view', $ticket);
-        return response()->json(
-            $ticket->load(['creator', 'assignee', 'department', 'comments.user', 'histories.user', 'attachments', 'approvals.approver', 'approvals.responder'])
-        );
+
+        $relations = [
+            'creator',
+            'assignee',
+            'department',
+            'comments' => function ($query) use ($request) {
+                if (!$request->user()->isItStaff()) {
+                    $query->where('is_internal', false);
+                }
+
+                $query->with('user');
+            },
+            'histories.user',
+            'attachments',
+            'approvals.approver',
+            'approvals.responder',
+        ];
+
+        return response()->json($ticket->load($relations));
     }
 
     public function update(Request $request, Ticket $ticket): JsonResponse
