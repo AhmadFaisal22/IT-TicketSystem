@@ -49,22 +49,28 @@
         class="bg-white rounded-card shadow-soft border border-gray-100 p-4 sm:p-6">
         <h3 class="font-semibold text-gray-700 mb-4">{{ t('ticket.attachments') }}</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <button v-for="att in ticket.attachments" :key="att.id" type="button"
-            @click="downloadAttachment(att)"
-            class="group block w-full text-left rounded-lg border border-gray-200 overflow-hidden hover:border-red-300 transition cursor-pointer">
-            <img v-if="att.mime_type.startsWith('image/') && previewUrls[att.id]" :src="previewUrls[att.id]" :alt="att.original_name"
-              class="w-full h-28 sm:h-32 object-cover" />
-            <div v-else class="w-full h-28 sm:h-32 flex flex-col items-center justify-center bg-gray-50 p-3 gap-2">
-              <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-              <span class="text-xs text-gray-500 text-center truncate w-full px-1">{{ att.original_name }}</span>
-            </div>
-            <div class="px-2 py-1.5 bg-white border-t border-gray-100">
+          <div v-for="att in ticket.attachments" :key="att.id"
+            class="group rounded-lg border border-gray-200 overflow-hidden hover:border-red-300 transition">
+            <button type="button" @click="openPreview(att)"
+              class="block w-full text-left cursor-pointer">
+              <img v-if="att.mime_type.startsWith('image/') && previewUrls[att.id]" :src="previewUrls[att.id]" :alt="att.original_name"
+                class="w-full h-28 sm:h-32 object-cover" />
+              <div v-else class="w-full h-28 sm:h-32 flex flex-col items-center justify-center bg-gray-50 p-3 gap-2">
+                <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span class="text-xs text-gray-500 text-center truncate w-full px-1">{{ att.original_name }}</span>
+              </div>
+            </button>
+            <div class="px-2 py-1.5 bg-white border-t border-gray-100 flex items-center justify-between gap-1">
               <p class="text-xs text-gray-500 truncate">{{ att.original_name }}</p>
+              <button type="button" @click="downloadAttachment(att)" :aria-label="t('asset.actions.download')"
+                class="text-gray-400 hover:text-red-600 shrink-0">
+                <ArrowDownTrayIcon class="h-4 w-4" />
+              </button>
             </div>
-          </button>
+          </div>
         </div>
       </div>
 
@@ -325,6 +331,8 @@
     </div>
 
   </div>
+
+  <ImageLightbox v-if="lightbox" :src="lightbox.url" :name="lightbox.name" @close="closeLightbox" />
 </template>
 
 <script setup lang="ts">
@@ -334,11 +342,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTicketStore } from '@/stores/tickets'
 import { useAuthStore } from '@/stores/auth'
 import { userApi, commentApi, approvalApi } from '@/api'
-import type { Ticket, Comment, TicketApproval } from '@/stores/tickets'
+import type { Comment, TicketApproval, Attachment } from '@/stores/tickets'
 import { CATEGORIES, getCategoryLabel, getSubCategoryLabel } from '@/constants/categories'
 import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
 import { backToList } from '@/utils/backToList'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import ImageLightbox from '@/components/ui/ImageLightbox.vue'
+import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -384,6 +394,54 @@ const categoryEmoji = computed(() =>
 )
 
 const previewUrls = ref<Record<number, string>>({})
+
+// Mirrors the asset-detail preview: images open in a lightbox, PDFs in a new
+// tab, everything else falls back to download. `ownedUrl` marks blob URLs
+// created just for the lightbox — cached thumbnail URLs must not be revoked
+// on close because the grid still uses them.
+const lightbox = ref<{ url: string; name: string; ownedUrl: boolean } | null>(null)
+
+async function openPreview(att: Attachment) {
+  if (att.mime_type.startsWith('image/')) {
+    const cached = previewUrls.value[att.id]
+    if (cached) {
+      lightbox.value = { url: cached, name: att.original_name, ownedUrl: false }
+      return
+    }
+    try {
+      const url = await attachmentPreviewUrl(att.id)
+      lightbox.value = { url, name: att.original_name, ownedUrl: true }
+    } catch {
+      downloadAttachment(att)
+    }
+    return
+  }
+  if (att.mime_type === 'application/pdf') {
+    // Open the tab synchronously (before await) so the browser keeps the
+    // user-gesture context and does not block it as a popup.
+    const w = window.open('', '_blank')
+    try {
+      const url = await attachmentPreviewUrl(att.id)
+      if (w) {
+        w.location.href = url
+        // Give the new tab time to load the blob before reclaiming it.
+        setTimeout(() => URL.revokeObjectURL(url), 60_000)
+      } else {
+        downloadAttachment(att)
+      }
+    } catch {
+      w?.close()
+      downloadAttachment(att)
+    }
+    return
+  }
+  downloadAttachment(att)
+}
+
+function closeLightbox() {
+  if (lightbox.value?.ownedUrl) URL.revokeObjectURL(lightbox.value.url)
+  lightbox.value = null
+}
 
 watch(() => ticket.value?.attachments, async (attachments) => {
   for (const att of attachments ?? []) {
