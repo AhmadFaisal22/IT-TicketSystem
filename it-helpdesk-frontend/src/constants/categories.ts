@@ -43,6 +43,9 @@ export const CATEGORIES: Category[] = [
       { id: 'bugs_errors', en: 'Software bugs/errors', zh: '软件故障/错误' },
       { id: 'license', en: 'License activation issues', zh: '许可证激活问题' },
       { id: 'version_upgrade', en: 'Version upgrade requests', zh: '版本升级申请' },
+      { id: 'erp', en: 'ERP', zh: 'ERP 系统' },
+      { id: 'wms', en: 'WMS', zh: 'WMS 仓储系统' },
+      { id: 'mes', en: 'MES', zh: 'MES 制造执行系统' },
     ],
   },
   {
