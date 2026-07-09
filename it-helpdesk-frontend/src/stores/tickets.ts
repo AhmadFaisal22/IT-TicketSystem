@@ -63,6 +63,7 @@ export interface Comment {
   is_internal: boolean
   created_at: string
   user: { id: number; name: string; avatar: string | null }
+  attachments?: Attachment[]
 }
 
 export interface TicketHistory {
@@ -121,8 +122,17 @@ export const useTicketStore = defineStore('tickets', () => {
     }
   }
 
-  async function addComment(ticketId: number, body: string, isInternal = false) {
-    const { data } = await commentApi.create(ticketId, { body, is_internal: isInternal })
+  async function addComment(ticketId: number, body: string, isInternal = false, files: File[] = []) {
+    let payload: object | FormData = { body, is_internal: isInternal }
+    if (files.length) {
+      const fd = new FormData()
+      if (body) fd.append('body', body)
+      // Laravel's boolean rule accepts '1'/'0' but not 'true'/'false' strings
+      fd.append('is_internal', isInternal ? '1' : '0')
+      files.forEach(f => fd.append('attachments[]', f))
+      payload = fd
+    }
+    const { data } = await commentApi.create(ticketId, payload)
     if (currentTicket.value?.id === ticketId) {
       currentTicket.value.comments?.push(data)
     }

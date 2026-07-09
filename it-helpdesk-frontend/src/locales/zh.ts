@@ -103,7 +103,8 @@ export default {
     placeholder: '输入消息...',
     internal: '内部备注（仅 IT 人员可见）',
     send: '发送',
-    noComments: '暂无评论，发起对话吧。'
+    noComments: '暂无评论，发起对话吧。',
+    attach: '添加附件（图片、PDF）'
   },
   dashboard: {
     title: '仪表盘',

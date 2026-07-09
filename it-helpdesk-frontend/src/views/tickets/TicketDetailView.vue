@@ -97,7 +97,21 @@
                 </span>
                 <span class="text-xs text-gray-400">{{ formatDateTime(comment.created_at) }}</span>
               </div>
-              <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 whitespace-pre-wrap">{{ comment.body }}</div>
+              <div v-if="comment.body" class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 whitespace-pre-wrap">{{ comment.body }}</div>
+              <div v-if="comment.attachments?.length" class="mt-2 flex flex-wrap gap-2">
+                <template v-for="att in comment.attachments" :key="att.id">
+                  <button v-if="att.mime_type.startsWith('image/') && previewUrls[att.id]" type="button"
+                    @click="openPreview(att)" :title="att.original_name"
+                    class="block rounded-lg border border-gray-200 overflow-hidden hover:border-red-300 transition cursor-pointer">
+                    <img :src="previewUrls[att.id]" :alt="att.original_name" class="h-20 w-20 object-cover" />
+                  </button>
+                  <button v-else type="button" @click="openPreview(att)"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-600 hover:border-red-300 transition cursor-pointer max-w-[14rem]">
+                    <PaperClipIcon class="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                    <span class="truncate">{{ att.original_name }}</span>
+                  </button>
+                </template>
+              </div>
             </div>
           </div>
         </div>
@@ -106,13 +120,30 @@
         <div class="border-t pt-4">
           <textarea v-model="newComment" :placeholder="t('comment.placeholder')" rows="3"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none mb-2" />
+          <div v-if="commentFiles.length" class="mb-2 flex flex-wrap gap-2">
+            <span v-for="(file, i) in commentFiles" :key="`${file.name}-${i}`"
+              class="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 text-xs text-gray-600 max-w-[14rem]">
+              <PaperClipIcon class="h-3.5 w-3.5 shrink-0 text-gray-400" />
+              <span class="truncate">{{ file.name }}</span>
+              <button type="button" @click="removeCommentFile(i)" class="text-gray-400 hover:text-red-600">✕</button>
+            </span>
+          </div>
           <div class="flex items-center justify-between gap-2">
-            <label v-if="auth.isItStaff" class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-              <input v-model="isInternal" type="checkbox" class="rounded" />
-              <span class="text-xs sm:text-sm">{{ t('comment.internal') }}</span>
-            </label>
-            <div v-else></div>
-            <button @click="submitComment" :disabled="!newComment.trim() || submitting"
+            <div class="flex items-center gap-3">
+              <template v-if="auth.isItStaff">
+                <button type="button" @click="commentFileInput?.click()" :title="t('comment.attach')"
+                  class="text-gray-400 hover:text-red-600 transition">
+                  <PaperClipIcon class="h-5 w-5" />
+                </button>
+                <input ref="commentFileInput" type="file" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
+                  class="hidden" @change="onCommentFilesPicked" />
+                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                  <input v-model="isInternal" type="checkbox" class="rounded" />
+                  <span class="text-xs sm:text-sm">{{ t('comment.internal') }}</span>
+                </label>
+              </template>
+            </div>
+            <button @click="submitComment" :disabled="(!newComment.trim() && !commentFiles.length) || submitting"
               class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 flex-shrink-0">
               {{ t('comment.send') }}
             </button>
@@ -345,10 +376,11 @@ import { userApi, commentApi, approvalApi } from '@/api'
 import type { Comment, TicketApproval, Attachment } from '@/stores/tickets'
 import { CATEGORIES, getCategoryLabel, getSubCategoryLabel } from '@/constants/categories'
 import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
+import { useAttachmentPreview } from '@/composables/useAttachmentPreview'
 import { backToList } from '@/utils/backToList'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ImageLightbox from '@/components/ui/ImageLightbox.vue'
-import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownTrayIcon, PaperClipIcon } from '@heroicons/vue/24/outline'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -395,56 +427,12 @@ const categoryEmoji = computed(() =>
 
 const previewUrls = ref<Record<number, string>>({})
 
-// Mirrors the asset-detail preview: images open in a lightbox, PDFs in a new
-// tab, everything else falls back to download. `ownedUrl` marks blob URLs
-// created just for the lightbox — cached thumbnail URLs must not be revoked
-// on close because the grid still uses them.
-const lightbox = ref<{ url: string; name: string; ownedUrl: boolean } | null>(null)
+const { lightbox, openPreview, closeLightbox } = useAttachmentPreview(
+  att => previewUrls.value[att.id]
+)
 
-async function openPreview(att: Attachment) {
-  if (att.mime_type.startsWith('image/')) {
-    const cached = previewUrls.value[att.id]
-    if (cached) {
-      lightbox.value = { url: cached, name: att.original_name, ownedUrl: false }
-      return
-    }
-    try {
-      const url = await attachmentPreviewUrl(att.id)
-      lightbox.value = { url, name: att.original_name, ownedUrl: true }
-    } catch {
-      downloadAttachment(att)
-    }
-    return
-  }
-  if (att.mime_type === 'application/pdf') {
-    // Open the tab synchronously (before await) so the browser keeps the
-    // user-gesture context and does not block it as a popup.
-    const w = window.open('', '_blank')
-    try {
-      const url = await attachmentPreviewUrl(att.id)
-      if (w) {
-        w.location.href = url
-        // Give the new tab time to load the blob before reclaiming it.
-        setTimeout(() => URL.revokeObjectURL(url), 60_000)
-      } else {
-        downloadAttachment(att)
-      }
-    } catch {
-      w?.close()
-      downloadAttachment(att)
-    }
-    return
-  }
-  downloadAttachment(att)
-}
-
-function closeLightbox() {
-  if (lightbox.value?.ownedUrl) URL.revokeObjectURL(lightbox.value.url)
-  lightbox.value = null
-}
-
-watch(() => ticket.value?.attachments, async (attachments) => {
-  for (const att of attachments ?? []) {
+async function loadImagePreviews(attachments: Attachment[]) {
+  for (const att of attachments) {
     if (att.mime_type.startsWith('image/') && !previewUrls.value[att.id]) {
       try {
         previewUrls.value[att.id] = await attachmentPreviewUrl(att.id)
@@ -453,21 +441,44 @@ watch(() => ticket.value?.attachments, async (attachments) => {
       }
     }
   }
-}, { immediate: true })
+}
+
+watch(() => ticket.value?.attachments, atts => loadImagePreviews(atts ?? []), { immediate: true })
 
 async function loadComments() {
   const { data } = await commentApi.list(Number(route.params.id))
   comments.value = data
+  loadImagePreviews(comments.value.flatMap(c => c.attachments ?? []))
+}
+
+// Comment attachment upload (IT staff tool)
+const commentFileInput = ref<HTMLInputElement | null>(null)
+const commentFiles = ref<File[]>([])
+
+function onCommentFilesPicked(e: Event) {
+  const files = (e.target as HTMLInputElement).files
+  if (files?.length) {
+    commentFiles.value = [...commentFiles.value, ...Array.from(files)].slice(0, 5)
+  }
+  if (commentFileInput.value) commentFileInput.value.value = ''
+}
+
+function removeCommentFile(index: number) {
+  commentFiles.value.splice(index, 1)
 }
 
 async function submitComment() {
-  if (!newComment.value.trim()) return
+  if (!newComment.value.trim() && !commentFiles.value.length) return
   submitting.value = true
   try {
-    const c = await ticketStore.addComment(Number(route.params.id), newComment.value, isInternal.value)
+    const c = await ticketStore.addComment(
+      Number(route.params.id), newComment.value.trim(), isInternal.value, commentFiles.value
+    )
     comments.value.push(c)
+    loadImagePreviews(c.attachments ?? [])
     newComment.value = ''
     isInternal.value = false
+    commentFiles.value = []
   } finally {
     submitting.value = false
   }

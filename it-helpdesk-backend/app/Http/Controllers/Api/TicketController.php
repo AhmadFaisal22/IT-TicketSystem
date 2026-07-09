@@ -210,7 +210,7 @@ class TicketController extends Controller
                     $query->where('is_internal', false);
                 }
 
-                $query->with('user');
+                $query->with(['user', 'attachments']);
             },
             'histories.user',
             'attachments',

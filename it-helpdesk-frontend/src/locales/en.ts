@@ -103,7 +103,8 @@ export default {
     placeholder: 'Type your message...',
     internal: 'Internal Note (IT staff only)',
     send: 'Send',
-    noComments: 'No comments yet. Start the conversation.'
+    noComments: 'No comments yet. Start the conversation.',
+    attach: 'Attach files (images, PDF)'
   },
   dashboard: {
     title: 'Dashboard',

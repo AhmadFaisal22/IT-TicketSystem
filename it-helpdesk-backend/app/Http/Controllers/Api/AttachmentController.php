@@ -34,6 +34,9 @@ class AttachmentController extends Controller
     {
         $parent = $attachment->attachable;
         if ($parent instanceof Comment) {
+            // Internal notes are IT-only; their attachments must not leak to
+            // the ticket creator even if the attachment id is guessed.
+            abort_if($parent->is_internal && !$user->isItStaff(), 403);
             $parent = $parent->ticket;
         }
 

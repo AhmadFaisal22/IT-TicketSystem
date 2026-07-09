@@ -209,10 +209,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
 import { CheckIcon, MagnifyingGlassIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
-import { useAssetStore, ASSET_STATUSES, type AssetAttachment } from '@/stores/assets'
+import { useAssetStore, ASSET_STATUSES } from '@/stores/assets'
 import { useAuthStore } from '@/stores/auth'
 import { assetApi, userApi, assetCategoryApi } from '@/api'
-import { downloadAttachment, attachmentPreviewUrl } from '@/utils/attachments'
+import { downloadAttachment } from '@/utils/attachments'
+import { useAttachmentPreview } from '@/composables/useAttachmentPreview'
 import { backToList } from '@/utils/backToList'
 import ImageLightbox from '@/components/ui/ImageLightbox.vue'
 
@@ -406,44 +407,7 @@ async function removeAttachment(id: number) {
   await reload()
 }
 
-const lightbox = ref<{ url: string; name: string } | null>(null)
-
-async function openPreview(att: AssetAttachment) {
-  if (att.mime_type.startsWith('image/')) {
-    try {
-      const url = await attachmentPreviewUrl(att.id)
-      lightbox.value = { url, name: att.original_name }
-    } catch {
-      downloadAttachment(att)
-    }
-    return
-  }
-  if (att.mime_type === 'application/pdf') {
-    // Open the tab synchronously (before await) so the browser keeps the
-    // user-gesture context and does not block it as a popup.
-    const w = window.open('', '_blank')
-    try {
-      const url = await attachmentPreviewUrl(att.id)
-      if (w) {
-        w.location.href = url
-        // Give the new tab time to load the blob before reclaiming it.
-        setTimeout(() => URL.revokeObjectURL(url), 60_000)
-      } else {
-        downloadAttachment(att)
-      }
-    } catch {
-      w?.close()
-      downloadAttachment(att)
-    }
-    return
-  }
-  downloadAttachment(att)
-}
-
-function closeLightbox() {
-  if (lightbox.value) URL.revokeObjectURL(lightbox.value.url)
-  lightbox.value = null
-}
+const { lightbox, openPreview, closeLightbox } = useAttachmentPreview()
 
 function printLabel() {
   const w = window.open('', '_blank', 'width=400,height=400')
