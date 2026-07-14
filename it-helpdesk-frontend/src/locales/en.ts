@@ -87,6 +87,8 @@ export default {
     subcategory: 'Subcategory',
     selectSubcategory: 'Select a subcategory',
     clearCategory: 'Clear',
+    copyPath: 'Copy path',
+    pathCopied: 'Copied!',
     actions: {
       create: 'Create Ticket',
       edit: 'Edit Ticket',

@@ -87,6 +87,8 @@ export default {
     subcategory: '子类别',
     selectSubcategory: '请选择子类别',
     clearCategory: '清除',
+    copyPath: '复制路径',
+    pathCopied: '已复制！',
     actions: {
       create: '创建工单',
       edit: '编辑工单',

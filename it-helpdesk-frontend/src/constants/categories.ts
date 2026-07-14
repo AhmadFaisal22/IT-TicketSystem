@@ -1,7 +1,16 @@
+export interface SubCategoryHint {
+  en: string
+  zh: string
+  linkText: string
+  linkUrl: string
+  copyPath: string
+}
+
 export interface SubCategory {
   id: string
   en: string
   zh: string
+  hint?: SubCategoryHint
 }
 
 export interface Category {
@@ -91,6 +100,7 @@ export const CATEGORIES: Category[] = [
       { id: 'spam', en: 'Spam/phishing reports', zh: '垃圾邮件/钓鱼邮件举报' },
       { id: 'mailbox_access', en: 'Mailbox access requests', zh: '邮箱访问申请' },
       { id: 'distribution_list', en: 'Distribution list changes', zh: '通讯组列表变更' },
+      { id: 'new_email_account', en: 'New email account application', zh: '新邮箱账号申请' },
     ],
   },
   {
@@ -164,7 +174,18 @@ export const CATEGORIES: Category[] = [
       { id: 'software_request', en: 'Software request', zh: '软件申请' },
       { id: 'access_request', en: 'Access requests', zh: '访问申请' },
       { id: 'new_setup', en: 'New system setup', zh: '新系统部署' },
-      { id: 'asset_allocation', en: 'IT asset allocation', zh: 'IT 资产分配' },
+      {
+        id: 'asset_allocation',
+        en: 'Onboarding',
+        zh: '员工入职',
+        hint: {
+          en: 'Please fill out the IT Resource Application form:',
+          zh: '请填写 IT 资源申请表：',
+          linkText: 'IT Resource Application-Template(1).xlsx',
+          linkUrl: 'file://192.168.2.2/seg%20manufacturing%20inc/Public%20Files/IT%20Resource%20Application-Template(1).xlsx',
+          copyPath: '\\\\192.168.2.2\\seg manufacturing inc\\Public Files\\IT Resource Application-Template(1).xlsx',
+        },
+      },
     ],
   },
   {
@@ -232,6 +253,7 @@ export const CATEGORIES: Category[] = [
     subs: [
       { id: 'how_to', en: 'How-to questions', zh: '使用指南咨询' },
       { id: 'policy', en: 'IT policy clarification', zh: 'IT 政策说明' },
+      { id: 'device_purchase', en: 'Device purchase', zh: '设备采购' },
       { id: 'misc', en: 'Miscellaneous requests', zh: '其他杂项请求' },
     ],
   },

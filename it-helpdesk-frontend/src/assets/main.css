@@ -94,6 +94,7 @@ html {
 /* Error / warning banner borders in dark mode */
 .dark .border-orange-200  { border-color: rgba(249, 115,  22, 0.40); }
 .dark .border-red-300     { border-color: rgba(239,  68,  68, 0.40); }
+.dark .border-blue-200    { border-color: rgba(59,  130, 246, 0.40); }
 
 /* Scrollbar */
 .dark ::-webkit-scrollbar-thumb { background-color: #334155; }

@@ -62,13 +62,36 @@
             {{ locale === 'zh' ? sub.zh : sub.en }}
           </button>
         </div>
+
+        <!-- Hint for selected subcategory (e.g. onboarding form link) -->
+        <div v-if="selectedSubHint"
+          class="mt-3 flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+          <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div class="text-xs text-gray-700 leading-relaxed">
+            {{ locale === 'zh' ? selectedSubHint.zh : selectedSubHint.en }}
+            <a :href="selectedSubHint.linkUrl"
+              class="text-blue-500 hover:text-blue-400 underline font-medium break-all">
+              {{ selectedSubHint.linkText }}</a>
+            <button type="button" @click="copyHintPath"
+              class="ml-2 inline-flex items-center gap-1 text-blue-500 hover:text-blue-400 transition">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              {{ copied ? t('ticket.pathCopied') : t('ticket.copyPath') }}
+            </button>
+          </div>
+        </div>
       </div>
     </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CATEGORIES } from '@/constants/categories'
 
@@ -85,6 +108,29 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 
 const selectedCat = computed(() => CATEGORIES.find(c => c.id === props.category) ?? null)
+
+const selectedSubHint = computed(() =>
+  selectedCat.value?.subs.find(s => s.id === props.subcategory)?.hint ?? null
+)
+
+const copied = ref(false)
+
+async function copyHintPath() {
+  const path = selectedSubHint.value?.copyPath
+  if (!path) return
+  try {
+    await navigator.clipboard.writeText(path)
+  } catch {
+    const ta = document.createElement('textarea')
+    ta.value = path
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  }
+  copied.value = true
+  setTimeout(() => (copied.value = false), 2000)
+}
 
 function selectCategory(id: string) {
   if (props.category === id) {
