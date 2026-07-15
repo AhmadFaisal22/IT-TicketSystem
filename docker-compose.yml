@@ -19,10 +19,14 @@ services:
       retries: 5
 
   # ── Laravel Backend (PHP-FPM) ─────────────────────────────
+  # queue/scheduler reuse this exact image (no build: of their own) so a
+  # rebuild of `app` updates all three — otherwise workers keep running
+  # old code after a deploy.
   app:
     build:
       context: .
       dockerfile: docker/Dockerfile.php
+    image: it-helpdesk-php:latest
     restart: unless-stopped
     env_file: .env.docker
     volumes:
@@ -33,9 +37,7 @@ services:
 
   # ── Laravel Queue Worker ──────────────────────────────────
   queue:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.php
+    image: it-helpdesk-php:latest
     restart: unless-stopped
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     env_file: .env.docker
@@ -47,9 +49,7 @@ services:
 
   # ── Laravel Scheduler (SLA breach checks, etc.) ───────────
   scheduler:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.php
+    image: it-helpdesk-php:latest
     restart: unless-stopped
     command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
     env_file: .env.docker

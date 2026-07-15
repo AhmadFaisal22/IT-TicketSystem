@@ -132,8 +132,10 @@ jobs:
             git fetch --prune origin
             git reset --hard origin/main
 
-            # 2. Rebuild only the app container (keeps postgres/nginx warm)
-            docker compose build --no-cache app
+            # 2. Rebuild the PHP image (shared by app/queue/scheduler) and the
+            #    nginx image (which bakes the Vue SPA — without this the
+            #    frontend never ships)
+            docker compose build --no-cache app nginx
 
             # 3. Bring up updated containers with zero-downtime rolling restart
             docker compose up -d --remove-orphans
@@ -204,15 +206,9 @@ jobs:
           # Escape special Telegram HTML characters in the commit message
           SAFE_MSG=$(echo "$COMMIT_MSG" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
 
-          TEXT="${EMOJI} <b>IT HelpDesk — ${STATUS}</b>
-
-📦 <b>Repo:</b> ${REPO}
-🌿 <b>Branch:</b> main
-👤 <b>Author:</b> ${AUTHOR}
-🔖 <b>Commit:</b> <code>${SHORT_SHA}</code>
-💬 <b>Message:</b> ${SAFE_MSG}
-
-🔗 <a href=\"${RUN_URL}\">View workflow run</a>"
+          # Built with printf so every line of this script stays indented —
+          # a flush-left continuation line would terminate the YAML block scalar.
+          TEXT=$(printf '%b' "${EMOJI} <b>IT HelpDesk — ${STATUS}</b>\n\n📦 <b>Repo:</b> ${REPO}\n🌿 <b>Branch:</b> main\n👤 <b>Author:</b> ${AUTHOR}\n🔖 <b>Commit:</b> <code>${SHORT_SHA}</code>\n💬 <b>Message:</b> ${SAFE_MSG}\n\n🔗 <a href=\"${RUN_URL}\">View workflow run</a>")
 
           curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
