@@ -56,6 +56,7 @@ export const CATEGORIES: Category[] = [
       { id: 'mes', en: 'MES', zh: 'MES 制造执行系统' },
       { id: 'sharepoint', en: 'SharePoint', zh: 'SharePoint' },
       { id: 'office', en: 'Office', zh: 'Office 办公软件' },
+      { id: 'onedrive', en: 'OneDrive', zh: 'OneDrive' },
       { id: 'camera', en: 'Camera', zh: '摄像头' },
     ],
   },
@@ -183,6 +184,7 @@ export const CATEGORIES: Category[] = [
     subs: [
       { id: 'new_hardware', en: 'New hardware request', zh: '新硬件申请' },
       { id: 'software_request', en: 'Software request', zh: '软件申请' },
+      { id: 'license_request', en: 'License', zh: '许可证申请' },
       { id: 'access_request', en: 'Access requests', zh: '访问申请' },
       { id: 'new_setup', en: 'New system setup', zh: '新系统部署' },
       {
@@ -264,6 +266,7 @@ export const CATEGORIES: Category[] = [
       { id: 'policy', en: 'IT policy clarification', zh: 'IT 政策说明' },
       { id: 'device_purchase', en: 'Device purchase', zh: '设备采购' },
       { id: 'misc', en: 'Miscellaneous requests', zh: '其他杂项请求' },
+      { id: 'other', en: 'Other', zh: '其他' },
     ],
   },
 ]
