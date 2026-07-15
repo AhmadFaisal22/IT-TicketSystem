@@ -1,11 +1,11 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────
-# IT HelpDesk — manual production deploy (run ON the NAS)
+# IT HelpDesk — manual production deploy (run ON the server)
 #
-#   ssh <user>@192.168.2.213
-#   cd /volume1/docker/it-helpdesk && ./deploy.sh
+#   ssh seg@appserver
+#   cd /opt/docker/helpdesk-inventory && sudo ./deploy.sh
 #
-# Mirrors the steps in .github/workflows/deploy.yml. The NAS is
+# Mirrors the steps in .github/workflows/deploy.yml. The server is
 # LAN-only, so GitHub-hosted runners cannot SSH in — until a
 # self-hosted runner is set up, this script IS the deploy.
 # ─────────────────────────────────────────────────────────────────

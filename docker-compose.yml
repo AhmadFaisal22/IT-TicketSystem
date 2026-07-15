@@ -1,11 +1,13 @@
-version: "3.9"
-
 services:
 
   # ── PostgreSQL Database ───────────────────────────────────
   postgres:
     image: postgres:14-alpine
     restart: unless-stopped
+    ports:
+      # Exposed for LAN DB clients (pgAdmin/DBeaver). Change to
+      # "127.0.0.1:5432:5432" if no one connects from other machines.
+      - "5432:5432"
     environment:
       POSTGRES_DB:       ${DB_DATABASE:-it_helpdesk}
       POSTGRES_USER:     ${DB_USERNAME:-helpdesk}

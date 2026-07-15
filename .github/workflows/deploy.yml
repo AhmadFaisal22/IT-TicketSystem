@@ -105,23 +105,22 @@ jobs:
 # and has no public SSH, so GitHub-hosted runners can never reach it — this
 # job failed with "Error: missing server host" on every run.
 #
-# Deploy manually instead:
-#     ssh <user>@192.168.2.213
-#     cd /volume1/docker/it-helpdesk && git pull && ./deploy.sh
+# Deploy manually instead (server: seg@appserver):
+#     cd /opt/docker/helpdesk-inventory && sudo git pull && sudo ./deploy.sh
 #
-# To restore push-to-deploy: install a self-hosted runner ON the NAS
+# To restore push-to-deploy: install a self-hosted runner ON the server
 # (repo Settings → Actions → Runners → New self-hosted runner), then
 # uncomment the job below and re-add `deploy` to notify's `needs`.
 # ──────────────────────────────────────────────────────────────────────────────
 #  deploy:
-#    name: Deploy (self-hosted runner on NAS)
+#    name: Deploy (self-hosted runner on server)
 #    runs-on: self-hosted
 #    needs: [test-backend, build-frontend]
 #    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 #    steps:
-#      - name: Run deploy script on the NAS
+#      - name: Run deploy script on the server
 #        run: |
-#          cd /volume1/docker/it-helpdesk
+#          cd /opt/docker/helpdesk-inventory
 #          git fetch --prune origin
 #          git reset --hard origin/main
 #          bash ./deploy.sh
