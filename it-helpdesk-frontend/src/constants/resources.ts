@@ -17,4 +17,11 @@ export const MANAGED_RESOURCES: ManagedResource[] = [
     desc_en: 'Offered for download when an employee picks “Onboarding” in the ticket form.',
     desc_zh: '员工在工单表单中选择「员工入职」时提供下载。',
   },
+  {
+    key: 'email_account_application',
+    en: 'Email Account Application',
+    zh: '邮箱账号申请表',
+    desc_en: 'Offered for download when an employee picks “New email account application” in the ticket form.',
+    desc_zh: '员工在工单表单中选择「新邮箱账号申请」时提供下载。',
+  },
 ]
