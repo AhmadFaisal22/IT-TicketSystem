@@ -60,7 +60,7 @@
           </label>
 
           <!-- Hidden inputs -->
-          <input ref="fileInputRef" type="file" accept="image/*,application/pdf" multiple
+          <input ref="fileInputRef" type="file" accept="image/*,application/pdf,.xlsx,.xls,.doc,.docx" multiple
             class="hidden" @change="handleFiles($event)" />
           <input ref="cameraInputRef" type="file" accept="image/*" capture="environment"
             class="hidden" @change="handleFiles($event)" />

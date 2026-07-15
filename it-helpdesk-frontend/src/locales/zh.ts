@@ -90,6 +90,7 @@ export default {
     clearCategory: '清除',
     resourceDownloading: '下载中…',
     resourceMissing: '模板暂未上传，请联系 IT。',
+    resourceAttachHint: '填写完成后，请将表格上传到下方的「附件」区域。',
     actions: {
       create: '创建工单',
       edit: '编辑工单',

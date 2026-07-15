@@ -133,6 +133,45 @@ class AttachmentDownloadTest extends TestCase
         Storage::disk('public')->assertMissing($path);
     }
 
+    public function test_ticket_accepts_excel_and_word_attachments(): void
+    {
+        Storage::fake('local');
+        $department = Department::create(['name' => 'IT', 'name_zh' => 'IT部']);
+        $itStaff = User::factory()->create(['role' => 'it_staff', 'department_id' => $department->id]);
+        Sanctum::actingAs(User::factory()->create(['role' => 'user']));
+
+        $this->post('/api/tickets', [
+            'title'         => 'Onboarding for new hire',
+            'description'   => 'Filled-out IT resource application attached',
+            'priority'      => 'medium',
+            'department_id' => $department->id,
+            'assigned_to'   => $itStaff->id,
+            'attachments'   => [
+                UploadedFile::fake()->create('IT Resource Application.xlsx', 100),
+                UploadedFile::fake()->create('notes.docx', 50),
+            ],
+        ])->assertStatus(201);
+
+        $this->assertSame(2, Attachment::count());
+    }
+
+    public function test_ticket_still_rejects_disallowed_attachment_types(): void
+    {
+        Storage::fake('local');
+        $department = Department::create(['name' => 'IT', 'name_zh' => 'IT部']);
+        $itStaff = User::factory()->create(['role' => 'it_staff', 'department_id' => $department->id]);
+        Sanctum::actingAs(User::factory()->create(['role' => 'user']));
+
+        $this->postJson('/api/tickets', [
+            'title'         => 'Bad file',
+            'description'   => 'Should be rejected',
+            'priority'      => 'medium',
+            'department_id' => $department->id,
+            'assigned_to'   => $itStaff->id,
+            'attachments'   => [UploadedFile::fake()->create('tool.exe', 10)],
+        ])->assertStatus(422)->assertJsonValidationErrors('attachments.0');
+    }
+
     public function test_new_asset_attachments_are_stored_on_private_disk(): void
     {
         Storage::fake('local');

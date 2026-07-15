@@ -135,7 +135,7 @@
                   class="text-gray-400 hover:text-red-600 transition">
                   <PaperClipIcon class="h-5 w-5" />
                 </button>
-                <input ref="commentFileInput" type="file" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
+                <input ref="commentFileInput" type="file" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.xlsx,.xls,.doc,.docx"
                   class="hidden" @change="onCommentFilesPicked" />
                 <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                   <input v-model="isInternal" type="checkbox" class="rounded" />

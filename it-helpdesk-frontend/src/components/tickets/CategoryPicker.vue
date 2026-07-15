@@ -81,6 +81,9 @@
               </svg>
               {{ downloading ? t('ticket.resourceDownloading') : resourceMeta.original_name }}
             </button>
+            <span v-if="resourceState === 'ready'" class="block mt-1 text-gray-500">
+              {{ t('ticket.resourceAttachHint') }}
+            </span>
             <span v-else-if="resourceState === 'loading'" class="text-gray-400">…</span>
             <span v-else-if="resourceState === 'missing'" class="text-gray-500 italic">
               {{ t('ticket.resourceMissing') }}

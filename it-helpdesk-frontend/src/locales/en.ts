@@ -90,6 +90,7 @@ export default {
     clearCategory: 'Clear',
     resourceDownloading: 'Downloading…',
     resourceMissing: 'The template has not been uploaded yet — please contact IT.',
+    resourceAttachHint: 'Once completed, please upload the filled-out form below under “Attachments”.',
     actions: {
       create: 'Create Ticket',
       edit: 'Edit Ticket',

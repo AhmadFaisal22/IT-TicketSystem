@@ -35,7 +35,7 @@ class CommentController extends Controller
             'body' => 'required_without:attachments|nullable|string|max:5000',
             'is_internal' => 'boolean',
             'attachments' => 'nullable|array|max:5',
-            'attachments.*' => 'file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240',
+            'attachments.*' => 'file|mimes:jpeg,jpg,png,gif,webp,pdf,xlsx,xls,doc,docx|max:10240',
         ]);
 
         if (($data['is_internal'] ?? false) && !$request->user()->isItStaff()) {

@@ -128,7 +128,7 @@ class TicketController extends Controller
             'department_id'  => 'required|exists:departments,id',
             'assigned_to'    => ['required', Rule::exists('users', 'id')->where('active', true)->where('department_id', $itDeptId)],
             'attachments'    => 'nullable|array|max:5',
-            'attachments.*'  => 'file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240',
+            'attachments.*'  => 'file|mimes:jpeg,jpg,png,gif,webp,pdf,xlsx,xls,doc,docx|max:10240',
         ]);
 
         $ticket = DB::transaction(function () use ($data, $request) {
