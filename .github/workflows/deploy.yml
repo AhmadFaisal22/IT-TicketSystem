@@ -100,105 +100,63 @@ jobs:
           retention-days: 1
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Job 3 — Deploy (only on push to main, skipped on PRs)
-# Requires: test-backend and build-frontend both green.
+# Job 3 — Deploy  (DISABLED 2026-07-15)
+# The NAS is LAN-only: helpdesk.seg.com resolves to 192.168.2.213 internally
+# and has no public SSH, so GitHub-hosted runners can never reach it — this
+# job failed with "Error: missing server host" on every run.
+#
+# Deploy manually instead:
+#     ssh <user>@192.168.2.213
+#     cd /volume1/docker/it-helpdesk && git pull && ./deploy.sh
+#
+# To restore push-to-deploy: install a self-hosted runner ON the NAS
+# (repo Settings → Actions → Runners → New self-hosted runner), then
+# uncomment the job below and re-add `deploy` to notify's `needs`.
 # ──────────────────────────────────────────────────────────────────────────────
-  deploy:
-    name: Deploy via SSH
-    runs-on: ubuntu-latest
-    needs: [test-backend, build-frontend]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Deploy to production server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host:     ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key:      ${{ secrets.SERVER_SSH_KEY }}
-          port:     22
-          # stop-on-error — any command failure aborts the deploy immediately
-          script: |
-            set -euo pipefail
-            cd /volume1/docker/it-helpdesk
-
-            echo "──────────────────────────────────────"
-            echo " IT HelpDesk — Production Deploy"
-            echo " Commit : ${{ github.sha }}"
-            echo " Author : ${{ github.actor }}"
-            echo "──────────────────────────────────────"
-
-            # 1. Pull latest code from main
-            git fetch --prune origin
-            git reset --hard origin/main
-
-            # 2. Rebuild the PHP image (shared by app/queue/scheduler) and the
-            #    nginx image (which bakes the Vue SPA — without this the
-            #    frontend never ships)
-            docker compose build --no-cache app nginx
-
-            # 3. Bring up updated containers with zero-downtime rolling restart
-            docker compose up -d --remove-orphans
-
-            # 4. Wait for the app container to be healthy before running artisan
-            TRIES=0
-            until docker compose exec -T app php -r "echo 'ok';" 2>/dev/null | grep -q ok; do
-              TRIES=$((TRIES+1))
-              if [ $TRIES -ge 15 ]; then echo "Container health check timed out"; exit 1; fi
-              sleep 2
-            done
-
-            # 5. Install/update Composer packages inside container
-            docker compose exec -T app composer install \
-              --prefer-dist --no-dev --no-progress --no-interaction \
-              --optimize-autoloader
-
-            # 6. Run pending migrations (safe — only applies new ones)
-            docker compose exec -T app php artisan migrate --force
-
-            # 7. Rebuild Laravel caches
-            docker compose exec -T app php artisan config:cache
-            docker compose exec -T app php artisan route:cache
-            docker compose exec -T app php artisan view:cache
-            docker compose exec -T app php artisan event:cache
-
-            # 8. Restart queue workers gracefully (finishes current job first)
-            docker compose exec -T app php artisan queue:restart
-
-            # 9. Create storage symlink if not already done
-            docker compose exec -T app php artisan storage:link --quiet || true
-
-            echo "✅ Deploy complete."
+#  deploy:
+#    name: Deploy (self-hosted runner on NAS)
+#    runs-on: self-hosted
+#    needs: [test-backend, build-frontend]
+#    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#    steps:
+#      - name: Run deploy script on the NAS
+#        run: |
+#          cd /volume1/docker/it-helpdesk
+#          git fetch --prune origin
+#          git reset --hard origin/main
+#          bash ./deploy.sh
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Job 4 — Telegram notification
-# Runs ALWAYS after deploy (reports success or failure).
+# Reports CI (tests + build) status; deploy is manual until a self-hosted
+# runner exists (see disabled Job 3 above).
 # Required secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 # ──────────────────────────────────────────────────────────────────────────────
   notify:
     name: Telegram Notification
     runs-on: ubuntu-latest
-    needs: [deploy]
+    needs: [test-backend, build-frontend]
     if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Send deployment status to Telegram
+      - name: Send CI status to Telegram
         env:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
-          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          RESULT_TESTS: ${{ needs.test-backend.result }}
+          RESULT_BUILD: ${{ needs.build-frontend.result }}
           COMMIT_SHA:    ${{ github.sha }}
           COMMIT_MSG:    ${{ github.event.head_commit.message }}
           AUTHOR:        ${{ github.actor }}
           REPO:          ${{ github.repository }}
           RUN_URL:       ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ "$DEPLOY_RESULT" = "success" ]; then
+          if [ "$RESULT_TESTS" = "success" ] && [ "$RESULT_BUILD" = "success" ]; then
             EMOJI="✅"
-            STATUS="DEPLOYED"
+            STATUS="CI PASSED — ready to deploy (run ./deploy.sh on NAS)"
           else
             EMOJI="❌"
-            STATUS="FAILED"
+            STATUS="CI FAILED (tests: ${RESULT_TESTS}, build: ${RESULT_BUILD})"
           fi
 
           SHORT_SHA="${COMMIT_SHA:0:7}"
