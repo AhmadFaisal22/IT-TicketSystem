@@ -91,6 +91,8 @@ export default {
     resourceDownloading: '下载中…',
     resourceMissing: '模板暂未上传，请联系 IT。',
     resourceAttachHint: '填写完成后，请将表格上传到下方的「附件」区域。',
+    searchCategory: '搜索类别…（如：打印机、VPN、email）',
+    noSearchResults: '没有匹配的类别——换个关键词，或从下方网格中选择。',
     actions: {
       create: '创建工单',
       edit: '编辑工单',

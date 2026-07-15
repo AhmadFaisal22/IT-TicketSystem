@@ -11,8 +11,39 @@
       </button>
     </div>
 
+    <!-- Search across every category & subcategory (matches EN + 中文) -->
+    <div class="relative mb-2">
+      <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"/>
+      </svg>
+      <input v-model="search" type="text" :placeholder="t('ticket.searchCategory')"
+        class="w-full pl-9 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+      <button v-if="search" type="button" @click="search = ''"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Search results: flat list, one click selects category + subcategory -->
+    <div v-if="searching" class="border border-gray-200 rounded-xl divide-y divide-gray-100 overflow-hidden">
+      <button v-for="hit in searchResults" :key="hit.catId + '/' + hit.subId" type="button"
+        @click="pickSearchResult(hit)"
+        class="w-full flex items-center gap-2 px-3 py-2.5 text-left text-sm hover:bg-red-50 transition">
+        <span class="text-base leading-none">{{ hit.emoji }}</span>
+        <span class="font-medium text-gray-800">{{ hit.subLabel }}</span>
+        <span class="ml-auto text-xs text-gray-400 shrink-0">{{ hit.catLabel }}</span>
+      </button>
+      <p v-if="!searchResults.length" class="px-3 py-3 text-xs text-gray-400">
+        {{ t('ticket.noSearchResults') }}
+      </p>
+    </div>
+
     <!-- Category cards grid -->
-    <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+    <div v-else class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
       <button
         v-for="cat in CATEGORIES"
         :key="cat.id"
@@ -41,7 +72,7 @@
       leave-active-class="overflow-hidden transition-[max-height,opacity,transform,margin-top] duration-150 ease-in"
       leave-from-class="max-h-96 opacity-100 translate-y-0 mt-3"
       leave-to-class="max-h-0 opacity-0 -translate-y-1 mt-0">
-      <div v-if="selectedCat" class="bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4">
+      <div v-if="selectedCat && !searching" class="bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4">
         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2.5">
           {{ selectedCat.emoji }}&nbsp;
           <span class="normal-case font-medium text-gray-700">
@@ -114,6 +145,42 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 
 const selectedCat = computed(() => CATEGORIES.find(c => c.id === props.category) ?? null)
+
+// Search: case-insensitive substring match against BOTH languages of the
+// category and subcategory names, so "打印" and "print" both work whatever
+// the UI locale. Multi-word queries AND together ("email account" ==
+// "account email").
+const search = ref('')
+const searching = computed(() => search.value.trim().length > 0)
+
+interface SearchHit { catId: string; subId: string; emoji: string; subLabel: string; catLabel: string }
+
+const searchResults = computed<SearchHit[]>(() => {
+  const tokens = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (!tokens.length) return []
+  const hits: SearchHit[] = []
+  for (const cat of CATEGORIES) {
+    for (const sub of cat.subs) {
+      const hay = `${cat.en} ${cat.zh} ${cat.short_en} ${cat.short_zh} ${sub.en} ${sub.zh}`.toLowerCase()
+      if (tokens.every(tk => hay.includes(tk))) {
+        hits.push({
+          catId: cat.id,
+          subId: sub.id,
+          emoji: cat.emoji,
+          subLabel: locale.value === 'zh' ? sub.zh : sub.en,
+          catLabel: locale.value === 'zh' ? cat.zh : cat.en,
+        })
+      }
+    }
+  }
+  return hits.slice(0, 15)
+})
+
+function pickSearchResult(hit: SearchHit) {
+  emit('update:category', hit.catId)
+  emit('update:subcategory', hit.subId)
+  search.value = ''
+}
 
 const selectedSubHint = computed(() =>
   selectedCat.value?.subs.find(s => s.id === props.subcategory)?.hint ?? null

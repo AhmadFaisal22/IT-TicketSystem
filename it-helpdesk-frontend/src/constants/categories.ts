@@ -54,6 +54,9 @@ export const CATEGORIES: Category[] = [
       { id: 'erp', en: 'ERP', zh: 'ERP 系统' },
       { id: 'wms', en: 'WMS', zh: 'WMS 仓储系统' },
       { id: 'mes', en: 'MES', zh: 'MES 制造执行系统' },
+      { id: 'sharepoint', en: 'SharePoint', zh: 'SharePoint' },
+      { id: 'office', en: 'Office', zh: 'Office 办公软件' },
+      { id: 'camera', en: 'Camera', zh: '摄像头' },
     ],
   },
   {
@@ -260,7 +263,6 @@ export const CATEGORIES: Category[] = [
       { id: 'how_to', en: 'How-to questions', zh: '使用指南咨询' },
       { id: 'policy', en: 'IT policy clarification', zh: 'IT 政策说明' },
       { id: 'device_purchase', en: 'Device purchase', zh: '设备采购' },
-      { id: 'camera', en: 'Camera', zh: '摄像头' },
       { id: 'misc', en: 'Miscellaneous requests', zh: '其他杂项请求' },
     ],
   },
