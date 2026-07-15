@@ -164,7 +164,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ComputerDesktopIcon, AdjustmentsHorizontalIcon, ClipboardDocumentCheckIcon } from '@heroicons/vue/24/outline'
+import { ComputerDesktopIcon, AdjustmentsHorizontalIcon, ClipboardDocumentCheckIcon, DocumentArrowDownIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import NotificationBell from '@/components/ui/NotificationBell.vue'
@@ -239,6 +239,7 @@ const adminItems = computed((): NavItem[] => {
   if (auth.isAdmin) {
     items.unshift({ name: 'admin-users', to: '/admin/users', label: 'nav.users', iconImg: '/Users.png' })
     items.push({ name: 'admin-approval', to: '/admin/approval-levels', label: 'nav.approval', iconImg: '/Approved.png' })
+    items.push({ name: 'admin-resources', to: '/admin/resources', label: 'nav.resources', icon: DocumentArrowDownIcon })
   }
   return items
 })
@@ -273,6 +274,7 @@ const pageTitle = computed(() => {
     'admin-departments': t('admin.departments.title'),
     'admin-sla': t('admin.sla.title'),
     'admin-approval': t('admin.approval.title'),
+    'admin-resources': t('admin.resources.title'),
     'admin-inventory-categories': t('admin.assetOptions.categories'),
     'admin-inventory-locations': t('admin.assetOptions.locations'),
     'admin-inventory-manufacturers': t('admin.manufacturers.title'),

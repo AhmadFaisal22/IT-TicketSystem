@@ -92,6 +92,13 @@ export const dashboardApi = {
   sla: (range?: number) => api.get('/dashboard/sla', { params: { range } })
 }
 
+export const resourceFileApi = {
+  list: () => api.get('/resources'),
+  get: (key: string) => api.get(`/resources/${key}`),
+  download: (key: string) => api.get(`/resources/${key}/download`, { responseType: 'blob' }),
+  upload: (key: string, formData: FormData) => api.post(`/resources/${key}`, formData),
+}
+
 export const notificationApi = {
   list: () => api.get('/notifications'),
   unreadCount: () => api.get('/notifications/unread-count'),

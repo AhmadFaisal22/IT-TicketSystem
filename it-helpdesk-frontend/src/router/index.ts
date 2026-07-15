@@ -126,6 +126,11 @@ const router = createRouter({
               component: () => import('@/views/admin/ApprovalLevelsView.vue')
             },
             {
+              path: 'resources',
+              name: 'admin-resources',
+              component: () => import('@/views/admin/ResourceFilesView.vue')
+            },
+            {
               path: 'inventory/categories',
               name: 'admin-inventory-categories',
               component: () => import('@/views/admin/OptionCrudView.vue'),

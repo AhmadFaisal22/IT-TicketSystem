@@ -72,17 +72,19 @@
           </svg>
           <div class="text-xs text-gray-700 leading-relaxed">
             {{ locale === 'zh' ? selectedSubHint.zh : selectedSubHint.en }}
-            <a :href="selectedSubHint.linkUrl"
-              class="text-blue-500 hover:text-blue-400 underline font-medium break-all">
-              {{ selectedSubHint.linkText }}</a>
-            <button type="button" @click="copyHintPath"
-              class="ml-2 inline-flex items-center gap-1 text-blue-500 hover:text-blue-400 transition">
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button v-if="resourceState === 'ready' && resourceMeta"
+              type="button" @click="downloadResource" :disabled="downloading"
+              class="inline-flex items-center gap-1 text-blue-500 hover:text-blue-400 underline font-medium break-all transition disabled:opacity-60">
+              <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
               </svg>
-              {{ copied ? t('ticket.pathCopied') : t('ticket.copyPath') }}
+              {{ downloading ? t('ticket.resourceDownloading') : resourceMeta.original_name }}
             </button>
+            <span v-else-if="resourceState === 'loading'" class="text-gray-400">…</span>
+            <span v-else-if="resourceState === 'missing'" class="text-gray-500 italic">
+              {{ t('ticket.resourceMissing') }}
+            </span>
           </div>
         </div>
       </div>
@@ -91,9 +93,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CATEGORIES } from '@/constants/categories'
+import { resourceFileApi } from '@/api'
 
 const props = defineProps<{
   category: string
@@ -113,23 +116,46 @@ const selectedSubHint = computed(() =>
   selectedCat.value?.subs.find(s => s.id === props.subcategory)?.hint ?? null
 )
 
-const copied = ref(false)
+// The hinted file is admin-managed and served through the authenticated
+// API, so we fetch its current name for display and download it as a blob.
+interface ResourceMeta { key: string; original_name: string; size: number }
 
-async function copyHintPath() {
-  const path = selectedSubHint.value?.copyPath
-  if (!path) return
-  try {
-    await navigator.clipboard.writeText(path)
-  } catch {
-    const ta = document.createElement('textarea')
-    ta.value = path
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
+const resourceMeta = ref<ResourceMeta | null>(null)
+const resourceState = ref<'idle' | 'loading' | 'ready' | 'missing'>('idle')
+const downloading = ref(false)
+
+watch(() => selectedSubHint.value?.resourceKey, async (key) => {
+  resourceMeta.value = null
+  if (!key) {
+    resourceState.value = 'idle'
+    return
   }
-  copied.value = true
-  setTimeout(() => (copied.value = false), 2000)
+  resourceState.value = 'loading'
+  try {
+    const { data } = await resourceFileApi.get(key)
+    resourceMeta.value = data
+    resourceState.value = 'ready'
+  } catch {
+    resourceState.value = 'missing'
+  }
+}, { immediate: true })
+
+async function downloadResource() {
+  const key = selectedSubHint.value?.resourceKey
+  const name = resourceMeta.value?.original_name
+  if (!key || !name || downloading.value) return
+  downloading.value = true
+  try {
+    const { data } = await resourceFileApi.download(key)
+    const url = URL.createObjectURL(data)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = name
+    link.click()
+    URL.revokeObjectURL(url)
+  } finally {
+    downloading.value = false
+  }
 }
 
 function selectCategory(id: string) {

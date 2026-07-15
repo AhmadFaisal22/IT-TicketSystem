@@ -10,6 +10,7 @@ export default {
     departments: '部门管理',
     sla: 'SLA 策略',
     approval: '审批级别',
+    resources: '资源文件',
     assetOptions: '库存选项',
     logout: '退出登录',
     collapse: '收起',
@@ -87,8 +88,8 @@ export default {
     subcategory: '子类别',
     selectSubcategory: '请选择子类别',
     clearCategory: '清除',
-    copyPath: '复制路径',
-    pathCopied: '已复制！',
+    resourceDownloading: '下载中…',
+    resourceMissing: '模板暂未上传，请联系 IT。',
     actions: {
       create: '创建工单',
       edit: '编辑工单',
@@ -166,6 +167,18 @@ export default {
       add: '添加策略',
       edit: '编辑策略',
       default: '默认（适用所有部门）'
+    },
+    resources: {
+      title: '资源文件',
+      subtitle: '员工在工单表单中可下载的模板文件。替换后立即生效，无需改代码。',
+      updated: '更新于',
+      uploadedBy: '上传人',
+      notUploaded: '暂未上传',
+      upload: '上传',
+      replace: '替换',
+      uploaded: '上传成功！',
+      invalidFile: '文件类型不允许或超过 20MB。',
+      uploadFailed: '上传失败，请重试。'
     },
     assetOptions: {
       title: '资产选项管理',

@@ -1,9 +1,8 @@
 export interface SubCategoryHint {
   en: string
   zh: string
-  linkText: string
-  linkUrl: string
-  copyPath: string
+  /** Key of an admin-managed resource file served by /api/resources/{key} */
+  resourceKey: string
 }
 
 export interface SubCategory {
@@ -181,9 +180,7 @@ export const CATEGORIES: Category[] = [
         hint: {
           en: 'Please fill out the IT Resource Application form:',
           zh: '请填写 IT 资源申请表：',
-          linkText: 'IT Resource Application-Template(1).xlsx',
-          linkUrl: 'file://192.168.2.2/seg%20manufacturing%20inc/Public%20Files/IT%20Resource%20Application-Template(1).xlsx',
-          copyPath: '\\\\192.168.2.2\\seg manufacturing inc\\Public Files\\IT Resource Application-Template(1).xlsx',
+          resourceKey: 'onboarding_template',
         },
       },
     ],

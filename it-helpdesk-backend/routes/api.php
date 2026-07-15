@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\RegisterController;
+use App\Http\Controllers\Api\ResourceFileController;
 use App\Http\Controllers\Api\SlaController;
 use App\Http\Controllers\Api\TicketApprovalController;
 use App\Http\Controllers\Api\TicketController;
@@ -117,6 +118,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('dashboard/stats', [DashboardController::class, 'stats']);
         Route::get('dashboard/sla', [DashboardController::class, 'sla']);
     });
+
+    // Resource files (admin-managed templates, e.g. onboarding form)
+    // download/metadata: any logged-in user; upload/replace: admin.
+    Route::get('resources', [ResourceFileController::class, 'index'])->middleware('role:admin');
+    Route::get('resources/{key}', [ResourceFileController::class, 'show']);
+    Route::get('resources/{key}/download', [ResourceFileController::class, 'download']);
+    Route::post('resources/{key}', [ResourceFileController::class, 'store'])->middleware('role:admin');
 
     // Notifications (the authenticated user's own)
     Route::get('notifications', [NotificationController::class, 'index']);

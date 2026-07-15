@@ -10,6 +10,7 @@ export default {
     departments: 'Departments',
     sla: 'SLA Policies',
     approval: 'Approval Levels',
+    resources: 'Resource Files',
     assetOptions: 'Inventory Options',
     logout: 'Logout',
     collapse: 'Collapse',
@@ -87,8 +88,8 @@ export default {
     subcategory: 'Subcategory',
     selectSubcategory: 'Select a subcategory',
     clearCategory: 'Clear',
-    copyPath: 'Copy path',
-    pathCopied: 'Copied!',
+    resourceDownloading: 'Downloading…',
+    resourceMissing: 'The template has not been uploaded yet — please contact IT.',
     actions: {
       create: 'Create Ticket',
       edit: 'Edit Ticket',
@@ -166,6 +167,18 @@ export default {
       add: 'Add Policy',
       edit: 'Edit Policy',
       default: 'Default (all departments)'
+    },
+    resources: {
+      title: 'Resource Files',
+      subtitle: 'Downloadable templates shown to employees in the ticket form. Replacing a file takes effect immediately — no code change needed.',
+      updated: 'updated',
+      uploadedBy: 'by',
+      notUploaded: 'Not uploaded yet',
+      upload: 'Upload',
+      replace: 'Replace',
+      uploaded: 'Uploaded successfully!',
+      invalidFile: 'File type not allowed or file exceeds 20 MB.',
+      uploadFailed: 'Upload failed. Please try again.'
     },
     assetOptions: {
       title: 'Inventory Options',
