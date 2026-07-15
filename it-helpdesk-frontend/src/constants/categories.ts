@@ -55,7 +55,7 @@ export const CATEGORIES: Category[] = [
       { id: 'wms', en: 'WMS', zh: 'WMS 仓储系统' },
       { id: 'mes', en: 'MES', zh: 'MES 制造执行系统' },
       { id: 'sharepoint', en: 'SharePoint', zh: 'SharePoint' },
-      { id: 'office', en: 'Office', zh: 'Office 办公软件' },
+      { id: 'office', en: 'Microsoft Office', zh: 'Microsoft Office 办公软件' },
       { id: 'onedrive', en: 'OneDrive', zh: 'OneDrive' },
       { id: 'camera', en: 'Camera', zh: '摄像头' },
     ],
