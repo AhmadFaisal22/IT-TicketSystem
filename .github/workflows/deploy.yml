@@ -101,7 +101,7 @@ jobs:
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Job 3 — Deploy  (DISABLED 2026-07-15)
-# The NAS is LAN-only: helpdesk.seg.com resolves to 192.168.2.213 internally
+# The NAS is LAN-only (192.168.2.213, app on :8088)
 # and has no public SSH, so GitHub-hosted runners can never reach it — this
 # job failed with "Error: missing server host" on every run.
 #
