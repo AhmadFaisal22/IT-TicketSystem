@@ -58,6 +58,7 @@ export const CATEGORIES: Category[] = [
       { id: 'office', en: 'Microsoft Office', zh: 'Microsoft Office 办公软件' },
       { id: 'onedrive', en: 'OneDrive', zh: 'OneDrive' },
       { id: 'camera', en: 'Camera', zh: '摄像头' },
+      { id: 'dingtalk', en: 'DingTalk', zh: '钉钉' },
     ],
   },
   {
